@@ -200,7 +200,7 @@ class StaticPhaseFieldProblem2D_split:
                     #_ , psiel_pos = self.psiel_neg_pos_spectral_split(u,lam,mu)
                     # test = degds(s) * ( psiel_pos )
                     #sdrive = ( ( degds(s) * ( psiel_pos ) - Gc * (1-s) / (2.0 * epsilon)  ) * ds + 2.0 * epsilon * Gc * ufl.inner(ufl.grad(s), ufl.grad(ds)) ) * ufl.dx
-                elif self.split =="volumetric":
+                elif self.split =="volumetric" or self.split:
                     pot = (self.psiel_degraded(s,eta,u,lam,mu)+self.psisurf(s,Gc,epsilon))*ufl.dx
             sdrive = ufl.derivative(pot, s, ds)
             equi = ufl.derivative(pot, u, du)
