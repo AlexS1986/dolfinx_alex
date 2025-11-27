@@ -58,6 +58,16 @@ def print_timestep_overview(iters: int, converged: bool, restart_solution: bool)
     sys.stdout.flush()
     return True
 
+def print_timestep_overview_staggered(iters_u: int, iters_s: int, converged: bool, restart_solution: bool):
+    print('-----------------------------')
+    print(' No. of iterations u: ', iters_u)
+    print(' No. of iterations s: ', iters_s)
+    print(' Converged:         ', converged)
+    print(' Restarting:        ', restart_solution)
+    print('-----------------------------')
+    sys.stdout.flush()
+    return True
+
 def print_runtime(runtime: float):
     print('') 
     print('-----------------------------')
@@ -212,7 +222,10 @@ def solve_with_newton_adaptive_time_stepping(domain: dlfx.mesh.Mesh,
                                              dt_never_scale_up: bool = False,
                                              trestart: dlfx.fem.Constant = None,
                                              max_iters = 8,
-                                             min_iters = 4):
+                                             min_iters = 4, 
+                                             arc_length=False,
+                                             λ_arc_length=None,
+                                             arc_length_ds=0.01):
     rank = comm.Get_rank()
     
     if print_bool:
@@ -243,6 +256,9 @@ def solve_with_newton_adaptive_time_stepping(domain: dlfx.mesh.Mesh,
     if solver is None:
             choose_default_solver_each_time_step = True
     
+    if arc_length:
+        arc = Crisfield(λ=λ_arc_length,u=w,ds=arc_length_ds)
+        arc.initialise(ds=arc_length_ds)
     # gc.set_debug(gc.DEBUG_LEAK)
     while t.value < Tend:
         # if comm.Get_rank() == 0:
@@ -263,7 +279,7 @@ def solve_with_newton_adaptive_time_stepping(domain: dlfx.mesh.Mesh,
         if choose_default_solver_each_time_step:
             if comm.Get_rank() == 0:
                 print(f"NO SOLVER PROVIDED. Default solver created each time step")
-            solver = get_solver(w, comm, max_iters, Res, dResdw, bcs)
+            solver, problem = get_solver(w, comm, max_iters, Res, dResdw, bcs)
             
         
         # control adaptive time adjustment
@@ -271,45 +287,174 @@ def solve_with_newton_adaptive_time_stepping(domain: dlfx.mesh.Mesh,
         converged = False
         iters = 0 # iters always needs to be defined
         try:
-            (iters, converged) = solver.solve(w)
+            if arc_length:  
+                arc.update_problem(problem)
+                iters, converged = arc.solve_step()
+                if rank == 0:
+                    print(f"ARCLENGTH SOLVE: iters={iters}, converged={converged}, λ={arc.λ.value:.3e}, ds={arc.ds:.3e}")
+            else:
+                (iters, converged) = solver.solve(w)
         except RuntimeError as e:
             if comm.Get_rank() == 0:
                 print(e)
-            dt.value = dt_scale_down*dt.value
-            # restart_solution = True
-            if rank == 0 and print_bool:
-                print_no_convergence(dt.value)
+            if not arc_length:
+                dt.value = dt_scale_down*dt.value
+                # restart_solution = True
+                if rank == 0 and print_bool:
+                    print_no_convergence(dt.value)
                 
         
         if converged:
             after_timestep_success_hook(t.value,dt.value,iters)
         
-        if converged and iters < min_iters and t.value > np.finfo(float).eps and iters > 0:
-            
-            if not dt_never_scale_up:
-                if dt_max is None:
-                    dt.value = dt_scale_up*dt.value
-                    if rank == 0 and print_bool:
-                        print_increasing_dt(dt.value)
-                else:
-                    if not (dt_scale_up*dt.value > dt_max.value): 
+        if not arc_length:
+            if converged and iters < min_iters and t.value > np.finfo(float).eps and iters > 0:
+                
+                if not dt_never_scale_up:
+                    if dt_max is None:
                         dt.value = dt_scale_up*dt.value
                         if rank == 0 and print_bool:
                             print_increasing_dt(dt.value)
                     else:
-                        dt.value = dt_max.value
+                        if not (dt_scale_up*dt.value > dt_max.value): 
+                            dt.value = dt_scale_up*dt.value
+                            if rank == 0 and print_bool:
+                                print_increasing_dt(dt.value)
+                        else:
+                            dt.value = dt_max.value
+                    
+        restart_solution = False
+        if arc_length:
+            if converged:
+                # do nothing arc length handles time update?
+                a=1
+            else:
+                trestart.value = t.value
+        else:
+            if converged:
+                #after_timestep_success_hook(t.value,dt.value,iters)
+                trestart.value = t.value
+                t.value = t.value+dt.value
+            else:
+                restart_solution = True
+                after_timestep_restart_hook(t.value,dt.value,iters)
+                t.value = trestart.value+dt.value
+        
+        if rank == 0 and print_bool:    
+            print_timestep_overview(iters,converged,restart_solution) 
+    after_last_timestep_hook()
+    
+    
+    
+def solve_staggered(domain: dlfx.mesh.Mesh,
+                                             u: dlfx.fem.Function,
+                                             s: dlfx.fem.Function, 
+                                             Tend: float,
+                                             dt: dlfx.fem.Constant,
+                                             before_first_timestep_hook: Callable = default_hook,
+                                             after_last_timestep_hook: Callable = default_hook,
+                                             before_each_timestep_hook: Callable = default_hook_tdt, 
+                                             get_residuum_and_gateaux_u: Callable = default_hook_dt,
+                                             get_residuum_and_gateaux_s: Callable = default_hook_dt,
+                                             get_bcs: Callable = default_hook_t,
+                                             after_timestep_success_hook: Callable = default_hook_all,
+                                             after_timestep_restart_hook: Callable = default_hook_all,
+                                             comm: MPI.Intercomm = MPI.COMM_WORLD,
+                                             print_bool = False,
+                                             solver : NewtonSolver = None,
+                                             t: dlfx.fem.Constant = None,
+                                             trestart: dlfx.fem.Constant = None,
+                                             dt_max: dlfx.fem.Constant = None,
+                                             dt_never_scale_up: bool = False,
+                                             max_iters = 20,
+                                             min_iters = 1):
+    rank = comm.Get_rank()
+    
+    dt_scale_down = 0.5
+    dt_scale_up = 2.0
+        
+    # t = 0
+    if t is None:
+        t = dlfx.fem.Constant(domain, 0.0)
+    if trestart is None:
+        trestart = dlfx.fem.Constant(domain, 0.0)
+    # delta_t = dlfx.fem.Constant(domain, dt)
+    # dtt = dt.value 
+
+    before_first_timestep_hook()
+
+    # nn = 0
+    choose_default_solver_each_time_step = False
+    if solver is None:
+            choose_default_solver_each_time_step = True
+
+    while t.value < Tend:
+
+        before_each_timestep_hook(t.value,dt.value)
+            
+        
+        
+        bcs_u, bcs_s = get_bcs(t.value)
+            
+        
+        # control adaptive time adjustment
+        # restart_solution = False
+        converged = False
+        converged_u  = False
+        converged_s = False
+        iters_u = 0 # iters always needs to be defined
+        iters_s = 0
+        try:
+            [Res_u,  dRes_uDu] = get_residuum_and_gateaux_u(dt)
+            solver_u, problem_u = get_solver(u, comm, max_iters, Res_u, dRes_uDu, bcs_u)
+            (iters_u, converged_u) = solver_u.solve(u)
+            
+            [Res_s,  dRes_sDs] = get_residuum_and_gateaux_s(dt)
+            solver_s, problem_s = get_solver(s, comm, max_iters, Res_s, dRes_sDs, bcs_s)
+            (iters_s, converged_s) = solver_s.solve(s)
+            a=1
+        except RuntimeError as e:
+                if comm.Get_rank() == 0:
+                    print(e)
+                    print_no_convergence(dt.value)
+                dt.value = dt_scale_down*dt.value
+                
+        converged = converged_u and converged_s
+        if rank == 0 and print_bool:
+            print(f"converged iters_u : {iters_u} iters_s : {iters_s}")
+        
+        if converged:
+            after_timestep_success_hook(t.value,dt.value,iters_u)
+            
+             
+        if converged and iters_u + iters_s < min_iters and t.value > np.finfo(float).eps and iters_u + iters_s > 0:
+                
+                    if dt_max is None:
+                        dt.value = dt_scale_up*dt.value
+                        if rank == 0 and print_bool:
+                            print_increasing_dt(dt.value)
+                    else:
+                        if not (dt_scale_up*dt.value > dt_max.value): 
+                            dt.value = dt_scale_up*dt.value
+                            if rank == 0 and print_bool:
+                                print_increasing_dt(dt.value)
+                        else:
+                            dt.value = dt_max.value
+        
                     
         restart_solution = False
         if converged:
-            #after_timestep_success_hook(t.value,dt.value,iters)
-            trestart.value = t.value
-            t.value = t.value+dt.value
-        else:
-            restart_solution = True
-            after_timestep_restart_hook(t.value,dt.value,iters)
-            t.value = trestart.value+dt.value
+                #after_timestep_success_hook(t.value,dt.value,iters)
+                trestart.value = t.value
+                t.value = t.value+dt.value
+        else:   
+                
+                restart_solution = True
+                after_timestep_restart_hook(t.value,dt.value,iters_u+iters_s)
+                t.value = trestart.value+dt.value
+        
         if rank == 0 and print_bool:    
-            print_timestep_overview(iters,converged,restart_solution) 
+            print_timestep_overview_staggered(iters_u,iters_s,converged,restart_solution)
     after_last_timestep_hook()
 
 def print_total_dofs(w, comm, rank):
@@ -438,7 +583,7 @@ def get_solver(w, comm, max_iters, Res, dResdw, bcs):
         print("Default KSP Type:", ksp.getType())
         print("Default PC Type:", ksp.getPC().getType())
     
-    return solver
+    return solver, problem
 
     
     
@@ -833,4 +978,251 @@ def update_newmark(beta, gamma, dt, u, um1, vm1, am1, is_ufl=True):
         acc = 1.0/(beta*dt*dt)*(u.x.array[:]-um1.x.array[:])-1.0/(beta*dt)*vm1.x.array[:]-(0.5-beta)/beta*am1.x.array[:]
         vel = gamma/(beta*dt)*(u.x.array[:]-um1.x.array[:])+(1.0-gamma/beta)*vm1.x.array[:]+dt*(beta-0.5*gamma)/beta*am1.x.array[:]
     return acc, vel 
+
+from petsc4py import PETSc
+import numpy as np
+import dolfinx
+
+
+def explain_snes_reason(reason: int) -> str:
+    """Return a human-readable explanation for PETSc SNES convergence reason."""
+    reasons = {
+        # --- Converged ---
+        PETSc.SNES.ConvergedReason.CONVERGED_FNORM_ABS: "Converged: residual norm below absolute tolerance",
+        PETSc.SNES.ConvergedReason.CONVERGED_FNORM_RELATIVE: "Converged: residual norm reduced by relative tolerance",
+        PETSc.SNES.ConvergedReason.CONVERGED_SNORM_RELATIVE: "Converged: step norm below tolerance (stationary point)",
+        PETSc.SNES.ConvergedReason.CONVERGED_ITS: "Converged: reached requested iteration count",
+
+        # --- Diverged ---
+        PETSc.SNES.ConvergedReason.DIVERGED_FUNCTION_DOMAIN: "Diverged: function not defined at current iterate (NaN or domain error)",
+        PETSc.SNES.ConvergedReason.DIVERGED_FUNCTION_COUNT: "Diverged: too many function evaluations",
+        PETSc.SNES.ConvergedReason.DIVERGED_LINEAR_SOLVE: "Diverged: linear solve failed (KSP did not converge)",
+        PETSc.SNES.ConvergedReason.DIVERGED_LOCAL_MIN: "Diverged: found a local minimum (not a root)",
+        PETSc.SNES.ConvergedReason.DIVERGED_MAX_IT: "Diverged: reached maximum iterations",
+    }
+
+    # Unknown reason (0 = not yet converged)
+    if reason == 0:
+        return "Not yet converged: solver still running"
+
+    # If PETSc reason is known
+    if reason in reasons:
+        return reasons[reason]
+
+    # Fallback for unknown codes
+    return f"Unknown SNES reason code: {reason}"
+
+
+import numpy as np
+from petsc4py import PETSc
+import dolfinx
+from dolfinx.fem.petsc import create_vector, create_matrix
+
+def explain_snes_reason(reason: int) -> str:
+    reasons = {
+        PETSc.SNES.ConvergedReason.CONVERGED_FNORM_ABS: "Converged: residual norm below absolute tolerance",
+        PETSc.SNES.ConvergedReason.CONVERGED_FNORM_RELATIVE: "Converged: residual norm reduced by relative tolerance",
+        PETSc.SNES.ConvergedReason.CONVERGED_SNORM_RELATIVE: "Converged: step norm below tolerance (stationary point)",
+        PETSc.SNES.ConvergedReason.CONVERGED_ITS: "Converged: reached requested iteration count",
+        PETSc.SNES.ConvergedReason.CONVERGED_TR_DELTA: "Converged: trust region too small",
+        PETSc.SNES.ConvergedReason.DIVERGED_FUNCTION_DOMAIN: "Diverged: function not defined at current iterate (NaN or domain error)",
+        PETSc.SNES.ConvergedReason.DIVERGED_FUNCTION_COUNT: "Diverged: too many function evaluations",
+        PETSc.SNES.ConvergedReason.DIVERGED_LINEAR_SOLVE: "Diverged: linear solve failed (KSP did not converge)",
+        PETSc.SNES.ConvergedReason.DIVERGED_FNORM_INFINITY: "Diverged: residual norm is infinite or NaN",
+        PETSc.SNES.ConvergedReason.DIVERGED_LS_FAILURE: "Diverged: line search failed",
+        PETSc.SNES.ConvergedReason.DIVERGED_LOCAL_MIN: "Diverged: found a local minimum (not a root)",
+        PETSc.SNES.ConvergedReason.DIVERGED_MAX_IT: "Diverged: reached maximum iterations",
+        PETSc.SNES.ConvergedReason.DIVERGED_BREAKDOWN: "Diverged: numerical breakdown (unknown failure)",
+    }
+    if reason == 0:
+        return "Not yet converged: solver still running"
+    return reasons.get(reason, f"Unknown SNES reason code: {reason}")
+
+import numpy as np
+from petsc4py import PETSc
+import dolfinx
+from dolfinx.fem.petsc import create_vector, create_matrix
+
+# -----------------------------
+def explain_snes_reason(reason: int) -> str:
+    reasons = {
+        PETSc.SNES.ConvergedReason.CONVERGED_FNORM_ABS: "Converged: residual norm below absolute tolerance",
+        PETSc.SNES.ConvergedReason.CONVERGED_FNORM_RELATIVE: "Converged: residual norm reduced by relative tolerance",
+        PETSc.SNES.ConvergedReason.CONVERGED_SNORM_RELATIVE: "Converged: step norm below tolerance (stationary point)",
+        PETSc.SNES.ConvergedReason.CONVERGED_ITS: "Converged: reached requested iteration count",
+        PETSc.SNES.ConvergedReason.DIVERGED_FUNCTION_DOMAIN: "Diverged: function not defined at current iterate (NaN or domain error)",
+        PETSc.SNES.ConvergedReason.DIVERGED_FUNCTION_COUNT: "Diverged: too many function evaluations",
+        PETSc.SNES.ConvergedReason.DIVERGED_LINEAR_SOLVE: "Diverged: linear solve failed (KSP did not converge)",
+        PETSc.SNES.ConvergedReason.DIVERGED_LOCAL_MIN: "Diverged: found a local minimum (not a root)",
+        PETSc.SNES.ConvergedReason.DIVERGED_MAX_IT: "Diverged: reached maximum iterations",
+    }
+    if reason == 0:
+        return "Not yet converged"
+    return reasons.get(reason, f"Unknown SNES reason code: {reason}")
+
+# -----------------------------
+class Crisfield:
+    def __init__(self, λ: dolfinx.fem.Constant, u: dolfinx.fem.Function,
+                 psi=1.0, ds=0.1, monitor=None, inner=None):
+        """
+        Crisfield arc-length continuation.
+        Problem can be attached later.
+        """
+        self.λ = λ
+        self.u = u
+        self.psi = psi
+        self.ds = ds
+        self.monitor = monitor
+        self.inner = inner if inner is not None else lambda v1, v2: v1.dot(v2)
+
+        self.problem = None
+
+        # SNES created at initialization
+        self.comm = u.function_space.mesh.comm
+        self.snes = PETSc.SNES().create(self.comm)
+        self.snes.setType("newtontr")
+
+        # Work vectors, initialized when problem is attached
+        self.b = None
+        self.A = None
+        self.dFdλ = None
+        self.dx = None
+        self.Δx = None
+        self.δx_dFdλ = None
+
+        self.dλ = dolfinx.fem.Constant(λ._ufl_domain, λ.value)
+        self.Δλ = dolfinx.fem.Constant(λ._ufl_domain, λ.value)
+
+    # -----------------------------
+    def update_problem(self, problem):
+        """Attach or update nonlinear problem."""
+        self.problem = problem
+        PETSc.Sys.Print("[Crisfield] Problem attached/updated.")
+
+        # Create work vectors if first time
+        if self.b is None:
+            self.b = create_vector(self.problem.L)
+            self.A = create_matrix(self.problem.a)
+            self.dFdλ = self.b.copy()
+            self.dx = self.b.copy()
+            self.Δx = self.b.copy()
+            self.δx_dFdλ = self.b.copy()
+
+        # Attach callbacks
+        self.snes.setFunction(lambda snes, x, b: self.problem.F(x, b), self.b)
+        self.snes.setJacobian(lambda snes, x, A, B: self.problem.J(x, A), self.A)
+
+        # Attach Crisfield update
+        self.snes.setUpdate(Crisfield.update, kargs=dict(continuation=self))
+
+    # -----------------------------
+    def initialise(self, ds=None, λ=None, psi=None):
+        if ds is not None:
+            self.ds = ds
+        if psi is not None:
+            self.psi = psi
+        if λ is not None:
+            self.λ.value = λ
+        if self.dx:
+            with self.dx.localForm() as dx_local:
+                dx_local.set(0.0)
+        self.dλ.value = self.ds
+
+    # -----------------------------
+    def solve_step(self, ds=None, zero_x_predictor=False,
+               ds_min=1e-4, ds_max=0.5, ds_increase_factor=1.2, ds_decrease_factor=0.5,
+               iter_increase=4, iter_decrease=8):
+        """Solve one Crisfield step, adaptively updating ds."""
+        if self.problem is None:
+            raise RuntimeError("No problem attached. Use update_problem() first.")
+        if ds is not None:
+            self.ds = ds
+
+        # Predictor step: update u only, no change to λ
+        if zero_x_predictor:
+            with self.Δx.localForm() as Δx_local:
+                Δx_local.set(0.0)
+        else:
+            with self.dx.localForm() as dx_local, self.Δx.localForm() as Δx_local:
+                dx_local.copy(Δx_local)
+
+        self.u.vector.axpy(1.0, self.Δx)  # predictor update
+
+        PETSc.Sys.Print(f"[Crisfield] Trying step with ds={self.ds:.3e}")
+        self.snes.solve(None, self.u.vector)
+
+        reason = self.snes.getConvergedReason()
+        iters = self.snes.getIterationNumber()
+        reason_str = explain_snes_reason(reason)
+        PETSc.Sys.Print(f"[Crisfield] step: iters={iters}, reason={reason_str} ({reason})")
+        converged = reason > 0
+
+        if converged:
+            # Update λ and Δλ only after successful convergence
+            self.Δλ.value = self.dλ.value
+            self.λ.value += self.Δλ.value
+
+            Crisfield.update(self.snes, iters, self)
+            with self.dx.localForm() as dx_local, self.Δx.localForm() as Δx_local:
+                Δx_local.copy(dx_local)
+            self.dλ.value = self.Δλ.value
+
+            # Adaptive ds
+            if iters <= iter_increase:
+                self.ds = min(self.ds * ds_increase_factor, ds_max)
+            elif iters >= iter_decrease:
+                self.ds = max(self.ds * ds_decrease_factor, ds_min)
+
+            return iters, True
+        else:
+            # Reduce ds and reset predictor, λ unchanged
+            self.ds = max(self.ds * ds_decrease_factor, ds_min)
+            with self.Δx.localForm() as Δx_local:
+                Δx_local.set(0.0)
+            return iters, False
+
+    # -----------------------------
+    @staticmethod
+    def update(snes, snes_iteration, continuation):
+        """Crisfield arc-length update."""
+        Δx, dx = continuation.Δx, continuation.dx
+        Δλ, dλ = continuation.Δλ.value.item(), continuation.dλ.value.item()
+        dFdλ, δx_dFdλ = continuation.dFdλ, continuation.δx_dFdλ
+        psi, ds = continuation.psi, continuation.ds
+
+        δx = snes.getSolutionUpdate()
+        if snes_iteration == 0:
+            with δx.localForm() as δx_local:
+                δx_local.set(0.0)
+        Δx.axpy(-1.0, δx)
+
+        if snes.getKSP().getConvergedReason() != 0 and snes_iteration > 0:
+            snes.getKSP().solve(-dFdλ, δx_dFdλ)
+        else:
+            with δx_dFdλ.localForm() as dx_local:
+                dx_local.set(0.0)
+
+        dFdλ_inner = psi**2 * continuation.inner(dFdλ, dFdλ)
+        a1 = continuation.inner(δx_dFdλ, δx_dFdλ) + dFdλ_inner
+        a2 = continuation.inner(Δx, δx_dFdλ) + Δλ * dFdλ_inner
+        a3 = continuation.inner(Δx, Δx) + Δλ**2 * dFdλ_inner - ds**2
+
+        if a1 > 0.0:
+            arg = a2**2 - a1 * a3
+            if arg < 0:
+                raise RuntimeError("Arc-length quadratic has no real roots.")
+            sqr = np.sqrt(arg)
+            δλ1 = (-a2 - sqr) / a1
+            δλ2 = (-a2 + sqr) / a1
+            sign = np.sign(continuation.inner(δx_dFdλ, dx) + dλ * dFdλ_inner)
+            δλ = δλ1 if δλ1 * sign > δλ2 * sign else δλ2
+        else:
+            δλ = -a3 / (2 * a2) if abs(a2) > 1e-14 else 0.0
+
+        continuation.Δλ.value += δλ
+        continuation.Δx.axpy(δλ, δx_dFdλ)
+        continuation.λ.value += δλ
+        snes.getSolution().axpy(δλ, δx_dFdλ)
+
+
 
