@@ -114,7 +114,7 @@ t_global = dlfx.fem.Constant(domain,0.0)
 trestart_global = dlfx.fem.Constant(domain,0.0)
 # Tend = 10.0 * dt_global.value
 dt_global.value = dt_max_in_critical_area
-dt_max = dlfx.fem.Constant(domain,0.01)
+dt_max = dlfx.fem.Constant(domain,0.00001)
 
 
 la = het.set_cell_function_heterogeneous_material(domain,la_micro, la_effective, micro_material_cells, effective_material_cells)
@@ -150,11 +150,11 @@ ddw = ufl.TrialFunction(W)
 
 deg_quad = 1  # quadrature degree for internal state variable representation
 gdim = 2
-_,alpha_n,alpha_tmp, e_p_11_n, e_p_22_n, e_p_12_n, e_p_33_n, e_p_11_n_tmp, e_p_22_n_tmp, e_p_12_n_tmp, e_p_33_n_tmp = alex.plasticity.define_internal_state_variables_basix_b(gdim, domain, deg_quad,quad_scheme="default")
+H,alpha_n,alpha_tmp, e_p_11_n, e_p_22_n, e_p_12_n, e_p_33_n, e_p_11_n_tmp, e_p_22_n_tmp, e_p_12_n_tmp, e_p_33_n_tmp = alex.plasticity.define_internal_state_variables_basix_b(gdim, domain, deg_quad,quad_scheme="default")
 dx = alex.plasticity.define_custom_integration_measure_that_matches_quadrature_degree_and_scheme(domain, deg_quad, "default")
 #dx = ufl.dx
 quadrature_points, cells = alex.plasticity.get_quadraturepoints_and_cells_for_inter_polation_at_gauss_points(domain, deg_quad)
-# H.x.array[:] = np.zeros_like(H.x.array[:])
+H.x.array[:] = np.zeros_like(H.x.array[:])
 alpha_n.x.array[:] = np.zeros_like(alpha_n.x.array[:])
 alpha_tmp.x.array[:] = np.zeros_like(alpha_tmp.x.array[:])
 e_p_11_n.x.array[:] = np.zeros_like(e_p_11_n.x.array[:])
@@ -201,13 +201,8 @@ e_p_n_3D = ufl.as_tensor([[e_p_11_n, e_p_12_n, 0.0],
                           [e_p_12_n, e_p_22_n, 0.0],
                           [0.0         ,          0.0, e_p_33_n]])
 
-# phaseFieldProblem = pf.StaticPhaseFieldProblem2D_incremental_plasticity(degradationFunction=pf.degrad_cubic,
-#                                                    psisurf=pf.psisurf_from_function,dx=dx, sig_y=sig_y.value, hard=hard.value,alpha_n=alpha_n,e_p_n=e_p_n_3D,H=H)
-
-phaseFieldProblem = pf.StaticPhaseFieldProblem2D_plasticity_noll(degradationFunction=pf.degrad_cubic,
-                                                   psisurf=pf.psisurf_from_function,dx=dx, sig_y=sig_y.value, hard=hard.value,alpha_n=alpha_n,e_p_n=e_p_n_3D)
-
-
+phaseFieldProblem = pf.StaticPhaseFieldProblem2D_incremental_plasticity(degradationFunction=pf.degrad_cubic,
+                                                   psisurf=pf.psisurf_from_function,dx=dx, sig_y=sig_y.value, hard=hard.value,alpha_n=alpha_n,e_p_n=e_p_n_3D,H=H)
 
 
 
@@ -313,14 +308,12 @@ def get_bcs(t):
 
 n = ufl.FacetNormal(domain)
 external_surface_tag = 5
-#external_surface_tags = pp.tag_part_of_boundary(domain,bc.get_boundary_of_box_as_function(domain, comm,atol=atol*0.0),external_surface_tag)
-external_surface_tags = pp.tag_part_of_boundary(domain,boundary_surfing_bc,external_surface_tag)
+external_surface_tags = pp.tag_part_of_boundary(domain,bc.get_boundary_of_box_as_function(domain, comm,atol=atol*0.0),external_surface_tag)
 ds = ufl.Measure('ds', domain=domain, subdomain_data=external_surface_tags,metadata={"quadrature_degree": deg_quad, "quadrature_scheme": "default"})
 # s_zero_for_tracking = pp.get_s_zero_field_for_tracking(domain)
 
 top_surface_tag = 9
 top_surface_tags = pp.tag_part_of_boundary(domain,bc.get_top_boundary_of_box_as_function(domain, comm,atol=atol*0.0),top_surface_tag)
-
 ds_top_tagged = ufl.Measure('ds', domain=domain, subdomain_data=top_surface_tags,metadata={"quadrature_degree": deg_quad, "quadrature_scheme": "default"})
 
 Work = dlfx.fem.Constant(domain,0.0)
@@ -339,9 +332,9 @@ def after_timestep_success(t,dt,iters):
     
     # update 
     delta_u = u - um1  
-    # H_expr = phaseFieldProblem.update_H(u,delta_u=delta_u,lam=la,mu=mu)
-    # # H_expr = phaseFieldProblem.update_H(u,s=s,delta_u=delta_u,lam=la,mu=mu,eta=eta)
-    # H.x.array[:] = alex.plasticity.interpolate_quadrature(domain, cells, quadrature_points,H_expr)
+    H_expr = phaseFieldProblem.update_H(u,delta_u=delta_u,lam=la,mu=mu)
+    # H_expr = phaseFieldProblem.update_H(u,s=s,delta_u=delta_u,lam=la,mu=mu,eta=eta)
+    H.x.array[:] = alex.plasticity.interpolate_quadrature(domain, cells, quadrature_points,H_expr)
     
     
     alex.plasticity.update_e_p_n_and_alpha_arrays(u,e_p_11_n_tmp,e_p_22_n_tmp,e_p_12_n_tmp,e_p_33_n_tmp,

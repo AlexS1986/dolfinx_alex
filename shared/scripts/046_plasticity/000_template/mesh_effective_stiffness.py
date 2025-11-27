@@ -22,8 +22,8 @@ try:
     # }
 except:
     print("Could not parse arguments")
-    dhole=0.25
-    wsteg=0.1
+    dhole=1.0
+    wsteg=0.25
     e0 = 0.02                # mesh size
 
 w_cell=dhole+wsteg
