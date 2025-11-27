@@ -25,10 +25,11 @@ import json
 # ---------------------------
 # CLI INPUT HANDLING
 # ---------------------------
-DEFAULT_FOLDER = os.path.join(os.path.dirname(__file__), "resources", "310125_var_bcpos_rho_10_120_004")
-VALID_CASES = {"vary", "min", "max", "all"}
+DEFAULT_FOLDER = os.path.join(os.path.dirname(__file__), "resources", "250925_TTO_mbb_festlager_var_a_E_var_min_max","mbb_festlager_var_a_E_var")
+VALID_CASES = {"vary", "min", "max", "all", "fromfile"}
+DEFAULT_CASE = "vary"
 
-def parse_args(argv):
+def parse_args(argv, rank=0):
     """
     Accepted forms:
       python script.py
@@ -44,11 +45,14 @@ def parse_args(argv):
     ds_start = None
     ds_end = None
     case = None
+    used_defaults = []
 
     if len(argv) >= 2:
         folder = argv[1]
         if not os.path.isdir(folder):
             raise FileNotFoundError(f"Provided folder path does not exist: {folder}")
+    else:
+        used_defaults.append("folder")
 
     # Collect remaining tokens and try to interpret ints vs case
     tokens = argv[2:]
@@ -64,18 +68,31 @@ def parse_args(argv):
         ds_start = ds_end = ints[0]
     elif len(ints) >= 2:
         ds_start, ds_end = ints[0], ints[1]
+    else:
+        used_defaults.append("dataset indices")
 
     if others:
-        # last textual token wins
         last = others[-1]
         if last in VALID_CASES:
             case = last
         else:
             raise ValueError(f"Unknown case '{last}'. Valid: {sorted(VALID_CASES)}")
+    else:
+        case = DEFAULT_CASE
+        used_defaults.append("case")
+
+    # Print warnings for defaults if rank == 0
+    if rank == 0 and used_defaults:
+        print(f"[WARNING] Using default values for: {', '.join(used_defaults)}")
+
+    if rank == 0:
+        print(f"[INFO] Using folder: {folder}")
+        print(f"[INFO] Dataset start: {ds_start}, end: {ds_end}, case: {case}")
 
     return folder, ds_start, ds_end, case
 
 folder_path, dataset_start, dataset_end, case_param = parse_args(sys.argv)
+
 print(f"[INFO] Using folder: {folder_path}")
 
 # ---------------------------
@@ -97,7 +114,7 @@ else:
 if not x_candidates:
     raise ValueError(f"No dataset indices found in the specified range: {dataset_start} to {dataset_end}")
 
-print(f"[INFO] Detected dataset indices to process: {x_candidates}")
+
 
 # ---------------------------
 # MPI INITIALIZATION
@@ -105,6 +122,9 @@ print(f"[INFO] Detected dataset indices to process: {x_candidates}")
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
+if rank == 0:
+    print(f"[INFO] Detected dataset indices to process: {x_candidates}")
+
 print('MPI-STATUS: Process:', rank, 'of', size, 'processes.')
 sys.stdout.flush()
 
@@ -118,7 +138,8 @@ if rank == 0:
             f.write("x_value,case,status\n")
 
 for x_value in x_candidates:
-    print(f"[INFO] Processing dataset index: {x_value}")
+    if rank == 0:
+        print(f"[INFO] Processing dataset index: {x_value}")
 
     # ---------------------------
     # BUILD FILE PATHS
@@ -140,7 +161,8 @@ for x_value in x_candidates:
         if not os.path.exists(fpath):
             raise FileNotFoundError(f"Required file not found: {fpath}")
 
-    print(f"[INFO] All required files found for dataset {x_value}.")
+    if rank ==0:
+        print(f"[INFO] All required files found for dataset {x_value}.")
 
     # ---------------------------
     # HELPER FUNCTIONS
@@ -291,7 +313,7 @@ for x_value in x_candidates:
     # ---------------------------
     # CASE LOOP
     # ---------------------------
-    available_cases = ["vary", "min", "max"]
+    available_cases = ["vary", "min", "max", "fromfile"]
     if case_param is None or case_param == "all":
         cases_to_run = available_cases
     else:
@@ -303,7 +325,8 @@ for x_value in x_candidates:
             cases_to_run = [case_param]
 
     for case in cases_to_run:
-        print(f"[INFO] Running case '{case}' for dataset index {x_value}")
+        if rank == 0:
+            print(f"[INFO] Running case '{case}' for dataset index {x_value}")
 
         # ---- Case-specific output paths to avoid overwrites
         results_xdmf_path = os.path.join(folder_path, f"results_{x_value}_{case}.xdmf")
@@ -347,22 +370,29 @@ for x_value in x_candidates:
         # ---- Boundary dofs (top boundary, u_y)
         fdim = domain.topology.dim - 1
         atol = 1e-12
+        atol_bc = 0.0
+       
+        increment_a = 0.5
+        width_applied_load = 0.2 #+ increment_a * 0.2 # modification to stabilize numerical problems
+        
         facets_at_boundary = dlfx.mesh.locate_entities_boundary(
-            domain, fdim, bc.get_top_boundary_of_box_as_function(domain, comm, atol=atol*0.0)
+            domain, fdim, bc.get_x_range_at_top_of_box_as_function(domain,comm,width_applied_load,width_applied_load/2.0,atol=atol_bc) 
         )
         dofs_at_boundary_y = dlfx.fem.locate_dofs_topological(W.sub(0).sub(1), fdim, facets_at_boundary)
 
         # ---- Simulation parameters
         dt_start = 0.001
         dt_global = dlfx.fem.Constant(domain, dt_start)
-        t_global = dlfx.fem.Constant(domain, 0.0)
-        trestart_global = dlfx.fem.Constant(domain, 0.0)
-        Tend = 100.0 * dt_global.value * x_value
+        t_global = dlfx.fem.Constant(domain, 0.0000001)
+        trestart_global = dlfx.fem.Constant(domain, t_global.value)
+        Tend = 50.0 * dt_global.value * x_value
         gc = dlfx.fem.Constant(domain, 1.0)
-        eta = dlfx.fem.Constant(domain, 0.00001)
-        epsilon = dlfx.fem.Constant(domain, 0.05)
-        Mob = dlfx.fem.Constant(domain, 1000.0)
+        eta = dlfx.fem.Constant(domain, 0.001)
+        epsilon = dlfx.fem.Constant(domain, 0.1)
+        Mob = dlfx.fem.Constant(domain, 100.0)
         iMob = dlfx.fem.Constant(domain, 1.0 / Mob.value)
+        
+       #λ_arc_length = dlfx.fem.Constant(domain, petsc.ScalarType(0.0000000001))
 
         # ---- Solution fields
         w = dlfx.fem.Function(W)
@@ -373,11 +403,15 @@ for x_value in x_candidates:
         dw = ufl.TestFunction(W)
         ddw = ufl.TrialFunction(W)
 
-        phaseFieldProblem = pf.StaticPhaseFieldProblem2D_split(
-            degradationFunction=pf.degrad_quadratic,
-            psisurf=pf.psisurf_from_function,
-            split="spectral"
-        )
+        # phaseFieldProblem = pf.StaticPhaseFieldProblem2D_split(
+        #     degradationFunction=pf.degrad_quadratic,
+        #     psisurf=pf.psisurf_from_function,
+        #     split="volumetric",
+        #     geometric_nl=False
+        # )
+        
+        phaseFieldProblem = pf.StaticPhaseFieldProblem2D(degradationFunction=pf.degrad_quadratic,
+                                                         psisurf=pf.psisurf_from_function)
 
         timer = dlfx.common.Timer()
 
@@ -414,15 +448,20 @@ for x_value in x_candidates:
         
         top_surface_tag = 9
         top_surface_tags = pp.tag_part_of_boundary(
-            domain, bc.get_top_boundary_of_box_as_function(domain, comm, atol=atol*0.0), top_surface_tag
+            domain, bc.get_top_boundary_of_box_as_function(domain, comm, atol=atol*1.0), top_surface_tag
         )
         ds_top_tagged = ufl.Measure('ds', domain=domain, subdomain_data=top_surface_tags)
 
         success_timestep_counter = dlfx.fem.Constant(domain, 0.0)
-        postprocessing_interval = dlfx.fem.Constant(domain, 300.0)
+        postprocessing_interval = dlfx.fem.Constant(domain, 50.0)
+
+
+        sigma_at_surface = dlfx.fem.Constant(domain, np.array([[0.0, 0.0],
+                    [0.0, -1.0]]))
+        sigma_amplitude = 1.0
 
         def get_bcs(t):
-            atol_bc = (x_max_all - x_min_all) * 0.000
+           
             # bcs = [
             #     bc.define_dirichlet_bc_from_value(domain, -t_global.value, 1,
             #                                       bc.get_top_boundary_of_box_as_function(domain, comm, atol=atol_bc), W, 0),
@@ -434,11 +473,10 @@ for x_value in x_candidates:
             #                                       bc.get_right_boundary_of_box_as_function(domain, comm, atol=atol_bc), W, 0)
             # ]
             
-            width_applied_load = 0.2
-            increment_a = 0.5
+
             
             bcs = [
-                bc.define_dirichlet_bc_from_value(domain, -t_global.value, 1,
+                bc.define_dirichlet_bc_from_value(domain, t_global.value, 1,
                                                    bc.get_x_range_at_top_of_box_as_function(domain,comm,width_applied_load,width_applied_load/2.0,atol=atol_bc), W, 0),
                 bc.define_dirichlet_bc_from_value(domain, 0.0, 0,
                                                    bc.get_x_range_at_top_of_box_as_function(domain,comm,width_applied_load,width_applied_load/2.0,atol=atol_bc), W, 0),
@@ -460,7 +498,11 @@ for x_value in x_candidates:
                 # bc.define_dirichlet_bc_from_value(domain, 0.0, 0,
                 #                                   bc.get_right_boundary_of_box_as_function(domain, comm, atol=atol_bc), W, 0)
             ]
+
             
+            # sigma_at_surface.value =  np.array([[0.0, 0.0],
+            #                                     [0.0, -sigma_amplitude* t_global.value ]])
+            # phaseFieldProblem.set_traction_bc(sigma_at_surface=sigma_at_surface,w=w,N=n,ds=ds_top_tagged(top_surface_tag))
             
             if abs(t) > sys.float_info.epsilon * 5:
                 bcs.append(pf.irreversibility_bc(domain, W, wm1))
@@ -474,14 +516,15 @@ for x_value in x_candidates:
         E_average = pp.get_volume_average_of_field(E,vol,dx=ufl.dx,comm=comm)
         
         def write_vol_data_to_file():
-            vol_path = os.path.join(folder_path, f"vol_{x_value}_{case}.json")
-            volumes_data = {
-                    "vol": vol,
-                    "E_average": E_average,
-                }
-            with open(vol_path, "w") as f:
-                json.dump(volumes_data, f, indent=4)
-            print(f"Saved volume info to: {vol_path}")
+            if rank == 0:
+                vol_path = os.path.join(folder_path, f"vol_{x_value}_{case}.json")
+                volumes_data = {
+                        "vol": vol,
+                        "E_average": E_average,
+                    }
+                with open(vol_path, "w") as f:
+                    json.dump(volumes_data, f, indent=4)
+                print(f"Saved volume info to: {vol_path}")
         
         write_vol_data_to_file()
         
@@ -520,6 +563,8 @@ for x_value in x_candidates:
                 
             wm1.x.array[:] = w.x.array[:]
             wrestart.x.array[:] = w.x.array[:]
+            
+            
                 
 
             success_timestep_counter.value = success_timestep_counter.value + 1.0
@@ -543,6 +588,9 @@ for x_value in x_candidates:
                 raise RuntimeError("ConvergenceFailure")
             # Otherwise: restore previous state and let the solver retry with smaller dt
             w.x.array[:] = wrestart.x.array[:]
+            # random perturbation
+            # epsilon_num = 1e-8  # adjust as needed (e.g., 1e-3 for larger noise)
+            # w.sub(1).x.array[:] += epsilon_num * np.random.randn(*w.sub(1).x.array.shape)
 
         def after_last_timestep():
             timer.stop()
@@ -585,6 +633,9 @@ for x_value in x_candidates:
                 print_bool=True,
                 t=t_global,
                 trestart=trestart_global,
+                arc_length=False,
+                arc_length_ds=0.01,
+                λ_arc_length=t_global
             )
             log_convergence_status(x_value, case, "OK")
         except RuntimeError as e:
