@@ -74,7 +74,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Running fracture simulation via mpirun..."
-mpirun -np 8 python3 run_simulation.py \
+mpirun -np 4 python3 run_simulation.py \
     --mesh_file "$MESH_FILE" \
     --in_crack_length "$LCRACK" \
     --lam_micro_param "$LAM_MICRO_PARAM" \
