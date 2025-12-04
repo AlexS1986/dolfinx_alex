@@ -171,7 +171,8 @@ def get_boundary_of_box_as_function(
     atol: Optional[float] = None,
     atol_x: Optional[float] = None,
     atol_y: Optional[float] = None,
-    atol_z: Optional[float] = None
+    atol_z: Optional[float] = None,
+    epsilon = 0.0
 ) -> Callable:
     
     x_min_all, x_max_all, y_min_all, y_max_all, z_min_all, z_max_all = get_dimensions(domain, comm)
@@ -192,8 +193,12 @@ def get_boundary_of_box_as_function(
             boundaries = [xmin, xmax, ymin, ymax, zmin, zmax]
         else:
             boundaries = [xmin, xmax, ymin, ymax]
+            
+        y_middle = (y_max_all+y_min_all) / 2.0
+        rangey = 4.0 * epsilon
+        applied_at_height = np.logical_or(np.greater_equal(x[1],(y_middle + rangey)), np.less_equal(x[1],(y_middle - rangey)) )
 
-        return reduce(np.logical_or, boundaries)
+        return np.logical_and(reduce(np.logical_or, boundaries),applied_at_height)#reduce(np.logical_or, boundaries)
 
     return boundary
 

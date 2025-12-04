@@ -23,6 +23,8 @@ import basix
 import shutil
 from datetime import datetime
 
+class StopSimulation(Exception):
+    pass
 
 
 script_path = os.path.dirname(__file__)
@@ -63,7 +65,7 @@ except (argparse.ArgumentError, SystemExit, Exception) as e:
     if rank == 0:
         print("Could not parse arguments")
         print(e)
-    in_crack_length = 0.05
+    in_crack_length = 0.3
     la_micro = 1.0
     la_effective = 1.0
     mu_micro = 1.0
@@ -73,20 +75,19 @@ except (argparse.ArgumentError, SystemExit, Exception) as e:
     mesh_file = "mesh_fracture_adaptive.xdmf"
     eps_param = 0.1
     
-parameters = pp.read_parameters_file(parameter_path)
-la_effective = parameters["lam_effective"]
-mu_effective = parameters["mue_effective"]
-wsteg = parameters["wsteg"]
-dhole = parameters["dhole"]
-w_cell = wsteg + dhole
+
 
 if rank == 0:
         print(f"Initial crack length: {in_crack_length}")
 
 
-with dlfx.io.XDMFFile(comm, os.path.join(script_path,mesh_file), 'r') as mesh_inp: 
-    domain = mesh_inp.read_mesh(name="Grid")
-    mesh_tags = mesh_inp.read_meshtags(domain,name="Grid")
+# with dlfx.io.XDMFFile(comm, os.path.join(script_path,mesh_file), 'r') as mesh_inp: 
+#     domain = mesh_inp.read_mesh(name="Grid")
+#     mesh_tags = mesh_inp.read_meshtags(domain,name="Grid")
+    
+    
+N=20
+domain = dlfx.mesh.create_unit_cube(comm, N, N, N, cell_type=dlfx.mesh.CellType.hexahedron)
     
 dim = domain.topology.dim
 alex.os.mpi_print('spatial dimensions: '+str(dim), rank)
@@ -102,10 +103,6 @@ effective_material_marker = 0
 
 
 
-micro_material_cells = mesh_tags.find(micro_material_marker)
-effective_material_cells = mesh_tags.find(effective_material_marker)
-
-
 # Simulation parameters ####
 dt_start = 0.001
 dt_max_in_critical_area = 2.0e-7
@@ -114,15 +111,15 @@ t_global = dlfx.fem.Constant(domain,0.0)
 trestart_global = dlfx.fem.Constant(domain,0.0)
 # Tend = 10.0 * dt_global.value
 dt_global.value = dt_max_in_critical_area
-dt_max = dlfx.fem.Constant(domain,0.00001)
+dt_max = dlfx.fem.Constant(domain,0.01)
 
 
-la = het.set_cell_function_heterogeneous_material(domain,la_micro, la_effective, micro_material_cells, effective_material_cells)
-mu = het.set_cell_function_heterogeneous_material(domain,mu_micro, mu_effective, micro_material_cells, effective_material_cells)
-gc = het.set_cell_function_heterogeneous_material(domain,gc_micro, gc_micro, micro_material_cells, effective_material_cells)
 
+la = dlfx.fem.Constant(domain, 1.0)
+mu = dlfx.fem.Constant(domain,1.0)
+gc = dlfx.fem.Constant(domain,1.0)
 eta = dlfx.fem.Constant(domain, 0.00001)
-epsilon = dlfx.fem.Constant(domain, eps_param)
+epsilon = dlfx.fem.Constant(domain, 0.5)
 Mob = dlfx.fem.Constant(domain, 1000.0)
 iMob = dlfx.fem.Constant(domain, 1.0/Mob.value)
 
@@ -149,12 +146,23 @@ ddw = ufl.TrialFunction(W)
 
 
 deg_quad = 1  # quadrature degree for internal state variable representation
-gdim = 2
-H,alpha_n,alpha_tmp, e_p_11_n, e_p_22_n, e_p_12_n, e_p_33_n, e_p_11_n_tmp, e_p_22_n_tmp, e_p_12_n_tmp, e_p_33_n_tmp = alex.plasticity.define_internal_state_variables_basix_2D(gdim, domain, deg_quad,quad_scheme="default")
+
+
+(
+    alpha_n, alpha_tmp,
+
+    e_p_11_n, e_p_22_n, e_p_33_n,
+    e_p_12_n, e_p_13_n, e_p_23_n,
+
+    e_p_11_n_tmp, e_p_22_n_tmp, e_p_33_n_tmp,
+    e_p_12_n_tmp, e_p_13_n_tmp, e_p_23_n_tmp
+) = alex.plasticity.define_internal_state_variables_basix_3D( domain, deg_quad, quad_scheme="default"
+)
+
 dx = alex.plasticity.define_custom_integration_measure_that_matches_quadrature_degree_and_scheme(domain, deg_quad, "default")
 #dx = ufl.dx
 quadrature_points, cells = alex.plasticity.get_quadraturepoints_and_cells_for_inter_polation_at_gauss_points(domain, deg_quad)
-H.x.array[:] = np.zeros_like(H.x.array[:])
+# H.x.array[:] = np.zeros_like(H.x.array[:])
 alpha_n.x.array[:] = np.zeros_like(alpha_n.x.array[:])
 alpha_tmp.x.array[:] = np.zeros_like(alpha_tmp.x.array[:])
 e_p_11_n.x.array[:] = np.zeros_like(e_p_11_n.x.array[:])
@@ -167,13 +175,6 @@ e_p_12_n_tmp.x.array[:] = np.zeros_like(e_p_12_n_tmp.x.array[:])
 e_p_33_n_tmp.x.array[:] = np.zeros_like(e_p_33_n_tmp.x.array[:])
 
 
-
-# setting K1 so it always breaks
-# E_mod = alex.linearelastic.get_emod(lam=la_effective,mu=mu_effective) # TODO should be effective elastic parameters
-# epsilon0 = dlfx.fem.Constant(domain, 0.1)
-# hh = 0.0 # TODO change
-# Gc_num = (1.0 + hh / epsilon.value ) * gc_micro
-# K1 = dlfx.fem.Constant(domain, 1.5 * math.sqrt(epsilon0) / math.sqrt(epsilon) * math.sqrt(Gc_num * E_mod))
 K1 = dlfx.fem.Constant(domain, 1.0 * math.sqrt(1.0 * 2.5))
 
 # define crack by boundary
@@ -181,7 +182,7 @@ crack_tip_start_location_x = in_crack_length
 crack_tip_start_location_y = 0.0 #(y_max_all + y_min_all) / 2.0
 def crack(x):
     x_log = x[0] < (crack_tip_start_location_x)
-    y_log = np.isclose(x[1],crack_tip_start_location_y,atol=0.01*dhole)
+    y_log = np.isclose(x[1],crack_tip_start_location_y,atol=0.1)
     return np.logical_and(y_log,x_log)
 
 v_crack = 1.0 # const for all simulations
@@ -197,13 +198,15 @@ crackdofs = dlfx.fem.locate_dofs_topological(W.sub(1), fdim, crackfacets)
 bccrack = dlfx.fem.dirichletbc(0.0, crackdofs, W.sub(1))
 
 
-e_p_n_3D = ufl.as_tensor([[e_p_11_n, e_p_12_n, 0.0], 
-                          [e_p_12_n, e_p_22_n, 0.0],
-                          [0.0         ,          0.0, e_p_33_n]])
+e_p_n_3D = ufl.as_tensor([[e_p_11_n, e_p_12_n, e_p_13_n], 
+                          [e_p_12_n, e_p_22_n, e_p_23_n],
+                          [e_p_13_n, e_p_23_n, e_p_33_n]])
 
-phaseFieldProblem = pf.StaticPhaseFieldProblem2D_incremental_plasticity(degradationFunction=pf.degrad_cubic,
-                                                   psisurf=pf.psisurf_from_function,dx=dx, sig_y=sig_y.value, hard=hard.value,alpha_n=alpha_n,e_p_n=e_p_n_3D,H=H)
+# phaseFieldProblem = pf.StaticPhaseFieldProblem2D_incremental_plasticity(degradationFunction=pf.degrad_cubic,
+#                                                    psisurf=pf.psisurf_from_function,dx=dx, sig_y=sig_y.value, hard=hard.value,alpha_n=alpha_n,e_p_n=e_p_n_3D,H=H)
 
+phaseFieldProblem = pf.StaticPhaseFieldProblem_plasticity_noll(degradationFunction=pf.degrad_cubic,
+                                                   psisurf=pf.psisurf_from_function,dx=dx, sig_y=sig_y.value, hard=hard.value,alpha_n=alpha_n,e_p_n=e_p_n_3D)
 
 
 
@@ -212,6 +215,7 @@ def before_first_time_step():
     timer.start()
     
     # initialize s=1 
+    w.sub(1).x.array[:] = np.ones_like(w.sub(1).x.array[:])
     wm1.sub(1).x.array[:] = np.ones_like(wm1.sub(1).x.array[:])
     wrestart.x.array[:] = wm1.x.array[:]
     # prepare newton-log-file
@@ -220,6 +224,7 @@ def before_first_time_step():
         pp.prepare_graphs_output_file(outputfile_graph_path)
     # prepare xdmf output 
     pp.write_meshoutputfile(domain, outputfile_xdmf_path, comm)
+
 
 def before_each_time_step(t,dt):
     # report solution status
@@ -262,9 +267,6 @@ xxK1 = dlfx.fem.Constant(domain, np.array([0.0,0.0,0.0],dtype=dlfx.default_scala
 def compute_surf_displacement():
     x = ufl.SpatialCoordinate(domain)
     
-
-
-    #xxK1 = crack_start + vcrack_const * t_global 
     dx = x[0] - xxK1[0]
     dy = x[1] - xxK1[1]
     
@@ -274,7 +276,7 @@ def compute_surf_displacement():
     
     u_x = K1 / (2.0 * mu * math.sqrt(2.0 * math.pi))  * ufl.sqrt(r) * (3.0 - 4.0 * nu - ufl.cos(theta)) * ufl.cos(0.5 * theta)
     u_y = K1 / (2.0 * mu * math.sqrt(2.0 * math.pi))  * ufl.sqrt(r) * (3.0 - 4.0 * nu - ufl.cos(theta)) * ufl.sin(0.5 * theta)
-    return ufl.as_vector([u_x, u_y]) # only 2 components in 2D
+    return ufl.as_vector([u_x, u_y, 0.0]) 
 
 bc_expression = dlfx.fem.Expression(compute_surf_displacement(),W.sub(0).element.interpolation_points())
 # boundary_surfing_bc = bc.get_topbottom_boundary_of_box_as_function(domain,comm,atol=atol*0.0) #bc.get_boundary_for_surfing_boundary_condition_2D(domain,comm,atol=atol,epsilon=epsilon.value) #bc.get_topbottom_boundary_of_box_as_function(domain,comm,atol=atol)
@@ -308,18 +310,18 @@ def get_bcs(t):
 
 n = ufl.FacetNormal(domain)
 external_surface_tag = 5
-external_surface_tags = pp.tag_part_of_boundary(domain,bc.get_boundary_of_box_as_function(domain, comm,atol=atol*0.0),external_surface_tag)
+external_surface_tags = pp.tag_part_of_boundary(domain,boundary_surfing_bc,external_surface_tag)
 ds = ufl.Measure('ds', domain=domain, subdomain_data=external_surface_tags,metadata={"quadrature_degree": deg_quad, "quadrature_scheme": "default"})
-# s_zero_for_tracking = pp.get_s_zero_field_for_tracking(domain)
 
 top_surface_tag = 9
 top_surface_tags = pp.tag_part_of_boundary(domain,bc.get_top_boundary_of_box_as_function(domain, comm,atol=atol*0.0),top_surface_tag)
+
 ds_top_tagged = ufl.Measure('ds', domain=domain, subdomain_data=top_surface_tags,metadata={"quadrature_degree": deg_quad, "quadrature_scheme": "default"})
 
 Work = dlfx.fem.Constant(domain,0.0)
 
 success_timestep_counter = dlfx.fem.Constant(domain,0.0)
-postprocessing_interval = dlfx.fem.Constant(domain,100.0)
+postprocessing_interval = dlfx.fem.Constant(domain,1.0)
 TEN = dlfx.fem.functionspace(domain, ("DP", deg_quad-1, (dim, dim)))
 
 
@@ -328,20 +330,16 @@ S0 = dlfx.fem.functionspace(domain, S0e)
 
 def after_timestep_success(t,dt,iters):
     um1, _ = ufl.split(wm1)
-    
-    
-    # update 
-    delta_u = u - um1  
-    H_expr = phaseFieldProblem.update_H(u,delta_u=delta_u,lam=la,mu=mu)
-    # H_expr = phaseFieldProblem.update_H(u,s=s,delta_u=delta_u,lam=la,mu=mu,eta=eta)
-    H.x.array[:] = alex.plasticity.interpolate_quadrature(domain, cells, quadrature_points,H_expr)
-    
-    
-    alex.plasticity.update_e_p_n_and_alpha_arrays_2D(u,e_p_11_n_tmp,e_p_22_n_tmp,e_p_12_n_tmp,e_p_33_n_tmp,
-                           e_p_11_n,e_p_22_n,e_p_12_n,e_p_33_n,
-                           alpha_tmp,alpha_n,domain,cells,quadrature_points,sig_y,hard,mu)
-    
-    
+    alex.plasticity.update_e_p_n_and_alpha_arrays_3D(
+        u,
+        e_p_11_n_tmp, e_p_22_n_tmp, e_p_33_n_tmp,
+        e_p_12_n_tmp, e_p_13_n_tmp, e_p_23_n_tmp,
+        e_p_11_n,     e_p_22_n,     e_p_33_n,
+        e_p_12_n,     e_p_13_n,     e_p_23_n,
+        alpha_tmp, alpha_n,
+        domain, cells, quadrature_points,
+        sig_y, hard, mu
+        )
     
     sigma = phaseFieldProblem.sigma_degraded(u,s,la,mu,eta)
     tensor_field_expression = dlfx.fem.Expression(sigma, 
@@ -350,10 +348,8 @@ def after_timestep_success(t,dt,iters):
     sigma_interpolated = dlfx.fem.Function(TEN) 
     sigma_interpolated.interpolate(tensor_field_expression)
     sigma_interpolated.name = tensor_field_name
-    Rx_top, Ry_top = pp.reaction_force(sigma_interpolated,n=n,ds=ds_top_tagged(top_surface_tag),comm=comm)
+    Rx_top, Ry_top, Rz_top = pp.reaction_force(sigma_interpolated,n=n,ds=ds_top_tagged(top_surface_tag),comm=comm)
     
-    
-
     dW = pp.work_increment_external_forces(sigma_interpolated,u,um1,n,ds,comm=comm)
     Work.value = Work.value + dW
     
@@ -374,11 +370,7 @@ def after_timestep_success(t,dt,iters):
     eshelby_interpolated.name = tensor_field_name
     
     
-    Jx, Jy = alex.linearelastic.get_J_2D(eshelby_interpolated,n,ds=ds(external_surface_tag),comm=comm)
-    # Jx_vol, Jy_vol = alex.linearelastic.get_J_2D_volume_integral(eshelby,ufl.dx,comm)
-    
-    #alex.os.mpi_print(pp.getJString2D(Jx,Jy),rank)
-    
+    Jx, Jy, Jz = alex.linearelastic.get_J_3D(eshelby_interpolated,n,ds=ds(external_surface_tag),comm=comm)
 
     
     # s_zero_for_tracking.x.array[:] = s.collapse().x.array[:]
@@ -392,17 +384,10 @@ def after_timestep_success(t,dt,iters):
         print("Crack tip position x: " + str(x_ct))
         pp.write_to_graphs_output_file(outputfile_graph_path,t, Jx, Jy,x_ct, xxK1.value[0], Rx_top, Ry_top, dW, Work.value, A, dt, E_el)
 
-    # # update 
-    # delta_u = u - um1  
-    # H_expr = phaseFieldProblem.update_H(u,delta_u=delta_u,lam=la,mu=mu)
-    # H.x.array[:] = alex.plasticity.interpolate_quadrature(domain, cells, quadrature_points,H_expr)
-    
-    
-    # alex.plasticity.update_e_p_n_and_alpha_arrays(u,e_p_11_n_tmp,e_p_22_n_tmp,e_p_12_n_tmp,e_p_33_n_tmp,
-    #                        e_p_11_n,e_p_22_n,e_p_12_n,e_p_33_n,
-    #                        alpha_tmp,alpha_n,domain,cells,quadrature_points,sig_y,hard,mu)
-    
-    
+   
+    if x_ct >= 0.9 * x_max_all:
+        raise StopSimulation("specimen separated completely")
+
     # update
     wm1.x.array[:] = w.x.array[:]
     wrestart.x.array[:] = w.x.array[:]
@@ -434,24 +419,30 @@ def after_last_timestep():
         pp.print_graphs_plot(outputfile_graph_path,script_path,legend_labels=["Jx", "Jy","x_pf_crack","x_macr","Rx", "Ry", "dW", "W", "A", "dt", "E_el"])
         
 
-sol.solve_with_newton_adaptive_time_stepping(
-    domain,
-    w,
-    Tend,
-    dt_global,
-    before_first_timestep_hook=before_first_time_step,
-    after_last_timestep_hook=after_last_timestep,
-    before_each_timestep_hook=before_each_time_step,
-    get_residuum_and_gateaux=get_residuum_and_gateaux,
-    get_bcs=get_bcs,
-    after_timestep_restart_hook=after_timestep_restart,
-    after_timestep_success_hook=after_timestep_success,
-    comm=comm,
-    print_bool=True,
-    t=t_global,
-    dt_max=dt_max,
-    trestart=trestart_global,
-)
+try:
+    sol.solve_with_newton_adaptive_time_stepping(
+        domain,
+        w,
+        Tend,
+        dt_global,
+        before_first_timestep_hook=before_first_time_step,
+        after_last_timestep_hook=after_last_timestep,
+        before_each_timestep_hook=before_each_time_step,
+        get_residuum_and_gateaux=get_residuum_and_gateaux,
+        get_bcs=get_bcs,
+        after_timestep_restart_hook=after_timestep_restart,
+        after_timestep_success_hook=after_timestep_success,
+        comm=comm,
+        print_bool=True,
+        t=t_global,
+        trestart=trestart_global,
+    )
+
+except StopSimulation as e:
+    print(f"[Rank {comm.rank}] Simulation stopped early: {e}")
+    # possibly broadcast to other ranks:
+    comm.Abort()  
+
 
 parameters_to_write = {
         'mesh_file': mesh_file,

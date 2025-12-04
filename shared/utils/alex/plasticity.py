@@ -105,29 +105,96 @@ def eps_as_3D_tensor_function(dim: int):
         return eps_3D
     
 
-def define_internal_state_variables_basix(gdim, domain, deg_quad, quad_scheme):  
+def define_internal_state_variables_basix(gdim, domain, deg_quad, quad_scheme="default"):  
     W0e = basix.ufl.quadrature_element(
-    domain.basix_cell(), value_shape=(), scheme="default", degree=deg_quad
+    domain.basix_cell(), value_shape=(), scheme=quad_scheme, degree=deg_quad
 )
-# We = basix.ufl.quadrature_element(
-#     domain.basix_cell(), value_shape=(alex.plasticity.get_history_field_dimension_for_symmetric_second_order_tensor(gdim),), scheme="default", degree=deg_quad
-# )
-    
-    W0 = fem.functionspace(domain, W0e)
-    
+    W0 = fem.functionspace(domain, W0e)    
     beta = fem.Function(W0, name="beta")
-    
-    
     return beta
 
 
-def define_internal_state_variables_basix_b(gdim, domain, deg_quad, quad_scheme):  
+
+
+def define_internal_state_variables_basix_3D(domain, deg_quad, quad_scheme="default"):
+    # ---------------------------------------------------------
+    # Scalar quadrature element for history variables
+    # ---------------------------------------------------------
     W0e = basix.ufl.quadrature_element(
-    domain.basix_cell(), value_shape=(), scheme="default", degree=deg_quad
+        domain.basix_cell(),
+        value_shape=(),
+        scheme=quad_scheme,
+        degree=deg_quad
+    )
+
+    # Create scalar quadrature function space
+    W0 = fem.functionspace(domain, W0e)
+
+    # ---------------------------------------------------------
+    # Internal variables (no H field)
+    # ---------------------------------------------------------
+    alpha     = fem.Function(W0, name="alpha")
+    alpha_tmp = fem.Function(W0, name="alpha_tmp")
+
+    # ---------------------------------------------------------
+    # Full symmetric 3×3 plastic strain tensor components
+    # Stored as *six* independent scalar quadrature fields
+    # ---------------------------------------------------------
+    # e_p_ij at step n
+    e_p_11_n = fem.Function(W0, name="e_p_11")
+    e_p_22_n = fem.Function(W0, name="e_p_22")
+    e_p_33_n = fem.Function(W0, name="e_p_33")
+
+    e_p_12_n = fem.Function(W0, name="e_p_12")
+    e_p_13_n = fem.Function(W0, name="e_p_13")
+    e_p_23_n = fem.Function(W0, name="e_p_23")
+
+    # Temporary copies e_p_ij_tmp
+    e_p_11_n_tmp = fem.Function(W0, name="e_p_11_tmp")
+    e_p_22_n_tmp = fem.Function(W0, name="e_p_22_tmp")
+    e_p_33_n_tmp = fem.Function(W0, name="e_p_33_tmp")
+
+    e_p_12_n_tmp = fem.Function(W0, name="e_p_12_tmp")
+    e_p_13_n_tmp = fem.Function(W0, name="e_p_13_tmp")
+    e_p_23_n_tmp = fem.Function(W0, name="e_p_23_tmp")
+    
+    
+    
+    alpha.x.array[:] = np.zeros_like(alpha.x.array[:])
+    alpha_tmp.x.array[:] = np.zeros_like(alpha_tmp.x.array[:])
+    e_p_11_n.x.array[:] = np.zeros_like(e_p_11_n.x.array[:])
+    e_p_22_n.x.array[:] = np.zeros_like(e_p_22_n.x.array[:])
+    e_p_33_n.x.array[:] = np.zeros_like(e_p_33_n.x.array[:])
+    e_p_12_n.x.array[:] = np.zeros_like(e_p_12_n.x.array[:])
+    e_p_13_n.x.array[:] = np.zeros_like(e_p_13_n.x.array[:])
+    e_p_23_n.x.array[:] = np.zeros_like(e_p_23_n.x.array[:])
+    
+    e_p_11_n_tmp.x.array[:] = np.zeros_like(e_p_11_n_tmp.x.array[:])
+    e_p_22_n_tmp.x.array[:] = np.zeros_like(e_p_22_n_tmp.x.array[:])
+    e_p_33_n_tmp.x.array[:] = np.zeros_like(e_p_33_n_tmp.x.array[:])
+    e_p_12_n_tmp.x.array[:] = np.zeros_like(e_p_12_n_tmp.x.array[:])
+    e_p_13_n_tmp.x.array[:] = np.zeros_like(e_p_13_n_tmp.x.array[:])
+    e_p_23_n_tmp.x.array[:] = np.zeros_like(e_p_23_n_tmp.x.array[:])
+
+    # ---------------------------------------------------------
+    # Return all internal variables
+    # ---------------------------------------------------------
+    return (
+        alpha, alpha_tmp,
+        e_p_11_n, e_p_22_n, e_p_33_n,
+        e_p_12_n, e_p_13_n, e_p_23_n,
+        e_p_11_n_tmp, e_p_22_n_tmp, e_p_33_n_tmp,
+        e_p_12_n_tmp, e_p_13_n_tmp, e_p_23_n_tmp
+    )
+
+
+def define_internal_state_variables_basix_2D( domain, deg_quad, quad_scheme="default",gdim=2):  
+    W0e = basix.ufl.quadrature_element(
+    domain.basix_cell(), value_shape=(), scheme=quad_scheme, degree=deg_quad
 )
     
     We = basix.ufl.quadrature_element(
-    domain.basix_cell(), value_shape=(2,2), scheme="default", degree=deg_quad
+    domain.basix_cell(), value_shape=(gdim,gdim), scheme=quad_scheme, degree=deg_quad
 )
 # We = basix.ufl.quadrature_element(
 #     domain.basix_cell(), value_shape=(alex.plasticity.get_history_field_dimension_for_symmetric_second_order_tensor(gdim),), scheme="default", degree=deg_quad
@@ -148,6 +215,26 @@ def define_internal_state_variables_basix_b(gdim, domain, deg_quad, quad_scheme)
     e_p_22_n_tmp = fem.Function(W0, name="e_p_22_tmp")
     e_p_12_n_tmp = fem.Function(W0, name="e_p_12_tmp")
     e_p_33_n_tmp = fem.Function(W0, name="e_p_33_tmp")
+    
+    
+            
+    H.x.array[:] = np.zeros_like(H.x.array[:])
+    
+    alpha.x.array[:] = np.zeros_like(alpha.x.array[:])
+    alpha_tmp.x.array[:] = np.zeros_like(alpha_tmp.x.array[:])
+    e_p_11_n.x.array[:] = np.zeros_like(e_p_11_n.x.array[:])
+    e_p_22_n.x.array[:] = np.zeros_like(e_p_22_n.x.array[:])
+    e_p_33_n.x.array[:] = np.zeros_like(e_p_33_n.x.array[:])
+    e_p_12_n.x.array[:] = np.zeros_like(e_p_12_n.x.array[:])
+    
+    e_p_11_n_tmp.x.array[:] = np.zeros_like(e_p_11_n_tmp.x.array[:])
+    e_p_22_n_tmp.x.array[:] = np.zeros_like(e_p_22_n_tmp.x.array[:])
+    e_p_33_n_tmp.x.array[:] = np.zeros_like(e_p_33_n_tmp.x.array[:])
+    e_p_12_n_tmp.x.array[:] = np.zeros_like(e_p_12_n_tmp.x.array[:])
+
+    
+    
+    
     
     return H,alpha,alpha_tmp, e_p_11_n, e_p_22_n, e_p_12_n, e_p_33_n, e_p_11_n_tmp, e_p_22_n_tmp, e_p_12_n_tmp, e_p_33_n_tmp
 
@@ -313,7 +400,7 @@ class Ramberg_Osgood:
         # b comparable to hardening modul
         # r lower -> smoother transition
         
-        eps = assemble_3D_representation_of_plane_strain_eps(u)
+        eps = assemble_3D_representation_of_eps(u)
         eps_dev = ufl.dev(eps)
         
         eps_dev_e_val = ufl.sqrt(2.0/3.0*ufl.inner(eps_dev,eps_dev))
@@ -407,7 +494,7 @@ class Ramberg_Osgood:
         
         
         
-        eps = assemble_3D_representation_of_plane_strain_eps(u)
+        eps = assemble_3D_representation_of_eps(u)
         eps_dev = ufl.dev(eps)
         
         eps_dev_voigt = ufl.as_vector(
@@ -541,27 +628,32 @@ class Ramberg_Osgood:
     
     
 def f_tr_func(u,e_p_n,alpha_n,sig_y,hard,mu):
-        eps_np1_3D_plane_strain = assemble_3D_representation_of_plane_strain_eps(u)
+        eps_np1 = assemble_3D_representation_of_eps(u)
         
         
         #e_np1 = ufl.dev(ufl.sym(ufl.grad(u)))
-        e_np1 = ufl.dev(eps_np1_3D_plane_strain)
+        e_np1 = ufl.dev(eps_np1)
         s_tr = 2.0*mu*(e_np1-e_p_n)
         norm_s_tr = ufl.sqrt(ufl.inner(s_tr,s_tr))
         f_tr = norm_s_tr -np.sqrt(2.0/3.0) * (sig_y+hard*alpha_n)
         return f_tr
 
-def assemble_3D_representation_of_plane_strain_eps(u):
-    eps_np1_2D = ufl.sym(ufl.grad(u))
-    eps_np1_3D_plane_strain = ufl.as_tensor([[eps_np1_2D[0,0], eps_np1_2D[0,1], 0.0],
+def assemble_3D_representation_of_eps(u):
+    
+    if u.ufl_shape[0] == 2:  
+        eps_np1_2D = ufl.sym(ufl.grad(u))
+        eps_np1_3D_plane_strain = ufl.as_tensor([[eps_np1_2D[0,0], eps_np1_2D[0,1], 0.0],
                                                 [ eps_np1_2D[1,0], eps_np1_2D[1,1], 0.0],
                                                 [ 0.0,             0.0,             0.0]])
-                                            
-    return eps_np1_3D_plane_strain
+        eps_3D_np1 = eps_np1_3D_plane_strain
+    elif u.ufl_shape[0] == 3:
+        eps_3D_np1 = ufl.sym(ufl.grad(u))
+                                                
+    return eps_3D_np1
         
     
 def update_e_p(u,e_p_n,alpha_n,sig_y,hard,mu):
-    e_np1 = ufl.dev(assemble_3D_representation_of_plane_strain_eps(u))
+    e_np1 = ufl.dev(assemble_3D_representation_of_eps(u))
     s_tr = 2.0*mu*(e_np1-e_p_n)
         
     norm_s_tr = ufl.sqrt(ufl.inner(s_tr,s_tr))
@@ -581,7 +673,7 @@ def update_alpha(u,e_p_n,alpha_n,sig_y,hard,mu):
     
 
 def sig_plasticity(u,e_p_n,alpha_n,sig_y,hard,lam,mu):  
-    eps_np1 = assemble_3D_representation_of_plane_strain_eps(u)
+    eps_np1 = assemble_3D_representation_of_eps(u)
     e_np1 = ufl.dev(eps_np1)
         
     s_tr = 2.0*mu*(e_np1-e_p_n)
@@ -599,12 +691,16 @@ def sig_plasticity(u,e_p_n,alpha_n,sig_y,hard,lam,mu):
     K = le.get_K(lam=lam,mu=mu)
     sig_3D = K * ufl.tr(eps_np1)*ufl.Identity(3) + s_np1
     
-    sig_2D = ufl.as_tensor([[sig_3D[0,0], sig_3D[0,1]],
+    if u.ufl_shape[0] == 2:
+        sig_out = ufl.as_tensor([[sig_3D[0,0], sig_3D[0,1]],
                             [sig_3D[1,0], sig_3D[1,1]]])
-    
-    return sig_2D
+    elif u.ufl_shape[0] == 3:
+        sig_out = sig_3D
+    return sig_out
 
-def update_e_p_n_and_alpha_arrays(u,e_p_11_n_tmp,e_p_22_n_tmp,e_p_12_n_tmp,e_p_33_n_tmp,
+
+
+def update_e_p_n_and_alpha_arrays_2D(u,e_p_11_n_tmp,e_p_22_n_tmp,e_p_12_n_tmp,e_p_33_n_tmp,
                            e_p_11_n,e_p_22_n,e_p_12_n,e_p_33_n,
                            alpha_tmp,alpha_n,domain,cells,quadrature_points,sig_y,hard,mu):
     e_p_11_n_tmp.x.array[:] = e_p_11_n.x.array[:]
@@ -635,15 +731,95 @@ def update_e_p_n_and_alpha_arrays(u,e_p_11_n_tmp,e_p_22_n_tmp,e_p_12_n_tmp,e_p_3
     e_p_33_expr = e_p_np1_expr[2,2]
     e_p_33_n.x.array[:] = interpolate_quadrature(domain, cells, quadrature_points,e_p_33_expr)
     
+def update_e_p_n_and_alpha_arrays_3D(
+        u,
+        e_p_11_n_tmp, e_p_22_n_tmp, e_p_33_n_tmp,
+        e_p_12_n_tmp, e_p_13_n_tmp, e_p_23_n_tmp,
+        e_p_11_n,     e_p_22_n,     e_p_33_n,
+        e_p_12_n,     e_p_13_n,     e_p_23_n,
+        alpha_tmp, alpha_n,
+        domain, cells, quadrature_points,
+        sig_y, hard, mu):
+
+    # ------------------------------------------------------------------
+    # Copy old values into temporary fields
+    # ------------------------------------------------------------------
+    e_p_11_n_tmp.x.array[:] = e_p_11_n.x.array[:]
+    e_p_22_n_tmp.x.array[:] = e_p_22_n.x.array[:]
+    e_p_33_n_tmp.x.array[:] = e_p_33_n.x.array[:]
+
+    e_p_12_n_tmp.x.array[:] = e_p_12_n.x.array[:]
+    e_p_13_n_tmp.x.array[:] = e_p_13_n.x.array[:]
+    e_p_23_n_tmp.x.array[:] = e_p_23_n.x.array[:]
+
+    # ------------------------------------------------------------------
+    # Full 3×3 plastic strain tensor
+    # ------------------------------------------------------------------
+    e_p_n_tmp = ufl.as_tensor([
+        [e_p_11_n_tmp, e_p_12_n_tmp, e_p_13_n_tmp],
+        [e_p_12_n_tmp, e_p_22_n_tmp, e_p_23_n_tmp],
+        [e_p_13_n_tmp, e_p_23_n_tmp, e_p_33_n_tmp],
+    ])
+
+    # ------------------------------------------------------------------
+    # Update alpha
+    # ------------------------------------------------------------------
+    alpha_tmp.x.array[:] = alpha_n.x.array[:]
+
+    alpha_expr = update_alpha(
+        u,
+        e_p_n=e_p_n_tmp,
+        alpha_n=alpha_n,
+        sig_y=sig_y.value,
+        hard=hard.value,
+        mu=mu
+    )
+
+    alpha_n.x.array[:] = interpolate_quadrature(
+        domain, cells, quadrature_points, alpha_expr
+    )
+
+    # ------------------------------------------------------------------
+    # Update plastic strain for all 3×3 components
+    # ------------------------------------------------------------------
+    e_p_np1_expr = update_e_p(
+        u,
+        e_p_n=e_p_n_tmp,
+        alpha_n=alpha_tmp,
+        sig_y=sig_y.value,
+        hard=hard.value,
+        mu=mu
+    )
+
+    # Extract all components
+    e_p_11_expr = e_p_np1_expr[0, 0]
+    e_p_22_expr = e_p_np1_expr[1, 1]
+    e_p_33_expr = e_p_np1_expr[2, 2]
+
+    e_p_12_expr = e_p_np1_expr[0, 1]
+    e_p_13_expr = e_p_np1_expr[0, 2]
+    e_p_23_expr = e_p_np1_expr[1, 2]
+
+    # ------------------------------------------------------------------
+    # Interpolate updated values back to quadrature function spaces
+    # ------------------------------------------------------------------
+    e_p_11_n.x.array[:] = interpolate_quadrature(domain, cells, quadrature_points, e_p_11_expr)
+    e_p_22_n.x.array[:] = interpolate_quadrature(domain, cells, quadrature_points, e_p_22_expr)
+    e_p_33_n.x.array[:] = interpolate_quadrature(domain, cells, quadrature_points, e_p_33_expr)
+
+    e_p_12_n.x.array[:] = interpolate_quadrature(domain, cells, quadrature_points, e_p_12_expr)
+    e_p_13_n.x.array[:] = interpolate_quadrature(domain, cells, quadrature_points, e_p_13_expr)
+    e_p_23_n.x.array[:] = interpolate_quadrature(domain, cells, quadrature_points, e_p_23_expr)
+
     
-class Plasticity_incremental_2D:
+    
+class Plasticity_2D:
     # Constructor method
     def __init__(self, 
                        sig_y: any,
                        hard: any,
                        alpha_n: any,
                        e_p_n: any,
-                       H: any,
                        dx: any = ufl.dx,
                  ):
 
@@ -654,16 +830,13 @@ class Plasticity_incremental_2D:
         self.hard = hard
         self.e_p_n = e_p_n
         self.alpha_n = alpha_n
-        self.H = H
         
         
     def prep_newton(self, u: any, um1: any, du: ufl.TestFunction, ddu: ufl.TrialFunction, lam: dlfx.fem.Function, mu: dlfx.fem.Function ):
         def residuum(u: any, du: any,  um1:any):
             
-            delta_u = u - um1
-            
             equi =  (ufl.inner(self.sigma(u,lam,mu),  0.5*(ufl.grad(du) + ufl.grad(du).T)))*self.dx # ufl.derivative(pot, u, du)
-            H_np1 = self.update_H(u,delta_u=delta_u,lam=lam,mu=mu)
+            #H_np1 = self.update_H(u,delta_u=delta_u,lam=lam,mu=mu)
             
             Res = equi
             return [ Res, None]        
@@ -680,21 +853,75 @@ class Plasticity_incremental_2D:
         return ufl.dev(self.eps(u))
     
     def eqeps(self,u):
-        return ufl.sqrt(2.0/3.0 * ufl.inner(self.eps(u),self.eps(u))) 
-    
-    def update_H(self, u, delta_u,lam,mu):
-        u_n = u-delta_u
-        delta_eps = 0.5*(ufl.grad(delta_u) + ufl.grad(delta_u).T)
-        W_np1 = ufl.inner(self.sigma(u=u,lam=lam,mu=mu), delta_eps )
-        W_n = ufl.inner(self.sigma(u=u_n,lam=lam,mu=mu), delta_eps )
-        H_np1 = ( self.H + 0.5 * (W_n+W_np1))
-        return H_np1
+        return ufl.sqrt(2.0/3.0 * ufl.inner(self.eps(u),self.eps(u)))     
     
     def psiel(self,u,lam,mu):
-        return  self.H
+        K = le.get_K_2D(lam,mu)
+        eps_3D = assemble_3D_representation_of_eps(u)
+        
+        e_3D = ufl.dev(eps_3D)
+        e_e_3D = e_3D-self.e_p_n
+        w_el = 0.5 * K * ufl.tr(eps_3D) * ufl.tr(eps_3D) + mu * ufl.inner(e_e_3D,e_e_3D)
+        return w_el
     
     def get_E_el_global(self,u,lam,mu, dx: ufl.Measure, comm: MPI.Intercomm) -> float:
         Pi = dlfx.fem.assemble_scalar(dlfx.fem.form(self.psiel(u,lam,mu) * dx))
         return comm.allreduce(Pi,MPI.SUM)
 
     
+class Plasticity_3D:
+    # Constructor method
+    def __init__(self, 
+                       sig_y: any,
+                       hard: any,
+                       alpha_n: any,
+                       e_p_n: any,
+                       dx: any = ufl.dx,
+                 ):
+
+
+        # Set all parameters here! Material etc
+        self.dx = dx
+        self.sig_y = sig_y
+        self.hard = hard
+        self.e_p_n = e_p_n
+        self.alpha_n = alpha_n
+        
+        
+    def prep_newton(self, u: any, um1: any, du: ufl.TestFunction, ddu: ufl.TrialFunction, lam: dlfx.fem.Function, mu: dlfx.fem.Function ):
+        def residuum(u: any, du: any,  um1:any):
+            
+            equi =  (ufl.inner(self.sigma(u,lam,mu),  0.5*(ufl.grad(du) + ufl.grad(du).T)))*self.dx # ufl.derivative(pot, u, du)
+            #H_np1 = self.update_H(u,delta_u=delta_u,lam=lam,mu=mu)
+            
+            Res = equi
+            return [ Res, None]        
+        return residuum(u,du,um1)
+    
+    def sigma(self, u,lam,mu):
+        return  sig_plasticity(u,e_p_n=self.e_p_n,alpha_n=self.alpha_n,sig_y=self.sig_y,hard=self.hard,lam=lam,mu=mu)
+        # return 1.0 * le.sigma_as_tensor3D(u=u,lam=lam,mu=mu)
+    
+    def eps(self,u):
+        return ufl.sym(ufl.grad(u)) #0.5*(ufl.grad(u) + ufl.grad(u).T)
+    
+    def deveps(self,u):
+        return ufl.dev(self.eps(u))
+    
+    def eqeps(self,u):
+        return ufl.sqrt(2.0/3.0 * ufl.inner(self.eps(u),self.eps(u)))     
+    
+    def psiel(self,u,lam,mu):
+        K = le.get_K_2D(lam,mu)
+        eps_3D = assemble_3D_representation_of_eps(u)
+        
+        e_3D = ufl.dev(eps_3D)
+        e_e_3D = e_3D-self.e_p_n
+        w_el = 0.5 * K * ufl.tr(eps_3D) * ufl.tr(eps_3D) + mu * ufl.inner(e_e_3D,e_e_3D)
+        return w_el
+    
+    def get_E_el_global(self,u,lam,mu, dx: ufl.Measure, comm: MPI.Intercomm) -> float:
+        Pi = dlfx.fem.assemble_scalar(dlfx.fem.form(self.psiel(u,lam,mu) * dx))
+        return comm.allreduce(Pi,MPI.SUM)
+
+

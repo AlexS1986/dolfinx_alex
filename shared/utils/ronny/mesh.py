@@ -22,283 +22,6 @@ comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 
-# class Mesh:
-#     def __init__(self, L, H, W, NL, n_i, R_i, center_i, f_i, inclusion_rotation_axis, inclusion_rotation_angle, Hexa, MeshName, MeshFilename, XdmfMeshFilename, XdmfLineFilename, matrix_marker, inclusion_marker, Hertzian, R_ind, Void):
-#         self.L = L
-#         self.H = H
-#         self.W = W
-#         self.NL = NL
-#         #self.t_z = t_z
-#         #self.NH = NH
-#         #self.NW = NW
-#         self.n_i = n_i
-#         self.R_i = R_i
-#         self.center_i = center_i
-#         self.f_i = f_i
-#         self.inclusion_rotation_axis = inclusion_rotation_axis
-#         self.inclusion_rotation_angle = inclusion_rotation_angle
-#         self.Hexa = Hexa
-#         self.MeshName = MeshName
-#         self.MeshFilename = MeshFilename
-#         self.XdmfMeshFilename = XdmfMeshFilename
-#         self.XdmfLineFilename = XdmfLineFilename
-#         self.matrix_marker = matrix_marker
-#         self.inclusion_marker = inclusion_marker
-#         self.Hertzian = Hertzian
-#         self.R_ind = R_ind
-#         self.Void = Void
-
-#     def mesh_refinement(self, n_ref: float):
-#         h_el = self.L/self.NL
-#         r_eff_list = []
-#         for i in range(0, self.n_i):
-#             r_eff_0 = self.f_i[i][0]*self.R_i[i]
-#             r_eff_list.append(r_eff_0)
-#             r_eff_1 = self.f_i[i][1]*self.R_i[i]
-#             r_eff_list.append(r_eff_1)
-#             r_eff_2 = self.f_i[i][2]*self.R_i[i]
-#             r_eff_list.append(r_eff_2)
-#         if self.n_i != 0:
-#             max_r = max(r_eff_list)
-        
-#         y_pos_list = []
-#         for i in range(0, self.n_i):
-#             y_pos = self.center_i[i][1] + self.f_i[i][1]*self.R_i[i]
-#             y_pos_list.append(y_pos)
-#         if self.n_i != 0:
-#             y_max = max(y_pos_list)
-#         else:
-#             y_max = 2.0*self.H/2
-        
-#         y_neg_list = []
-#         for i in range(0, self.n_i):
-#             y_neg = self.center_i[i][1] - self.f_i[i][1]*self.R_i[i]
-#             y_neg_list.append(y_neg)
-#         if self.n_i != 0:
-#             y_min = min(y_neg_list)
-#         else:
-#             y_min = -2.0*self.H/2
-        
-#         gmsh.model.mesh.field.add("Box", 10*(self.n_i+1))
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "VIn", h_el/n_ref)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "VOut", h_el)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "XMin", -2.0*self.L/2)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "XMax", 2.0*self.L/2)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "YMin", 1.1*y_min)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "YMax", 1.1*y_max)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "ZMin", -2.0*self.W/2)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "ZMax", 2.0*self.W/2)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "Thickness", 2.0*self.W)
-#         gmsh.model.mesh.field.setAsBackgroundMesh(10*(self.n_i+1))
-#         gmsh.model.occ.synchronize()
-
-
-#     def mesh_refinement_larger_area(self, n_ref: float):
-#         h_el = self.L/self.NL
-#         r_eff_list = []
-#         for i in range(0, self.n_i):
-#             r_eff_0 = self.f_i[i][0]*self.R_i[i]
-#             r_eff_list.append(r_eff_0)
-#             r_eff_1 = self.f_i[i][1]*self.R_i[i]
-#             r_eff_list.append(r_eff_1)
-#             r_eff_2 = self.f_i[i][2]*self.R_i[i]
-#             r_eff_list.append(r_eff_2)
-#         if self.n_i != 0:
-#             max_r = max(r_eff_list)
-#         else:
-#             max_r = 0.0
-        
-#         y_pos_list = []
-#         for i in range(0, self.n_i):
-#             y_pos = self.center_i[i][1] + self.f_i[i][1]*self.R_i[i]
-#             y_pos_list.append(y_pos)
-#         if self.n_i != 0:
-#             y_max = max(y_pos_list)
-#         else:
-#             y_max = 2.0*self.H/2
-        
-#         y_neg_list = []
-#         for i in range(0, self.n_i):
-#             y_neg = self.center_i[i][1] - self.f_i[i][1]*self.R_i[i]
-#             y_neg_list.append(y_neg)
-#         if self.n_i != 0:
-#             y_min = min(y_neg_list)
-#         else:
-#             y_min = -2.0*self.H/2
-        
-#         gmsh.model.mesh.field.add("Box", 10*(self.n_i+1))
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "VIn", h_el/n_ref)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "VOut", h_el)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "XMin", -2.0*self.L/2)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "XMax", 2.0*self.L/2)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "YMin", y_min-max_r)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "YMax", y_max+max_r)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "ZMin", -2.0*self.W/2)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "ZMax", 2.0*self.W/2)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "Thickness", 2.0*self.W)
-#         gmsh.model.mesh.field.setAsBackgroundMesh(10*(self.n_i+1))
-#         gmsh.model.occ.synchronize()
-
-
-#     def mesh_refinement_full(self, n_ref: float):
-#         h_el = self.L/self.NL
-#         r_eff_list = []
-#         for i in range(0, self.n_i):
-#             r_eff_0 = self.f_i[i][0]*self.R_i[i]
-#             r_eff_list.append(r_eff_0)
-#             r_eff_1 = self.f_i[i][1]*self.R_i[i]
-#             r_eff_list.append(r_eff_1)
-#             r_eff_2 = self.f_i[i][2]*self.R_i[i]
-#             r_eff_list.append(r_eff_2)
-#         if self.n_i != 0:
-#             max_r = max(r_eff_list)
-#         else:
-#             max_r = 0.0
-        
-#         y_pos_list = []
-#         for i in range(0, self.n_i):
-#             y_pos = self.center_i[i][1] + self.f_i[i][1]*self.R_i[i]
-#             y_pos_list.append(y_pos)
-#         if self.n_i != 0:
-#             y_max = max(y_pos_list)
-#         else:
-#             y_max = 2.0*self.H/2
-        
-#         y_neg_list = []
-#         for i in range(0, self.n_i):
-#             y_neg = self.center_i[i][1] - self.f_i[i][1]*self.R_i[i]
-#             y_neg_list.append(y_neg)
-#         if self.n_i != 0:
-#             y_min = min(y_neg_list)
-#         else:
-#             y_min = -2.0*self.H/2
-        
-#         gmsh.model.mesh.field.add("Box", 10*(self.n_i+1))
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "VIn", h_el/n_ref)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "VOut", h_el)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "XMin", -2.0*self.L/2)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "XMax", 2.0*self.L/2)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "YMin", -self.H/2)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "YMax", self.H/2)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "ZMin", -2.0*self.W/2)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "ZMax", 2.0*self.W/2)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "Thickness", 2.0*self.W)
-#         gmsh.model.mesh.field.setAsBackgroundMesh(10*(self.n_i+1))
-#         gmsh.model.occ.synchronize()
-
-
-#     def mesh_refinement_upper_half(self, n_ref: float):
-#         h_el = self.L/self.NL
-#         r_eff_list = []
-#         for i in range(0, self.n_i):
-#             r_eff_0 = self.f_i[i][0]*self.R_i[i]
-#             r_eff_list.append(r_eff_0)
-#             r_eff_1 = self.f_i[i][1]*self.R_i[i]
-#             r_eff_list.append(r_eff_1)
-#             r_eff_2 = self.f_i[i][2]*self.R_i[i]
-#             r_eff_list.append(r_eff_2)
-#         if self.n_i != 0:
-#             max_r = max(r_eff_list)
-#         else:
-#             max_r = 0.0
-        
-#         y_pos_list = []
-#         for i in range(0, self.n_i):
-#             y_pos = self.center_i[i][1] + self.f_i[i][1]*self.R_i[i]
-#             y_pos_list.append(y_pos)
-#         if self.n_i != 0:
-#             y_max = max(y_pos_list)
-#         else:
-#             y_max = 2.0*self.H/2
-        
-#         y_neg_list = []
-#         for i in range(0, self.n_i):
-#             y_neg = self.center_i[i][1] - self.f_i[i][1]*self.R_i[i]
-#             y_neg_list.append(y_neg)
-#         if self.n_i != 0:
-#             y_min = min(y_neg_list)
-#         else:
-#             y_min = -2.0*self.H/2
-        
-#         gmsh.model.mesh.field.add("Box", 10*(self.n_i+1))
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "VIn", h_el/n_ref)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "VOut", h_el)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "XMin", -2.0*self.L/2)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "XMax", 2.0*self.L/2)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "YMin", 0.0)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "YMax", self.H/2)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "ZMin", -2.0*self.W/2)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "ZMax", 2.0*self.W/2)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "Thickness", 2.0*self.W)
-#         gmsh.model.mesh.field.setAsBackgroundMesh(10*(self.n_i+1))
-#         gmsh.model.occ.synchronize()
-
-
-#     def mesh_refinement_lower_half(self, n_ref: float):
-#         h_el = self.L/self.NL
-#         r_eff_list = []
-#         for i in range(0, self.n_i):
-#             r_eff_0 = self.f_i[i][0]*self.R_i[i]
-#             r_eff_list.append(r_eff_0)
-#             r_eff_1 = self.f_i[i][1]*self.R_i[i]
-#             r_eff_list.append(r_eff_1)
-#             r_eff_2 = self.f_i[i][2]*self.R_i[i]
-#             r_eff_list.append(r_eff_2)
-#         if self.n_i != 0:
-#             max_r = max(r_eff_list)
-#         else:
-#             max_r = 0.0
-        
-#         y_pos_list = []
-#         for i in range(0, self.n_i):
-#             y_pos = self.center_i[i][1] + self.f_i[i][1]*self.R_i[i]
-#             y_pos_list.append(y_pos)
-#         if self.n_i != 0:
-#             y_max = max(y_pos_list)
-#         else:
-#             y_max = 2.0*self.H/2
-        
-#         y_neg_list = []
-#         for i in range(0, self.n_i):
-#             y_neg = self.center_i[i][1] - self.f_i[i][1]*self.R_i[i]
-#             y_neg_list.append(y_neg)
-#         if self.n_i != 0:
-#             y_min = min(y_neg_list)
-#         else:
-#             y_min = -2.0*self.H/2
-        
-#         gmsh.model.mesh.field.add("Box", 10*(self.n_i+1))
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "VIn", h_el/n_ref)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "VOut", h_el)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "XMin", -2.0*self.L/2)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "XMax", 2.0*self.L/2)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "YMin", -self.H/2)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "YMax", 0.0)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "ZMin", -2.0*self.W/2)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "ZMax", 2.0*self.W/2)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "Thickness", 2.0*self.W)
-#         gmsh.model.mesh.field.setAsBackgroundMesh(10*(self.n_i+1))
-#         gmsh.model.occ.synchronize()
-
-
-#     def mesh_refinement_Hertzian(self, n_ref:float):  #TODO: should be above + contact zone refinement
-#         h_el = self.L/self.NL
-#         #top_center = gmsh.model.occ.addPoint(0.0, self.H/2, 0.0)  
-#         top_center_line = gmsh.model.occ.addLine(gmsh.model.occ.addPoint(0.0, self.H/2, -self.W/2), gmsh.model.occ.addPoint(0.0, self.H/2, self.W/2))
-#         gmsh.model.mesh.field.add("Distance", 10*(self.n_i+2))
-#         #gmsh.model.mesh.field.setNumbers(10*(self.n_i+2), "PointsList", [top_center])
-#         gmsh.model.mesh.field.setNumbers(10*(self.n_i+2), "CurvesList", [top_center_line])
-#         gmsh.model.mesh.field.add("Threshold", 10*(self.n_i+3))
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+3), "InField", 10*(self.n_i+2))
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+3), "SizeMin", h_el/n_ref)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+3), "SizeMax", h_el)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+3), "DistMin", 0.0)
-#         gmsh.model.mesh.field.setNumber(10*(self.n_i+3), "DistMax", 1.5*self.R_ind)
-#         gmsh.model.mesh.field.add("Min", 10*(self.n_i+4))
-#         gmsh.model.mesh.field.setNumbers(10*(self.n_i+4), "FieldsList", [10*(self.n_i+1), 10*(self.n_i+3)])
-#         gmsh.model.mesh.field.setAsBackgroundMesh(10*(self.n_i+4))
-
-
 
 class Mesh:
     def __init__(self, L, H, W, NL, n_i, inclusions, n_v, voids, Hexa, MeshName, MeshFilename, matrix_marker, inclusion_marker, inclusion_surface_marker, Hertzian, R_ind):
@@ -324,97 +47,6 @@ class Mesh:
         self.Hertzian = Hertzian
         self.R_ind = R_ind
         #self.Void = Void
-
-    # def mesh_refinement(self, n_ref: float):
-    #     h_el = self.L/self.NL
-    #     r_eff_list = []
-    #     for i in range(0, self.n_i):
-    #         r_eff_0 = self.inclusions[i]['stretch_factor'][0]*self.inclusions[i]['length']  #  f_i[i][0]*self.R_i[i]
-    #         r_eff_list.append(r_eff_0)
-    #         r_eff_1 = self.inclusions[i]['stretch_factor'][1]*self.inclusions[i]['length']
-    #         r_eff_list.append(r_eff_1)
-    #         r_eff_2 = self.inclusions[i]['stretch_factor'][2]*self.inclusions[i]['length']
-    #         r_eff_list.append(r_eff_2)
-    #     if self.n_i != 0:
-    #         max_r = max(r_eff_list)
-        
-    #     y_pos_list = []
-    #     for i in range(0, self.n_i):
-    #         y_pos = self.inclusions[i]['center'][1] + self.inclusions[i]['stretch_factor'][1]*self.inclusions[i]['length']              #center_i[i][1] + self.f_i[i][1]*self.R_i[i]
-    #         y_pos_list.append(y_pos)
-    #     if self.n_i != 0:
-    #         y_max = max(y_pos_list)
-    #     else:
-    #         y_max = 2.0*self.H/2
-        
-    #     y_neg_list = []
-    #     for i in range(0, self.n_i):
-    #         y_neg = self.inclusions[i]['center'][1] - self.inclusions[i]['stretch_factor'][1]*self.inclusions[i]['length'] #self.center_i[i][1] - self.f_i[i][1]*self.R_i[i]
-    #         y_neg_list.append(y_neg)
-    #     if self.n_i != 0:
-    #         y_min = min(y_neg_list)
-    #     else:
-    #         y_min = -2.0*self.H/2
-        
-    #     gmsh.model.mesh.field.add("Box", 10*(self.n_i+1))
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "VIn", h_el/n_ref)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "VOut", h_el)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "XMin", -2.0*self.L/2)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "XMax", 2.0*self.L/2)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "YMin", 1.1*y_min)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "YMax", 1.1*y_max)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "ZMin", -2.0*self.W/2)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "ZMax", 2.0*self.W/2)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "Thickness", 2.0*self.W)
-    #     gmsh.model.mesh.field.setAsBackgroundMesh(10*(self.n_i+1))
-    #     gmsh.model.occ.synchronize()
-
-
-    # def mesh_refinement_larger_area(self, n_ref: float):
-    #     h_el = self.L/self.NL
-    #     r_eff_list = []
-    #     for i in range(0, self.n_i):
-    #         r_eff_0 = self.f_i[i][0]*self.R_i[i]
-    #         r_eff_list.append(r_eff_0)
-    #         r_eff_1 = self.f_i[i][1]*self.R_i[i]
-    #         r_eff_list.append(r_eff_1)
-    #         r_eff_2 = self.f_i[i][2]*self.R_i[i]
-    #         r_eff_list.append(r_eff_2)
-    #     if self.n_i != 0:
-    #         max_r = max(r_eff_list)
-    #     else:
-    #         max_r = 0.0
-        
-    #     y_pos_list = []
-    #     for i in range(0, self.n_i):
-    #         y_pos = self.center_i[i][1] + self.f_i[i][1]*self.R_i[i]
-    #         y_pos_list.append(y_pos)
-    #     if self.n_i != 0:
-    #         y_max = max(y_pos_list)
-    #     else:
-    #         y_max = 2.0*self.H/2
-        
-    #     y_neg_list = []
-    #     for i in range(0, self.n_i):
-    #         y_neg = self.center_i[i][1] - self.f_i[i][1]*self.R_i[i]
-    #         y_neg_list.append(y_neg)
-    #     if self.n_i != 0:
-    #         y_min = min(y_neg_list)
-    #     else:
-    #         y_min = -2.0*self.H/2
-        
-    #     gmsh.model.mesh.field.add("Box", 10*(self.n_i+1))
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "VIn", h_el/n_ref)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "VOut", h_el)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "XMin", -2.0*self.L/2)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "XMax", 2.0*self.L/2)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "YMin", y_min-max_r)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "YMax", y_max+max_r)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "ZMin", -2.0*self.W/2)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "ZMax", 2.0*self.W/2)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "Thickness", 2.0*self.W)
-    #     gmsh.model.mesh.field.setAsBackgroundMesh(10*(self.n_i+1))
-    #     gmsh.model.occ.synchronize()
 
 
     def mesh_refinement(self, n_ref: float, scope: str):
@@ -507,118 +139,7 @@ class Mesh:
         gmsh.model.mesh.field.setAsBackgroundMesh(10*(self.n_i+4))
 
 
-    # def mesh_refinement_upper_half(self, n_ref: float):
-    #     h_el = self.L/self.NL
-    #     r_eff_list = []
-    #     for i in range(0, self.n_i):
-    #         r_eff_0 = self.f_i[i][0]*self.R_i[i]
-    #         r_eff_list.append(r_eff_0)
-    #         r_eff_1 = self.f_i[i][1]*self.R_i[i]
-    #         r_eff_list.append(r_eff_1)
-    #         r_eff_2 = self.f_i[i][2]*self.R_i[i]
-    #         r_eff_list.append(r_eff_2)
-    #     if self.n_i != 0:
-    #         max_r = max(r_eff_list)
-    #     else:
-    #         max_r = 0.0
-        
-    #     y_pos_list = []
-    #     for i in range(0, self.n_i):
-    #         y_pos = self.center_i[i][1] + self.f_i[i][1]*self.R_i[i]
-    #         y_pos_list.append(y_pos)
-    #     if self.n_i != 0:
-    #         y_max = max(y_pos_list)
-    #     else:
-    #         y_max = 2.0*self.H/2
-        
-    #     y_neg_list = []
-    #     for i in range(0, self.n_i):
-    #         y_neg = self.center_i[i][1] - self.f_i[i][1]*self.R_i[i]
-    #         y_neg_list.append(y_neg)
-    #     if self.n_i != 0:
-    #         y_min = min(y_neg_list)
-    #     else:
-    #         y_min = -2.0*self.H/2
-        
-    #     gmsh.model.mesh.field.add("Box", 10*(self.n_i+1))
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "VIn", h_el/n_ref)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "VOut", h_el)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "XMin", -2.0*self.L/2)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "XMax", 2.0*self.L/2)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "YMin", 0.0)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "YMax", self.H/2)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "ZMin", -2.0*self.W/2)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "ZMax", 2.0*self.W/2)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "Thickness", 2.0*self.W)
-    #     gmsh.model.mesh.field.setAsBackgroundMesh(10*(self.n_i+1))
-    #     gmsh.model.occ.synchronize()
-
-
-    # def mesh_refinement_lower_half(self, n_ref: float):
-    #     h_el = self.L/self.NL
-    #     r_eff_list = []
-    #     for i in range(0, self.n_i):
-    #         r_eff_0 = self.f_i[i][0]*self.R_i[i]
-    #         r_eff_list.append(r_eff_0)
-    #         r_eff_1 = self.f_i[i][1]*self.R_i[i]
-    #         r_eff_list.append(r_eff_1)
-    #         r_eff_2 = self.f_i[i][2]*self.R_i[i]
-    #         r_eff_list.append(r_eff_2)
-    #     if self.n_i != 0:
-    #         max_r = max(r_eff_list)
-    #     else:
-    #         max_r = 0.0
-        
-    #     y_pos_list = []
-    #     for i in range(0, self.n_i):
-    #         y_pos = self.center_i[i][1] + self.f_i[i][1]*self.R_i[i]
-    #         y_pos_list.append(y_pos)
-    #     if self.n_i != 0:
-    #         y_max = max(y_pos_list)
-    #     else:
-    #         y_max = 2.0*self.H/2
-        
-    #     y_neg_list = []
-    #     for i in range(0, self.n_i):
-    #         y_neg = self.center_i[i][1] - self.f_i[i][1]*self.R_i[i]
-    #         y_neg_list.append(y_neg)
-    #     if self.n_i != 0:
-    #         y_min = min(y_neg_list)
-    #     else:
-    #         y_min = -2.0*self.H/2
-        
-    #     gmsh.model.mesh.field.add("Box", 10*(self.n_i+1))
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "VIn", h_el/n_ref)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "VOut", h_el)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "XMin", -2.0*self.L/2)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "XMax", 2.0*self.L/2)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "YMin", -self.H/2)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "YMax", 0.0)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "ZMin", -2.0*self.W/2)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "ZMax", 2.0*self.W/2)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "Thickness", 2.0*self.W)
-    #     gmsh.model.mesh.field.setAsBackgroundMesh(10*(self.n_i+1))
-    #     gmsh.model.occ.synchronize()
-
-
-    # def mesh_refinement_Hertzian(self, n_ref:float):  #TODO: should be above + contact zone refinement
-    #     h_el = self.L/self.NL
-    #     #top_center = gmsh.model.occ.addPoint(0.0, self.H/2, 0.0)  
-    #     top_center_line = gmsh.model.occ.addLine(gmsh.model.occ.addPoint(0.0, self.H/2, -self.W/2), gmsh.model.occ.addPoint(0.0, self.H/2, self.W/2))
-    #     gmsh.model.mesh.field.add("Distance", 10*(self.n_i+2))
-    #     #gmsh.model.mesh.field.setNumbers(10*(self.n_i+2), "PointsList", [top_center])
-    #     gmsh.model.mesh.field.setNumbers(10*(self.n_i+2), "CurvesList", [top_center_line])
-    #     gmsh.model.mesh.field.add("Threshold", 10*(self.n_i+3))
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+3), "InField", 10*(self.n_i+2))
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+3), "SizeMin", h_el/n_ref)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+3), "SizeMax", h_el)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+3), "DistMin", 0.0)
-    #     gmsh.model.mesh.field.setNumber(10*(self.n_i+3), "DistMax", 1.5*self.R_ind)
-    #     gmsh.model.mesh.field.add("Min", 10*(self.n_i+4))
-    #     gmsh.model.mesh.field.setNumbers(10*(self.n_i+4), "FieldsList", [10*(self.n_i+1), 10*(self.n_i+3)])
-    #     gmsh.model.mesh.field.setAsBackgroundMesh(10*(self.n_i+4))
-
-
+    
 
 
 class MatrixInclusion3D(Mesh):    
@@ -879,6 +400,115 @@ class MatrixInclusionPlaneStrain(Mesh):
         inclusion_surface_list.clear()
         gmsh.finalize()
         return gmsh.model
+
+
+
+
+class MatrixPores3D_save(Mesh):
+    def __init__(self, L, H, W, NL, n_i=0, inclusions=None, n_v=0, voids=None,
+                 Hexa=False, MeshName="Mesh", MeshFilename="mesh.msh",
+                 matrix_marker=1, inclusion_marker=None, inclusion_surface_marker=None,
+                 Hertzian=False, R_ind=0.0,
+                 n_void_x=0, n_void_y=0, n_void_z=0):
+        super().__init__(L, H, W, NL, n_i, inclusions, n_v, voids, Hexa,
+                         MeshName, MeshFilename, matrix_marker,
+                         inclusion_marker if inclusion_marker else [],
+                         inclusion_surface_marker if inclusion_surface_marker else [],
+                         Hertzian, R_ind)
+        self.n_void_x = n_void_x
+        self.n_void_y = n_void_y
+        self.n_void_z = n_void_z
+
+    def create(self, n_ref: float = 1.0):
+        gmsh.initialize()
+        
+        if rank == 0:
+            gmsh.model.add(self.MeshName)
+
+            # -------------------
+            # Cube (matrix)
+            # -------------------
+            matrix_volume = gmsh.model.occ.addBox(-self.L/2, -self.H/2, -self.W/2,
+                                                 self.L, self.H, self.W)
+
+            # -------------------
+            # Inclusions
+            # -------------------
+            inclusion_volumes = []
+            for i in range(self.n_i):
+                inc = self.inclusions[i]
+                if inc["shape"] == "ellipsoid":
+                    vol = gmsh.model.occ.addSphere(*inc["center"], inc["length"])
+                elif inc["shape"] == "rectangle":
+                    x0 = inc["center"][0] - 0.5*inc["length"]
+                    y0 = inc["center"][1] - 0.5*inc["length"]
+                    z0 = inc["center"][2] - 0.5*inc["length"]
+                    vol = gmsh.model.occ.addBox(x0, y0, z0,
+                                                inc["length"], inc["length"], inc["length"])
+                gmsh.model.occ.dilate([(3, vol)], *inc["center"], *inc["stretch_factor"])
+                gmsh.model.occ.rotate([(3, vol)], *inc["center"], *inc["rotation_axis"], inc["rotation_angle"])
+                inclusion_volumes.append((3, vol))
+
+            # -------------------
+            # Voids
+            # -------------------
+            void_volumes = []
+            for key, void in self.voids.items():
+                if void["shape"] == "ellipsoid":
+                    vol = gmsh.model.occ.addSphere(*void["center"], void["length"])
+                elif void["shape"] == "rectangle":
+                    x0 = void["center"][0] - 0.5*void["length"]
+                    y0 = void["center"][1] - 0.5*void["length"]
+                    z0 = void["center"][2] - 0.5*void["length"]
+                    vol = gmsh.model.occ.addBox(x0, y0, z0,
+                                                void["length"], void["length"], void["length"])
+                gmsh.model.occ.dilate([(3, vol)], *void["center"], *void["stretch_factor"])
+                gmsh.model.occ.rotate([(3, vol)], *void["center"], *void["rotation_axis"], void["rotation_angle"])
+                void_volumes.append((3, vol))
+
+            gmsh.model.occ.synchronize()
+
+            # -------------------
+            # Subtract inclusions and voids from matrix
+            # -------------------
+            cut_objects = inclusion_volumes + void_volumes
+            if cut_objects:
+                result = gmsh.model.occ.cut([(3, matrix_volume)], cut_objects)
+                gmsh.model.occ.synchronize()
+                final_matrix_tag = result[0][0][1] if result else matrix_volume
+            else:
+                final_matrix_tag = matrix_volume
+
+            # -------------------
+            # Physical groups
+            # -------------------
+            gmsh.model.addPhysicalGroup(3, [final_matrix_tag], self.matrix_marker)
+            for idx, inc in enumerate(inclusion_volumes):
+                if self.inclusion_marker:
+                    gmsh.model.addPhysicalGroup(3, [inc[1]], self.inclusion_marker[idx])
+            for void in void_volumes:
+                gmsh.model.addPhysicalGroup(3, [void[1]], 99)  # void marker
+
+            # -------------------
+            # Mesh refinement using NL
+            # -------------------
+            self.mesh_refinement(n_ref=self.NL, scope="full")  # Use NL as mesh density factor
+
+            # -------------------
+            # Mesh generation
+            # -------------------
+            if self.Hexa:
+                gmsh.option.setNumber("Mesh.RecombineAll", 1)
+                gmsh.option.setNumber("Mesh.SubdivisionAlgorithm", 2)
+
+        gmsh.option.setNumber("Mesh.Algorithm3D", 10)
+        gmsh.model.occ.synchronize()
+        gmsh.model.mesh.generate(3)
+        gmsh.write(self.MeshFilename)
+        gmsh.finalize()
+        return gmsh.model
+
+
 
     
 class MatrixPores3D(Mesh):    

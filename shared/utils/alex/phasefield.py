@@ -545,7 +545,7 @@ class StaticPhaseFieldProblem2D_incremental:
 
 
 
-class StaticPhaseFieldProblem2D_plasticity_noll:
+class StaticPhaseFieldProblem_plasticity_noll:
     # Constructor method
     def __init__(self, degradationFunction: Callable,
                        psisurf: Callable,
@@ -563,7 +563,6 @@ class StaticPhaseFieldProblem2D_plasticity_noll:
 
         # Set all parameters here! Material etc
         self.psisurf : Callable = psisurf
-        self.sigma_undegraded : Callable = self.sigma_undegraded #.sigma_as_tensor # plane strain
         self.dx = dx
         self.sig_y = sig_y
         self.hard = hard
@@ -610,48 +609,19 @@ class StaticPhaseFieldProblem2D_plasticity_noll:
     def eqeps(self,u):
         return ufl.sqrt(2.0/3.0 * ufl.inner(self.eps(u),self.eps(u))) 
     
-    # def update_H(self, u, s, delta_u,lam,mu,eta):
-    #     u_n = u-delta_u
-    #     delta_eps = 0.5*(ufl.grad(delta_u) + ufl.grad(delta_u).T)
-    #     W_np1 = ufl.inner(self.sigma_degraded( u,s,lam,mu, eta), delta_eps )
-    #     # W_n = ufl.inner(self.sigma_undegraded(u=u_n,lam=lam,mu=mu), delta_eps )
-    #     # H_np1 = ( self.H + 0.5 * (W_n+W_np1))
-    #     # this correct?
-    #     W_n = ufl.inner(self.sigma_degraded( u,s,lam,mu, eta), delta_eps )
-    #     H_np1 = ( self.H +(W_np1))
-    #     return H_np1
-    
-    def update_H(self, u, delta_u,lam,mu):
-        u_n = u-delta_u
-        delta_eps = 0.5*(ufl.grad(delta_u) + ufl.grad(delta_u).T)
-        W_np1 = ufl.inner(self.sigma_undegraded(u=u,lam=lam,mu=mu), delta_eps )
-        W_n = ufl.inner(self.sigma_undegraded(u=u_n,lam=lam,mu=mu), delta_eps )
-        H_np1 = ( self.H + 0.5 * (W_n+W_np1))
-        # # this correct?
-        # W_n = ufl.inner(self.sigma_undegraded(u=u_n,lam=lam,mu=mu), delta_eps )
-        # H_np1 = ( self.H + (W_np1))
-        return H_np1
     
     def sigma_undegraded(self,u,lam,mu):
         #sig = plasticity.Ramberg_Osgood.sig_ramberg_osgood_wiki(u, lam, mu,norm_eps_crit_dev=self.norm_eps_crit_dev,b_hardening_parameter=self.b_hardening_parameter,r_transition_smoothness_parameter=self.r_transition_smoothness_parameter)
         sig = plasticity.sig_plasticity(u,e_p_n=self.e_p_n,alpha_n=self.alpha_n,sig_y=self.sig_y,hard=self.hard,lam=lam,mu=mu)
         return sig
 
-    # def psiel_degraded(self,s,eta,u,lam,mu):
-    #     eps_3D = plasticity.assemble_3D_representation_of_plane_strain_eps(u)
-    #     eps_e_3D = eps_3D - self.e_p_n
-        
-    #     K = le.get_K(lam,mu)
-    #     sig_3D = K * ufl.tr(eps_e_3D) * ufl.Identity(3) - 2.0 * mu * ufl.dev(eps_e_3D)
-        
-    #     psiel_undegraded = 0.5*ufl.inner(sig_3D,eps_e_3D)
-    #     return self.degradation_function(s,eta) * psiel_undegraded
-    
-    
     def psiel_undegraded(self,u,la,mu):
-        K = le.get_K_2D(la,mu)
-        eps = self.eps(u)
-        eps_3D = plasticity.assemble_3D_representation_of_plane_strain_eps(u)
+        
+        if u.ufl_shape[0] == 2:
+            K = le.get_K_2D(la,mu)
+        elif u.ufl_shape[0] == 3:
+            K = le.get_K(la,mu)
+        eps_3D = plasticity.assemble_3D_representation_of_eps(u)
         
         e_3D = ufl.dev(eps_3D)
         e_e_3D = e_3D-self.e_p_n
@@ -673,7 +643,7 @@ class StaticPhaseFieldProblem2D_plasticity_noll:
     
     def getEshelby(self, w: any, eta: dlfx.fem.Constant, lam: dlfx.fem.Constant, mu: dlfx.fem.Constant):
         u, s = ufl.split(w)
-        eshelby = self.psi_total(u,s,lam,mu,eta) * ufl.Identity(2) - ufl.dot(ufl.grad(u).T,self.sigma_degraded(u,s,lam,mu, eta))
+        eshelby = self.psi_total(u,s,lam,mu,eta) * ufl.Identity(u.ufl_shape[0]) - ufl.dot(ufl.grad(u).T,self.sigma_degraded(u,s,lam,mu, eta))
         return ufl.as_tensor(eshelby)
     
     
@@ -685,6 +655,7 @@ class StaticPhaseFieldProblem2D_plasticity_noll:
         Pi = dlfx.fem.assemble_scalar(dlfx.fem.form(self.psiel_degraded(s,eta,u,lam,mu) * dx))
         return comm.allreduce(Pi,MPI.SUM)
     
+
     
 class StaticPhaseFieldProblem2D_incremental_plasticity:
     # Constructor method
@@ -723,11 +694,7 @@ class StaticPhaseFieldProblem2D_incremental_plasticity:
             
             degds = self.degds(s)
             H_np1 = self.update_H(u,delta_u=delta_u,lam=lam,mu=mu)
-            # H_np1 = self.update_H(u,s,delta_u=delta_u,lam=lam,mu=mu,eta=eta)
-            
-            
-
-            
+       
             sdrive = ( ( degds * ( H_np1 ) - Gc * (1-s) / (2.0 * epsilon)  ) * ds + 2.0 * epsilon * Gc * ufl.inner(ufl.grad(s), ufl.grad(ds)) ) * self.dx
             rate = (s-sm1)/delta_t*ds*self.dx
             Res = iMob*rate+sdrive+equi
@@ -753,16 +720,6 @@ class StaticPhaseFieldProblem2D_incremental_plasticity:
     def eqeps(self,u):
         return ufl.sqrt(2.0/3.0 * ufl.inner(self.eps(u),self.eps(u))) 
     
-    # def update_H(self, u, s, delta_u,lam,mu,eta):
-    #     u_n = u-delta_u
-    #     delta_eps = 0.5*(ufl.grad(delta_u) + ufl.grad(delta_u).T)
-    #     W_np1 = ufl.inner(self.sigma_degraded( u,s,lam,mu, eta), delta_eps )
-    #     # W_n = ufl.inner(self.sigma_undegraded(u=u_n,lam=lam,mu=mu), delta_eps )
-    #     # H_np1 = ( self.H + 0.5 * (W_n+W_np1))
-    #     # this correct?
-    #     W_n = ufl.inner(self.sigma_degraded( u,s,lam,mu, eta), delta_eps )
-    #     H_np1 = ( self.H +(W_np1))
-    #     return H_np1
     
     def update_H(self, u, delta_u,lam,mu):
         u_n = u-delta_u
@@ -770,27 +727,13 @@ class StaticPhaseFieldProblem2D_incremental_plasticity:
         W_np1 = ufl.inner(self.sigma_undegraded(u=u,lam=lam,mu=mu), delta_eps )
         W_n = ufl.inner(self.sigma_undegraded(u=u_n,lam=lam,mu=mu), delta_eps )
         H_np1 = ( self.H + 0.5 * (W_n+W_np1))
-        # # this correct?
-        # W_n = ufl.inner(self.sigma_undegraded(u=u_n,lam=lam,mu=mu), delta_eps )
-        # H_np1 = ( self.H + (W_np1))
         return H_np1
     
     def sigma_undegraded(self,u,lam,mu):
         #sig = plasticity.Ramberg_Osgood.sig_ramberg_osgood_wiki(u, lam, mu,norm_eps_crit_dev=self.norm_eps_crit_dev,b_hardening_parameter=self.b_hardening_parameter,r_transition_smoothness_parameter=self.r_transition_smoothness_parameter)
         sig = plasticity.sig_plasticity(u,e_p_n=self.e_p_n,alpha_n=self.alpha_n,sig_y=self.sig_y,hard=self.hard,lam=lam,mu=mu)
         return sig
-
-    # def psiel_degraded(self,s,eta,u,lam,mu):
-    #     eps_3D = plasticity.assemble_3D_representation_of_plane_strain_eps(u)
-    #     eps_e_3D = eps_3D - self.e_p_n
-        
-    #     K = le.get_K(lam,mu)
-    #     sig_3D = K * ufl.tr(eps_e_3D) * ufl.Identity(3) - 2.0 * mu * ufl.dev(eps_e_3D)
-        
-    #     psiel_undegraded = 0.5*ufl.inner(sig_3D,eps_e_3D)
-    #     return self.degradation_function(s,eta) * psiel_undegraded
-        
-        
+      
     def psiel_degraded(self,s,eta,u,lam,mu):
         return self.degradation_function(s,eta) * self.H
         #return self.H

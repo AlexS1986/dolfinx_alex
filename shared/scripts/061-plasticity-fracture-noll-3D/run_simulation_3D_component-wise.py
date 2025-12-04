@@ -5,6 +5,7 @@ from mpi4py import MPI
 import numpy as np
 from array import array
 import ufl
+import dolfinx.fem as fem
 
 import alex.heterogeneous as het
 import alex.os
@@ -39,8 +40,8 @@ alex.os.print_mpi_status(rank, size)
 if rank == 0:
     alex.util.print_dolfinx_version()
 
-N=50
-domain = dlfx.mesh.create_unit_square(comm, N, N, cell_type=dlfx.mesh.CellType.quadrilateral)
+N=10
+domain = dlfx.mesh.create_unit_cube(comm, N, N, N, cell_type=dlfx.mesh.CellType.hexahedron)
     
 dim = domain.topology.dim
 alex.os.mpi_print('spatial dimensions: '+str(dim), rank)
@@ -87,21 +88,66 @@ du = ufl.TestFunction(V)
 ddu = ufl.TrialFunction(V)
 
 deg_quad = 1  # quadrature degree for internal state variable representation
-gdim = 2
-_,alpha_n,alpha_tmp, e_p_11_n, e_p_22_n, e_p_12_n, e_p_33_n, e_p_11_n_tmp, e_p_22_n_tmp, e_p_12_n_tmp, e_p_33_n_tmp = alex.plasticity.define_internal_state_variables_basix_2D(gdim, domain, deg_quad,quad_scheme="default")
+gdim = 3
+
+'''# function space for 3d fields
+Ve_3d = ufl.TensorElement("Lagrange", domain.ufl_cell(), 1, shape=(3,3)) # displacements
+V_3d = dlfx.fem.FunctionSpace(domain, Ve_3d)
+# Set e_p and e_p_n up in a TensorFunctionSpace
+e_p_n = fem.Function(V_3d, name='e_p')
+e_p_n_tmp = fem.Function(V_3d, name='e_p_tmp')
+e_p_n.x.array[:] = 0.0
+e_p_n_tmp.x.array[:] = 0.0'''
+
+'''# Get the sub-space for the (0,0) component and its dofmap
+V_00, map_00 = V.sub([0, 0]).collapse()
+# Create the numpy array you want to assign
+num_dofs_component = V_00.dofmap.index_map.size_local
+zero_array = np.zeros_like(num_dofs_component)'''
+
+(
+    alpha_n, alpha_tmp,
+
+    e_p_11_n, e_p_22_n, e_p_33_n,
+    e_p_12_n, e_p_13_n, e_p_23_n,
+
+    e_p_11_n_tmp, e_p_22_n_tmp, e_p_33_n_tmp,
+    e_p_12_n_tmp, e_p_13_n_tmp, e_p_23_n_tmp
+) = alex.plasticity.define_internal_state_variables_basix_3D(
+        gdim, domain, deg_quad, quad_scheme="default"
+)
+W0e = basix.ufl.quadrature_element(domain.basix_cell(), value_shape=(), scheme="default", degree=deg_quad)
+W0 = fem.functionspace(domain, W0e)
+
+# e_p_11_n_tmp = fem.Function(W0, name="e_p_11_tmp")
+# e_p_22_n_tmp = fem.Function(W0, name="e_p_22_tmp")
+# e_p_12_n_tmp = fem.Function(W0, name="e_p_12_tmp")
+# e_p_33_n_tmp = fem.Function(W0, name="e_p_33_tmp")
+# e_p_13_n_tmp = fem.Function(W0, name="e_p_13_tmp")
+# e_p_23_n_tmp = fem.Function(W0, name="e_p_23_tmp")
+# e_p_11_n = fem.Function(W0, name="e_p_11")
+# e_p_22_n = fem.Function(W0, name="e_p_22")
+# e_p_12_n = fem.Function(W0, name="e_p_12")
+# e_p_33_n = fem.Function(W0, name="e_p_33")
+# e_p_13_n = fem.Function(W0, name="e_p_13")
+# e_p_23_n = fem.Function(W0, name="e_p_23")
+
 dx = alex.plasticity.define_custom_integration_measure_that_matches_quadrature_degree_and_scheme(domain, deg_quad, "default")
 quadrature_points, cells = alex.plasticity.get_quadraturepoints_and_cells_for_inter_polation_at_gauss_points(domain, deg_quad)
-#H.x.array[:] = np.zeros_like(H.x.array[:])
 alpha_n.x.array[:] = np.zeros_like(alpha_n.x.array[:])
 alpha_tmp.x.array[:] = np.zeros_like(alpha_tmp.x.array[:])
 e_p_11_n.x.array[:] = np.zeros_like(e_p_11_n.x.array[:])
 e_p_22_n.x.array[:] = np.zeros_like(e_p_22_n.x.array[:])
 e_p_12_n.x.array[:] = np.zeros_like(e_p_12_n.x.array[:])
 e_p_33_n.x.array[:] = np.zeros_like(e_p_33_n.x.array[:])
+e_p_13_n.x.array[:] = np.zeros_like(e_p_13_n.x.array[:])
+e_p_23_n.x.array[:] = np.zeros_like(e_p_23_n.x.array[:])
 e_p_11_n_tmp.x.array[:] = np.zeros_like(e_p_11_n_tmp.x.array[:])
 e_p_22_n_tmp.x.array[:] = np.zeros_like(e_p_22_n_tmp.x.array[:])
 e_p_12_n_tmp.x.array[:] = np.zeros_like(e_p_12_n_tmp.x.array[:])
 e_p_33_n_tmp.x.array[:] = np.zeros_like(e_p_33_n_tmp.x.array[:])
+e_p_13_n_tmp.x.array[:] = np.zeros_like(e_p_13_n_tmp.x.array[:])
+e_p_23_n_tmp.x.array[:] = np.zeros_like(e_p_23_n_tmp.x.array[:])
 
 # setting K1 so it always breaks
 #K1 = dlfx.fem.Constant(domain, 1.0 * math.sqrt(1.0 * 2.5))
@@ -114,11 +160,11 @@ fdim = tdim - 1
 domain.topology.create_connectivity(fdim, tdim)
 
 
-e_p_n_3D = ufl.as_tensor([[e_p_11_n, e_p_12_n, 0.0], 
-                          [e_p_12_n, e_p_22_n, 0.0],
-                          [0.0, 0.0, e_p_33_n]])
-
-plasticityProblem = alex.plasticity.Plasticity_2D(sig_y=sig_y.value, hard=hard.value,alpha_n=alpha_n,e_p_n=e_p_n_3D)
+e_p_n_3D = ufl.as_tensor([[e_p_11_n, e_p_12_n, e_p_13_n], 
+                          [e_p_12_n, e_p_22_n, e_p_23_n],
+                          [e_p_13_n, e_p_23_n, e_p_33_n]])
+plasticityProblem = alex.plasticity.Plasticity_3D(sig_y=sig_y.value, hard=hard.value,alpha_n=alpha_n,e_p_n=e_p_n_3D)
+#plasticityProblem = alex.linearelastic.StaticLinearElasticProblem()
 
 # pf.StaticPhaseFieldProblem2D_incremental_plasticity(degradationFunction=pf.degrad_cubic,
 #                                                    psisurf=pf.psisurf_from_function,dx=dx, sig_y=sig_y.value, hard=hard.value,alpha_n=alpha_n,e_p_n=e_p_n_3D,H=H)
@@ -141,7 +187,9 @@ def before_each_time_step(t,dt):
 
 
 def get_residuum_and_gateaux(delta_t: dlfx.fem.Constant):
-    [Res, dResdw] = plasticityProblem.prep_newton(u=u,um1=um1,du=du,ddu=ddu,lam=la, mu=mu) 
+    [Res, dResdw] = plasticityProblem.prep_newton(u=u,um1=um1,du=du,ddu=ddu,lam=la,mu=mu) 
+    #[Res, dResdw] = plasticityProblem.prep_newton(u,du,ddu,la,mu) 
+
     return [Res, dResdw]
 
 
@@ -158,7 +206,8 @@ u_D = dlfx.fem.Function(V) # for dirichlet BCs
 def top_displacement():    
     u_y = ufl.conditional(ufl.le(t_global,ufl.as_ufl(1.0)),t_global,ufl.as_ufl(1.0-(t_global-1.0)))
     u_x = ufl.as_ufl(0.0)
-    return ufl.as_vector([u_x, u_y]) # only 2 components in 2D
+    u_z = ufl.as_ufl(0.0)
+    return ufl.as_vector([u_x, u_y, u_z]) # 3 components in 3D
 
 bc_top_expression = dlfx.fem.Expression(top_displacement(),V.element.interpolation_points())
 
@@ -170,11 +219,12 @@ def get_bcs(t):
     
     u_D.interpolate(bc_top_expression)
     bc_top : dlfx.fem.DirichletBC = dlfx.fem.dirichletbc(u_D,dofs_at_boundary)
-     
+    
+    bc_bottom_z = bc.define_dirichlet_bc_from_value(domain,0.0,2,bc.get_bottom_boundary_of_box_as_function(domain,comm,atol=atol),V,-1)
     bc_bottom_y = bc.define_dirichlet_bc_from_value(domain,0.0,1,bc.get_bottom_boundary_of_box_as_function(domain,comm,atol=atol),V,-1)
     bc_bottom_x = bc.define_dirichlet_bc_from_value(domain,0.0,0,bc.get_bottom_boundary_of_box_as_function(domain,comm,atol=atol),V,-1)
 
-    bcs = [bc_top,bc_bottom_y,bc_bottom_x]
+    bcs = [bc_top,bc_bottom_z,bc_bottom_y,bc_bottom_x]
     return bcs
 
 
@@ -194,35 +244,37 @@ postprocessing_interval = dlfx.fem.Constant(domain,20.0)
 TEN = dlfx.fem.functionspace(domain, ("DP", 0, (dim, dim)))
 def after_timestep_success(t,dt,iters):
     
-    delta_u = u - um1  
-    # H_expr = plasticityProblem.update_H(u,delta_u=delta_u,lam=la,mu=mu)
-    # H.x.array[:] = alex.plasticity.interpolate_quadrature(domain, cells, quadrature_points,H_expr)
-    
-    
-    alex.plasticity.update_e_p_n_and_alpha_arrays_2D(u,e_p_11_n_tmp,e_p_22_n_tmp,e_p_12_n_tmp,e_p_33_n_tmp,
-                           e_p_11_n,e_p_22_n,e_p_12_n,e_p_33_n,
-                           alpha_tmp,alpha_n,domain,cells,quadrature_points,sig_y,hard,mu)
-    
+    alex.plasticity.update_e_p_n_and_alpha_arrays_3D(
+    u,
+    e_p_11_n_tmp, e_p_22_n_tmp, e_p_33_n_tmp,
+    e_p_12_n_tmp, e_p_13_n_tmp, e_p_23_n_tmp,
+    e_p_11_n,     e_p_22_n,     e_p_33_n,
+    e_p_12_n,     e_p_13_n,     e_p_23_n,
+    alpha_tmp, alpha_n,
+    domain, cells, quadrature_points,
+    sig_y, hard, mu
+    )
+
     
     # update u from Δu
-    
+    #epsilon = alex.linearelastic.eps_as_tensor(u)
+    #sigma = alex.linearelastic.sigma_as_tensor_from_epsilon(epsilon,la,mu)
     sigma = plasticityProblem.sigma(u,la,mu)
-    tensor_field_expression = dlfx.fem.Expression(sigma, 
-                                                         TEN.element.interpolation_points())
+    tensor_field_expression = dlfx.fem.Expression(sigma, TEN.element.interpolation_points())
     tensor_field_name = "sigma"
     sigma_interpolated = dlfx.fem.Function(TEN) 
     sigma_interpolated.interpolate(tensor_field_expression)
     sigma_interpolated.name = tensor_field_name
     
     #pp.write_tensor_fields(domain,comm,[sigma],["sigma"],outputfile_xdmf_path,t)
-    Rx_top, Ry_top = pp.reaction_force(sigma_interpolated,n=n,ds=ds_top_tagged(top_surface_tag),comm=comm)
+    Rx_top, Ry_top, Rz_top = pp.reaction_force(sigma_interpolated,n=n,ds=ds_top_tagged(top_surface_tag),comm=comm)
     
 
     dW = pp.work_increment_external_forces(sigma_interpolated,u,um1,n,ds,comm=comm)
     Work.value = Work.value + dW
     
     
-    E_el = plasticityProblem.get_E_el_global(u,la,mu,dx=ufl.dx,comm=comm)
+    #E_el = plasticityProblem.get_E_el_global(u,la,mu,dx=ufl.dx,comm=comm)
     
     # write to newton-log-file
     if rank == 0:
@@ -234,7 +286,7 @@ def after_timestep_success(t,dt,iters):
             u_y = 1.0-(t-1.0)
         else:
             u_y = t
-        pp.write_to_graphs_output_file(outputfile_graph_path,t,  Ry_top,u_y)
+        pp.write_to_graphs_output_file(outputfile_graph_path,t, Ry_top,u_y)
 
 
     # update
@@ -285,8 +337,6 @@ sol.solve_with_newton_adaptive_time_stepping(
 )
 
 
-
-
 # copy relevant files
 
 # Step 1: Create a unique timestamped directory
@@ -303,4 +353,3 @@ def copy_files_to_directory(files, target_directory):
             shutil.copy(file, target_directory)
         else:
             print(f"Warning: File '{file}' does not exist and will not be copied.")
-

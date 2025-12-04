@@ -13,6 +13,9 @@ import utils.ronny.mesh as mesh
 import alex.postprocessing as pp
 import alex.os as alexos
 
+import alex.heterogeneous as het
+
+import basix
 
 # -----------------------------------------------------------
 # USER PARAMETERS
@@ -24,9 +27,9 @@ D = 1.0
 W_s = 1.0
 W_b = 0.5
 
-n_void_x = 2
-n_void_y = 1
-n_void_z = 2
+n_void_x = 6
+n_void_y = 3
+n_void_z = 3
 
 NL = 20
 n_ref = 1.0
@@ -172,6 +175,21 @@ if rank == 0:
 pp.write_meshoutputfile(domain, outputfile_xdmf_path, comm)
 
 
+
+marker_outside = 1
+marker_inside = 0
+
+cells_inside = cell_markers.find(marker_inside)
+cells_outside = cell_markers.find(marker_outside)
+
+S0e = basix.ufl.element("DP", domain.basix_cell(), 0, shape=())
+S0 = dlfx.fem.functionspace(domain, S0e)
+
+marker_field = het.set_cell_function_heterogeneous_material(domain,marker_inside, marker_outside, 
+                                                            cells_inside, cells_outside)
+
+
+pp.write_field(domain,outputfile_xdmf_path,marker_field,0.0,comm,S=S0)
 # -----------------------------------------------------------
 # DONE — domain is ready
 # -----------------------------------------------------------

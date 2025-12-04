@@ -159,7 +159,7 @@ ddw = ufl.TrialFunction(W)
 
 deg_quad = 2  # quadrature degree for internal state variable representation
 gdim = 2
-H,_,_, _, _, _, _, _, _ = alex.plasticity.define_internal_state_variables_basix_b(gdim, domain, deg_quad,quad_scheme="default")
+H,_,_, _, _, _, _, _, _ = alex.plasticity.define_internal_state_variables_basix_2D(gdim, domain, deg_quad,quad_scheme="default")
 #H,_,_, _ = alex.plasticity.define_internal_state_variables_basix_b(gdim, domain, deg_quad,quad_scheme="default")
 dx = alex.plasticity.define_custom_integration_measure_that_matches_quadrature_degree_and_scheme(domain, deg_quad, "default")
 quadrature_points, cells = alex.plasticity.get_quadraturepoints_and_cells_for_inter_polation_at_gauss_points(domain, deg_quad)

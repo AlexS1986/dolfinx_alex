@@ -785,7 +785,7 @@ ddu = ufl.TrialFunction(V)
 
 deg_quad = 1  # quadrature degree for internal state variable representation
 gdim = 2
-H,alpha_n,alpha_tmp, e_p_11_n, e_p_22_n, e_p_12_n, e_p_33_n, e_p_11_n_tmp, e_p_22_n_tmp, e_p_12_n_tmp, e_p_33_n_tmp = alex.plasticity.define_internal_state_variables_basix_b(gdim, domain, deg_quad,quad_scheme="default")
+H,alpha_n,alpha_tmp, e_p_11_n, e_p_22_n, e_p_12_n, e_p_33_n, e_p_11_n_tmp, e_p_22_n_tmp, e_p_12_n_tmp, e_p_33_n_tmp = alex.plasticity.define_internal_state_variables_basix_2D(gdim, domain, deg_quad,quad_scheme="default")
 dx = define_custom_integration_measure_that_matches_quadrature_degree_and_scheme(domain, deg_quad, "default")
 quadrature_points, cells = get_quadraturepoints_and_cells_for_inter_polation_at_gauss_points(domain, deg_quad)
 H.x.array[:] = np.zeros_like(H.x.array[:])

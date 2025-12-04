@@ -28,7 +28,6 @@ except:
 
 w_cell=dhole+wsteg
 h_cell=w_cell
-h0 = 2*w_cell
 
 mesh_inclusions = True  # mesh inclusions 
 
