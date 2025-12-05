@@ -103,7 +103,7 @@ srun -n {PROCESSOR_NUMBER} apptainer exec --bind $HOME/dolfinx_alex/shared:/home
     --mue_micro_param "$MUE_MICRO_PARAM" \
     --gc_micro_param "$GC_MICRO_PARAM" \
     --eps_param "$EPS_PARAM" \
-    --element
+    --element_order "$ELEMENT_ORDER"
 
 
 
