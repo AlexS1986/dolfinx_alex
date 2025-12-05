@@ -31,7 +31,7 @@ args = parser.parse_args()
 Nholes = args.Nholes if args.Nholes is not None else 6
 dhole = args.dhole if args.dhole is not None else 1.0
 wsteg = args.wsteg if args.wsteg is not None else 1.0
-nl = args.NL if args.NL is not None else 50
+nl = args.NL if args.NL is not None else 200
 
 n_void_x = Nholes
 n_void_y = 3

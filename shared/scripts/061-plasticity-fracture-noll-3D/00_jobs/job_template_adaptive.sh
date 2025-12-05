@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -J {JOB_NAME}
 #SBATCH -A p0023647
-#SBATCH -t {TIME}  # "minutes", "minutes:seconds", "hours:minutes:seconds", "days-hours", "days-hours:minutes" and "days-hours:minutes:seconds"
+#SBATCH -t {TIME}
 #SBATCH --mem-per-cpu={MEMORY_VALUE}
 #SBATCH -n {PROCESSOR_NUMBER}
 #SBATCH -N 1
@@ -10,48 +10,101 @@
 #SBATCH --mail-type=End
 #SBATCH -C i01
 
-# Set the working directory name
-working_folder_name="{FOLDER_NAME}"  # Change this to your desired folder name
-# Create the working directory under $HPC_SCRATCH
+# --------------------------------------------------
+# Working directory settings
+# --------------------------------------------------
+
+working_folder_name="{FOLDER_NAME}"
 working_directory="$HPC_SCRATCH/061-plasticity-fracture-noll-3D/$working_folder_name"
 
+# --------------------------------------------------
+# Parameters
+# --------------------------------------------------
 
-# Default values for parameters
-NHOLES={NHOLES} # needs to be int
+# Effective stiffness mesh parameter
+NL_EFFECTIVE={NL_EFFECTIVE}
+
+# Fracture mesh parameter
+NL_FRACTURE={NL_FRACTURE}
+
+NHOLES={NHOLES}
 WSTEG={WSTEG}
 DHOLE={DHOLE}
-NL={NL}
+
 MESH_FILE="{MESH_FILE}"
+
 LAM_MICRO_PARAM={LAM_MICRO_PARAM}
 MUE_MICRO_PARAM={MUE_MICRO_PARAM}
 GC_MICRO_PARAM={GC_MICRO_PARAM}
 
-
-# Calculate EPS_PARAM as 6 times E0 using awk if not provided by user
 EPS_PARAM={EPS_PARAM}
 ELEMENT_ORDER={ELEMENT_ORDER}
 
 LCRACK=$(awk "BEGIN {print $WSTEG + $DHOLE}")
 
-
-# Navigate to $HPC_SCRATCH
 cd $HPC_SCRATCH
 
-srun -n 1 apptainer exec --bind $HOME/dolfinx_alex/shared:/home,$working_directory:/work $HOME/dolfinx_alex/alex-dolfinx.sif python3 $working_directory/mesh_effective_stiffness.py --dhole "$DHOLE" --wsteg "$WSTEG" --NL "$NL"
+# --------------------------------------------------
+# Effective stiffness mesh generation
+# --------------------------------------------------
 
-srun -n 1 apptainer exec --bind $HOME/dolfinx_alex/shared:/home,$working_directory:/work $HOME/dolfinx_alex/alex-dolfinx.sif python3 $working_directory/run_effective_stiffness.py --lam_micro_param "$LAM_MICRO_PARAM" --mue_micro_param "$MUE_MICRO_PARAM"
+srun -n 1 apptainer exec --bind $HOME/dolfinx_alex/shared:/home,$working_directory:/work \
+    $HOME/dolfinx_alex/alex-dolfinx.sif python3 \
+    $working_directory/mesh_effective_stiffness.py \
+    --dhole "$DHOLE" \
+    --wsteg "$WSTEG" \
+    --NL "$NL_EFFECTIVE"
 
-srun -n 1 apptainer exec --bind $HOME/dolfinx_alex/shared:/home,$working_directory:/work $HOME/dolfinx_alex/alex-dolfinx.sif python3 $working_directory/mesh_fracture_adaptive.py --nholes "$NHOLES" --dhole "$DHOLE" --wsteg "$WSTEG" --e0 "$E0" --e1 "$E1"
+# --------------------------------------------------
+# Effective stiffness simulation
+# --------------------------------------------------
 
-srun -n 1 apptainer exec --bind $HOME/dolfinx_alex/shared:/home,$working_directory:/work $HOME/dolfinx_alex/alex-dolfinx.sif python3 $working_directory/get_mesh_info.py --mesh_file "$MESH_FILE"
+srun -n 1 apptainer exec --bind $HOME/dolfinx_alex/shared:/home,$working_directory:/work \
+    $HOME/dolfinx_alex/alex-dolfinx.sif python3 \
+    $working_directory/run_effective_stiffness.py \
+    --lam_micro_param "$LAM_MICRO_PARAM" \
+    --mue_micro_param "$MUE_MICRO_PARAM"
 
-# Parameters for simulation_script.py (passed as command-line arguments)
-srun -n {PROCESSOR_NUMBER} apptainer exec --bind $HOME/dolfinx_alex/shared:/home,$working_directory:/work $HOME/dolfinx_alex/alex-dolfinx.sif python3 $working_directory/run_simulation.py --mesh_file "$MESH_FILE" --in_crack_length "$LCRACK" --lam_micro_param "$LAM_MICRO_PARAM" --mue_micro_param "$MUE_MICRO_PARAM" --gc_micro_param "$GC_MICRO_PARAM" --eps_param "$EPS_PARAM" --element_order "$ELEMENT_ORDER"
+# --------------------------------------------------
+# Fracture mesh generation (adaptive)
+# --------------------------------------------------
+
+srun -n 1 apptainer exec --bind $HOME/dolfinx_alex/shared:/home,$working_directory:/work \
+    $HOME/dolfinx_alex/alex-dolfinx.sif python3 \
+    $working_directory/mesh_fracture_adaptive.py \
+    --Nholes "$NHOLES" \
+    --dhole "$DHOLE" \
+    --wsteg "$WSTEG" \
+    --NL "$NL_FRACTURE"
+
+# --------------------------------------------------
+# Mesh info extraction
+# --------------------------------------------------
+
+srun -n 1 apptainer exec --bind $HOME/dolfinx_alex/shared:/home,$working_directory:/work \
+    $HOME/dolfinx_alex/alex-dolfinx.sif python3 \
+    $working_directory/get_mesh_info.py \
+    --mesh_file "$MESH_FILE"
+
+# --------------------------------------------------
+# Final full simulation
+# --------------------------------------------------
+
+srun -n {PROCESSOR_NUMBER} apptainer exec --bind $HOME/dolfinx_alex/shared:/home,$working_directory:/work \
+    $HOME/dolfinx_alex/alex-dolfinx.sif python3 \
+    $working_directory/run_simulation.py \
+    --mesh_file "$MESH_FILE" \
+    --in_crack_length "$LCRACK" \
+    --lam_micro_param "$LAM_MICRO_PARAM" \
+    --mue_micro_param "$MUE_MICRO_PARAM" \
+    --gc_micro_param "$GC_MICRO_PARAM" \
+    --eps_param "$EPS_PARAM" \
+    --element_order "$ELEMENT_ORDER"
 
 EXITCODE=$?
-
-# JobScript mit dem Status des wiss. Programms beenden
 exit $EXITCODE
+
+
 
 
 
