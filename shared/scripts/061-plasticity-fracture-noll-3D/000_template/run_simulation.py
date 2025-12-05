@@ -143,8 +143,8 @@ epsilon = dlfx.fem.Constant(domain, 0.1)
 Mob = dlfx.fem.Constant(domain, 1000.0)
 iMob = dlfx.fem.Constant(domain, 1.0/Mob.value)
 
-E_mod = alex.linearelastic.get_emod(la.value, mu.value)
-K1 = dlfx.fem.Constant(domain, 1.5 * math.sqrt(gc.value*E_mod))
+#E_mod = alex.linearelastic.get_emod(la.value, mu.value)
+#K1 = dlfx.fem.Constant(domain, 1.5 * math.sqrt(gc.value*E_mod))
 
 sig_y = dlfx.fem.Constant(domain, 1.0)
 hard = dlfx.fem.Constant(domain, 0.2222222)
@@ -164,6 +164,8 @@ hard = dlfx.fem.Constant(domain, 0.2222222)
 dx_integration_plasticity = alex.plasticity.define_custom_integration_measure_that_matches_quadrature_degree_and_scheme(domain, deg_quad, "default")
 quadrature_points, cells = alex.plasticity.get_quadraturepoints_and_cells_for_inter_polation_at_gauss_points(domain, deg_quad)
 
+
+K1 = dlfx.fem.Constant(domain, 1.0 * math.sqrt(1.0 * 2.5))
 
 
 # define crack by boundary
