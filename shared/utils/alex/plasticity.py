@@ -116,6 +116,63 @@ def define_internal_state_variables_basix(gdim, domain, deg_quad, quad_scheme="d
 
 
 
+def define_internal_state_variables_basix_3D_wo_tmp(domain, deg_quad, quad_scheme="default"):
+    # ---------------------------------------------------------
+    # Scalar quadrature element for history variables
+    # ---------------------------------------------------------
+    W0e = basix.ufl.quadrature_element(
+        domain.basix_cell(),
+        value_shape=(),
+        scheme=quad_scheme,
+        degree=deg_quad
+    )
+
+    # Create scalar quadrature function space
+    W0 = fem.functionspace(domain, W0e)
+
+    # ---------------------------------------------------------
+    # Internal variables (no H field)
+    # ---------------------------------------------------------
+    alpha     = fem.Function(W0, name="alpha")
+    alpha_tmp = fem.Function(W0, name="alpha_tmp")
+
+    # ---------------------------------------------------------
+    # Full symmetric 3×3 plastic strain tensor components
+    # Stored as *six* independent scalar quadrature fields
+    # ---------------------------------------------------------
+    # e_p_ij at step n
+    e_p_11_n = fem.Function(W0, name="e_p_11")
+    e_p_22_n = fem.Function(W0, name="e_p_22")
+    e_p_33_n = fem.Function(W0, name="e_p_33")
+
+    e_p_12_n = fem.Function(W0, name="e_p_12")
+    e_p_13_n = fem.Function(W0, name="e_p_13")
+    e_p_23_n = fem.Function(W0, name="e_p_23")
+
+    
+    
+    
+    alpha.x.array[:] = np.zeros_like(alpha.x.array[:])
+    alpha_tmp.x.array[:] = np.zeros_like(alpha_tmp.x.array[:])
+    e_p_11_n.x.array[:] = np.zeros_like(e_p_11_n.x.array[:])
+    e_p_22_n.x.array[:] = np.zeros_like(e_p_22_n.x.array[:])
+    e_p_33_n.x.array[:] = np.zeros_like(e_p_33_n.x.array[:])
+    e_p_12_n.x.array[:] = np.zeros_like(e_p_12_n.x.array[:])
+    e_p_13_n.x.array[:] = np.zeros_like(e_p_13_n.x.array[:])
+    e_p_23_n.x.array[:] = np.zeros_like(e_p_23_n.x.array[:])
+    
+    
+
+    # ---------------------------------------------------------
+    # Return all internal variables
+    # ---------------------------------------------------------
+    return (
+        alpha, alpha_tmp,
+        e_p_11_n, e_p_22_n, e_p_33_n,
+        e_p_12_n, e_p_13_n, e_p_23_n,
+    )
+
+
 def define_internal_state_variables_basix_3D(domain, deg_quad, quad_scheme="default"):
     # ---------------------------------------------------------
     # Scalar quadrature element for history variables
@@ -730,6 +787,87 @@ def update_e_p_n_and_alpha_arrays_2D(u,e_p_11_n_tmp,e_p_22_n_tmp,e_p_12_n_tmp,e_
 
     e_p_33_expr = e_p_np1_expr[2,2]
     e_p_33_n.x.array[:] = interpolate_quadrature(domain, cells, quadrature_points,e_p_33_expr)
+ 
+ 
+def update_e_p_n_and_alpha_arrays_3D_wo_tmp(
+        u,
+        e_p_11_n,     e_p_22_n,     e_p_33_n,
+        e_p_12_n,     e_p_13_n,     e_p_23_n,
+        alpha_tmp, alpha_n,
+        domain, cells, quadrature_points,
+        sig_y, hard, mu):
+
+    # ------------------------------------------------------------------
+    # Copy old values into temporary fields
+    # ------------------------------------------------------------------
+
+
+    # ------------------------------------------------------------------
+    # Full 3×3 plastic strain tensor
+    # ------------------------------------------------------------------
+    # e_p_n_tmp = ufl.as_tensor([
+    #     [e_p_11_n_tmp, e_p_12_n_tmp, e_p_13_n_tmp],
+    #     [e_p_12_n_tmp, e_p_22_n_tmp, e_p_23_n_tmp],
+    #     [e_p_13_n_tmp, e_p_23_n_tmp, e_p_33_n_tmp],
+    # ])
+    
+      
+    e_p_n = ufl.as_tensor([
+        [e_p_11_n, e_p_12_n, e_p_13_n],
+        [e_p_12_n, e_p_22_n, e_p_23_n],
+        [e_p_13_n, e_p_23_n, e_p_33_n],
+    ])
+
+    # ------------------------------------------------------------------
+    # Update alpha
+    # ------------------------------------------------------------------
+    alpha_tmp.x.array[:] = alpha_n.x.array[:]
+
+    alpha_expr = update_alpha(
+        u,
+        e_p_n=e_p_n,#e_p_n_tmp,
+        alpha_n=alpha_n,
+        sig_y=sig_y.value,
+        hard=hard.value,
+        mu=mu
+    )
+
+    alpha_n.x.array[:] = interpolate_quadrature(
+        domain, cells, quadrature_points, alpha_expr
+    )
+
+    # ------------------------------------------------------------------
+    # Update plastic strain for all 3×3 components
+    # ------------------------------------------------------------------
+    e_p_np1_expr = update_e_p(
+        u,
+        e_p_n= e_p_n, #, e_p_n_tmp,
+        alpha_n=alpha_tmp,
+        sig_y=sig_y.value,
+        hard=hard.value,
+        mu=mu
+    )
+
+    # Extract all components
+    e_p_11_expr = e_p_np1_expr[0, 0]
+    e_p_22_expr = e_p_np1_expr[1, 1]
+    e_p_33_expr = e_p_np1_expr[2, 2]
+
+    e_p_12_expr = e_p_np1_expr[0, 1]
+    e_p_13_expr = e_p_np1_expr[0, 2]
+    e_p_23_expr = e_p_np1_expr[1, 2]
+
+    # ------------------------------------------------------------------
+    # Interpolate updated values back to quadrature function spaces
+    # ------------------------------------------------------------------
+    e_p_11_n.x.array[:] = interpolate_quadrature(domain, cells, quadrature_points, e_p_11_expr)
+    e_p_22_n.x.array[:] = interpolate_quadrature(domain, cells, quadrature_points, e_p_22_expr)
+    e_p_33_n.x.array[:] = interpolate_quadrature(domain, cells, quadrature_points, e_p_33_expr)
+
+    e_p_12_n.x.array[:] = interpolate_quadrature(domain, cells, quadrature_points, e_p_12_expr)
+    e_p_13_n.x.array[:] = interpolate_quadrature(domain, cells, quadrature_points, e_p_13_expr)
+    e_p_23_n.x.array[:] = interpolate_quadrature(domain, cells, quadrature_points, e_p_23_expr) 
+ 
     
 def update_e_p_n_and_alpha_arrays_3D(
         u,
@@ -755,10 +893,17 @@ def update_e_p_n_and_alpha_arrays_3D(
     # ------------------------------------------------------------------
     # Full 3×3 plastic strain tensor
     # ------------------------------------------------------------------
-    e_p_n_tmp = ufl.as_tensor([
-        [e_p_11_n_tmp, e_p_12_n_tmp, e_p_13_n_tmp],
-        [e_p_12_n_tmp, e_p_22_n_tmp, e_p_23_n_tmp],
-        [e_p_13_n_tmp, e_p_23_n_tmp, e_p_33_n_tmp],
+    # e_p_n_tmp = ufl.as_tensor([
+    #     [e_p_11_n_tmp, e_p_12_n_tmp, e_p_13_n_tmp],
+    #     [e_p_12_n_tmp, e_p_22_n_tmp, e_p_23_n_tmp],
+    #     [e_p_13_n_tmp, e_p_23_n_tmp, e_p_33_n_tmp],
+    # ])
+    
+      
+    e_p_n = ufl.as_tensor([
+        [e_p_11_n, e_p_12_n, e_p_13_n],
+        [e_p_12_n, e_p_22_n, e_p_23_n],
+        [e_p_13_n, e_p_23_n, e_p_33_n],
     ])
 
     # ------------------------------------------------------------------
@@ -768,7 +913,7 @@ def update_e_p_n_and_alpha_arrays_3D(
 
     alpha_expr = update_alpha(
         u,
-        e_p_n=e_p_n_tmp,
+        e_p_n=e_p_n,#e_p_n_tmp,
         alpha_n=alpha_n,
         sig_y=sig_y.value,
         hard=hard.value,
@@ -784,7 +929,7 @@ def update_e_p_n_and_alpha_arrays_3D(
     # ------------------------------------------------------------------
     e_p_np1_expr = update_e_p(
         u,
-        e_p_n=e_p_n_tmp,
+        e_p_n= e_p_n, #, e_p_n_tmp,
         alpha_n=alpha_tmp,
         sig_y=sig_y.value,
         hard=hard.value,

@@ -154,7 +154,9 @@ hard = dlfx.fem.Constant(domain, 0.2222222)
     e_p_11_n, e_p_22_n, e_p_33_n,
     e_p_12_n, e_p_13_n, e_p_23_n,
 
-) = alex.plasticity.define_internal_state_variables_basix_3D_wo_tmp(domain, deg_quad, quad_scheme="default"
+    e_p_11_n_tmp, e_p_22_n_tmp, e_p_33_n_tmp,
+    e_p_12_n_tmp, e_p_13_n_tmp, e_p_23_n_tmp
+) = alex.plasticity.define_internal_state_variables_basix_3D(domain, deg_quad, quad_scheme="default"
 )
 
 dx_integration_plasticity = alex.plasticity.define_custom_integration_measure_that_matches_quadrature_degree_and_scheme(domain, deg_quad, "default")
@@ -312,16 +314,18 @@ TEN = dlfx.fem.functionspace(domain, ("DP", deg_quad-1, (dim, dim)))
 sigma_interpolated = dlfx.fem.Function(TEN) 
 eshelby_interpolated = dlfx.fem.Function(TEN) 
 
-# S0e = basix.ufl.element("DP", domain.basix_cell(), 0, shape=())
-# S0 = dlfx.fem.functionspace(domain, S0e)
+S0e = basix.ufl.element("DP", domain.basix_cell(), 0, shape=())
+S0 = dlfx.fem.functionspace(domain, S0e)
 
 
 def after_timestep_success(t,dt,iters):
     
     um1, _ = ufl.split(wm1)
     
-    alex.plasticity.update_e_p_n_and_alpha_arrays_3D_wo_tmp(
+    alex.plasticity.update_e_p_n_and_alpha_arrays_3D(
         u,
+        e_p_11_n_tmp, e_p_22_n_tmp, e_p_33_n_tmp,
+        e_p_12_n_tmp, e_p_13_n_tmp, e_p_23_n_tmp,
         e_p_11_n,     e_p_22_n,     e_p_33_n,
         e_p_12_n,     e_p_13_n,     e_p_23_n,
         alpha_tmp, alpha_n,
@@ -380,7 +384,7 @@ def after_timestep_success(t,dt,iters):
     wrestart.x.array[:] = w.x.array[:]
     
     pp.write_tensor_fields(domain,comm,[sigma_interpolated],["sigma"],outputfile_xdmf_path=outputfile_xdmf_path,t=t)
-    # pp.write_field(domain,outputfile_xdmf_path,alpha_n,t,comm,S=S0)
+    pp.write_field(domain,outputfile_xdmf_path,alpha_n,t,comm,S=S0)
     pp.write_phasefield_mixed_solution(domain,outputfile_xdmf_path, w, t, comm)
 
     
