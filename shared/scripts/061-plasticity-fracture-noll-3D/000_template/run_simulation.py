@@ -97,7 +97,7 @@ sys.stdout.flush()
 #domain = dlfx.mesh.create_unit_cube(comm,N,N,N,cell_type=dlfx.mesh.CellType.tetrahedron)
 
 
-with dlfx.io.XDMFFile(comm, os.path.join(script_path,"mesh_script.xdmf"), 'r') as mesh_inp: 
+with dlfx.io.XDMFFile(comm, os.path.join(script_path,mesh_file), 'r') as mesh_inp: 
     domain = mesh_inp.read_mesh(name="mesh")
     mesh_tags = mesh_inp.read_meshtags(domain,name="Cell tags")
 
