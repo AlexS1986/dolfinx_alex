@@ -11,7 +11,8 @@ import ronny.mesh as mesh
 import alex.postprocessing as pp
 import alex.os as alexos
 import alex.heterogeneous as het
-import basix
+
+script_path = os.path.dirname(__file__)
 
 # -----------------------------------------------------------
 # ARGUMENT PARSING
@@ -64,7 +65,7 @@ n_v = 1  # only one pore
 ModelDim = 3
 matrix_marker = 0
 RecreateMesh = True
-MeshFile = "cube_with_pore.msh"
+MeshFile = os.path.join(script_path,"mesh_tmp.msh")
 
 if RecreateMesh and rank == 0:
     print("Creating mesh with MatrixPores3D ...")
@@ -99,7 +100,7 @@ comm.barrier()
 # -----------------------------------------------------------
 # IMPORT MSH INTO DOLFINX
 # -----------------------------------------------------------
-mesh_path = os.path.join("/home/", MeshFile)
+mesh_path = os.path.join(MeshFile)
 print(f"Rank {rank}: reading mesh from {mesh_path}")
 
 domain, cell_markers, facet_markers = io.gmshio.read_from_msh(mesh_path, comm, gdim=ModelDim)

@@ -22,8 +22,8 @@ for folder_path in "${BASE_DIR}"/simulation_*; do
         folder_name=$(basename "${folder_path}")
 
         # Set fixed values for memory, processors, and time
-        memory_value=7000
-        processor_number=96
+        memory_value=4000
+        processor_number=64
         time=10080
 
         # Define the path to the job script to be updated
