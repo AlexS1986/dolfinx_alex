@@ -509,6 +509,217 @@ class MatrixPores3D_save(Mesh):
         return gmsh.model
 
 
+import gmsh
+from mpi4py import MPI
+rank = MPI.COMM_WORLD.Get_rank() if 'MPI' in globals() else 0
+
+class MatrixPores3DAdaptive(Mesh):
+    def __init__(self, L, H, W, NL, n_i, inclusions, n_v, voids, Hexa,
+                 MeshName="Mesh", MeshFilename="mesh.msh",
+                 matrix_marker=1, inclusion_marker=None, inclusion_surface_marker=None,
+                 Hertzian=False, R_ind=0.0, n_void_x=0, n_void_y=0, n_void_z=0):
+        super().__init__(L, H, W, NL, n_i, inclusions, n_v, voids, Hexa,
+                         MeshName, MeshFilename, matrix_marker, inclusion_marker,
+                         inclusion_surface_marker, Hertzian, R_ind)
+        self.n_void_x = n_void_x
+        self.n_void_y = n_void_y
+        self.n_void_z = n_void_z
+
+    def mesh_refinement_adaptive(self, gmsh_void_tags, max_ratio: float = 20.0):
+        """
+        Builds Distance fields to the *surfaces* bounding each void volume,
+        then a Threshold field mapping distance -> element size from h_min to h_max.
+        """
+        if not gmsh_void_tags:
+            return
+
+        h_min = self.L / self.NL
+        h_max = h_min * max_ratio
+
+        distance_field_ids = []
+        base_id = 1000
+
+        for i, vol_tag in enumerate(gmsh_void_tags):
+            boundary = gmsh.model.getBoundary([(3, vol_tag)], oriented=False, recursive=True)
+            surface_tags = [dtag[1] for dtag in boundary if dtag[0] == 2]
+            if not surface_tags:
+                continue
+
+            fid = base_id + i
+            gmsh.model.mesh.field.add("Distance", fid)
+            gmsh.model.mesh.field.setNumbers(fid, "SurfacesList", surface_tags)
+            distance_field_ids.append(fid)
+
+        if not distance_field_ids:
+            return
+
+        if len(distance_field_ids) == 1:
+            in_field = distance_field_ids[0]
+        else:
+            min_fid = 2000
+            gmsh.model.mesh.field.add("Min", min_fid)
+            gmsh.model.mesh.field.setNumbers(min_fid, "FieldsList", distance_field_ids)
+            in_field = min_fid
+
+        thresh_fid = 3000
+        gmsh.model.mesh.field.add("Threshold", thresh_fid)
+        gmsh.model.mesh.field.setNumber(thresh_fid, "InField", in_field)
+        gmsh.model.mesh.field.setNumber(thresh_fid, "SizeMin", h_min)
+        gmsh.model.mesh.field.setNumber(thresh_fid, "SizeMax", h_max)
+        gmsh.model.mesh.field.setNumber(thresh_fid, "DistMin", 0.0)
+        gmsh.model.mesh.field.setNumber(thresh_fid, "DistMax", max(self.L, self.H, self.W) * 0.5)
+        gmsh.model.mesh.field.setAsBackgroundMesh(thresh_fid)
+
+    def create(self, n_ref: float = 1.0):
+        """
+        Build geometry (matrix, inclusions, voids), subtract voids from inclusions,
+        subtract voids from matrix, then fragment matrix by inclusions.
+        """
+        gmsh.initialize()
+        if rank == 0:
+            gmsh.model.add(self.MeshName)
+            gmsh.model.setCurrent(self.MeshName)
+
+            # --- OCC options compatible with most versions
+            gmsh.option.setNumber("Geometry.OCCFixSmallEdges", 1)
+            gmsh.option.setNumber("Geometry.OCCFixSmallFaces", 1)
+            gmsh.option.setNumber("Geometry.OCCSewFaces", 1)
+            # removed Geometry.OCCConnect (unsupported)
+
+            # --- Matrix (box)
+            matrix_volume = gmsh.model.occ.addBox(-self.L/2, -self.H/2, -self.W/2,
+                                                 self.L, self.H, self.W)
+            gmsh.model.occ.synchronize()
+
+            # --- Inclusions
+            inclusion_volume_list = []
+            for i in range(self.n_i):
+                inc = self.inclusions[i]
+                if inc['shape'] == 'ellipsoid':
+                    inc_vol = gmsh.model.occ.addSphere(*inc['center'], inc['length'])
+                elif inc['shape'] == 'rectangle':
+                    c = inc['center']
+                    l = inc['length']
+                    inc_vol = gmsh.model.occ.addBox(c[0]-0.5*l, c[1]-0.5*l, c[2]-0.5*l, l, l, l)
+                else:
+                    raise ValueError(f"Unknown inclusion shape: {inc['shape']}")
+
+                gmsh.model.occ.dilate([(3, inc_vol)], *inc['center'], *inc['stretch_factor'])
+                gmsh.model.occ.rotate([(3, inc_vol)], *inc['center'], *inc['rotation_axis'], inc['rotation_angle'])
+                gmsh.model.occ.synchronize()
+                inclusion_volume_list.append(inc_vol)
+
+            inclusion_volume_dimTags_list = [(3, v) for v in inclusion_volume_list]
+
+            # --- Voids
+            void_volume_list = []
+            if self.n_void_x > 0 and self.n_void_y > 0 and self.n_void_z > 0:
+                for vx in range(self.n_void_x):
+                    for vy in range(self.n_void_y):
+                        for vz in range(self.n_void_z):
+                            try:
+                                v = self.voids[vx, vy, vz]
+                            except Exception:
+                                v = self.voids[(vx, vy, vz)]
+
+                            if v['shape'] == 'ellipsoid':
+                                void_vol = gmsh.model.occ.addSphere(*v['center'], v['length'])
+                            elif v['shape'] == 'rectangle':
+                                c = v['center']
+                                l = v['length']
+                                void_vol = gmsh.model.occ.addBox(c[0]-0.5*l, c[1]-0.5*l, c[2]-0.5*l, l, l, l)
+                            else:
+                                raise ValueError(f"Unknown void shape: {v['shape']}")
+
+                            gmsh.model.occ.dilate([(3, void_vol)], *v['center'], *v['stretch_factor'])
+                            gmsh.model.occ.rotate([(3, void_vol)], *v['center'], *v['rotation_axis'], v['rotation_angle'])
+                            gmsh.model.occ.synchronize()
+                            void_volume_list.append(void_vol)
+                            try:
+                                self.voids[vx, vy, vz]['gmsh_tag'] = void_vol
+                            except Exception:
+                                pass
+            elif hasattr(self.voids, "items"):
+                for key, v in self.voids.items():
+                    if v['shape'] == 'ellipsoid':
+                        void_vol = gmsh.model.occ.addSphere(*v['center'], v['length'])
+                    elif v['shape'] == 'rectangle':
+                        c = v['center']
+                        l = v['length']
+                        void_vol = gmsh.model.occ.addBox(c[0]-0.5*l, c[1]-0.5*l, c[2]-0.5*l, l, l, l)
+                    else:
+                        raise ValueError(f"Unknown void shape: {v['shape']}")
+                    gmsh.model.occ.dilate([(3, void_vol)], *v['center'], *v['stretch_factor'])
+                    gmsh.model.occ.rotate([(3, void_vol)], *v['center'], *v['rotation_axis'], v['rotation_angle'])
+                    gmsh.model.occ.synchronize()
+                    void_volume_list.append(void_vol)
+                    try:
+                        self.voids[key]['gmsh_tag'] = void_vol
+                    except Exception:
+                        pass
+
+            gmsh.model.occ.synchronize()
+
+            # --- Boolean operations
+            inclusion_minus_voids_dimTags_list = []
+            if inclusion_volume_dimTags_list and void_volume_list:
+                try:
+                    inclusion_minus_voids = gmsh.model.occ.fragment(
+                        inclusion_volume_dimTags_list, [(3, v) for v in void_volume_list], removeTool=True
+                    )
+                    gmsh.model.occ.synchronize()
+                    inclusion_minus_voids_dimTags_list = [(e[0], e[1]) for e in inclusion_minus_voids[0] if e[0] == 3]
+                except Exception:
+                    inclusion_minus_voids_dimTags_list = inclusion_volume_dimTags_list
+
+            matrix_minus_volume_tag = matrix_volume
+            if void_volume_list:
+                try:
+                    matrix_minus_voids = gmsh.model.occ.fragment([(3, matrix_volume)], [(3, v) for v in void_volume_list], removeTool=True)
+                    gmsh.model.occ.synchronize()
+                    matrix_minus_volume_tag = [e for e in matrix_minus_voids[0] if e[0] == 3][0][1]
+                except Exception:
+                    matrix_minus_volume_tag = matrix_volume
+
+            final_domain_matrix_tag = matrix_minus_volume_tag
+            if inclusion_minus_voids_dimTags_list:
+                try:
+                    final_fragment = gmsh.model.occ.fragment([(3, matrix_minus_volume_tag)], inclusion_minus_voids_dimTags_list, removeTool=False)
+                    gmsh.model.occ.synchronize()
+                    final_domain_matrix_tag = final_fragment[-1][0][0][1]
+                except Exception:
+                    pass
+
+            # --- Physical groups
+            gmsh.model.addPhysicalGroup(3, [final_domain_matrix_tag], self.matrix_marker)
+            inc_tags_to_add = [t[1] for t in inclusion_minus_voids_dimTags_list] if inclusion_minus_voids_dimTags_list else inclusion_volume_list
+            for i, inc_tag in enumerate(inc_tags_to_add):
+                if self.inclusion_marker and i < len(self.inclusion_marker):
+                    try:
+                        gmsh.model.addPhysicalGroup(3, [inc_tag], self.inclusion_marker[i])
+                    except Exception:
+                        pass
+            if void_volume_list:
+                gmsh.model.addPhysicalGroup(3, void_volume_list, 99)
+
+            # --- Adaptive refinement
+            self.mesh_refinement_adaptive(gmsh_void_tags=void_volume_list, max_ratio=20.0)
+
+            # --- Hexahedral options
+            if self.Hexa:
+                gmsh.option.setNumber("Mesh.RecombineAll", 1)
+                gmsh.option.setNumber("Mesh.SubdivisionAlgorithm", 2)
+
+        # --- Mesh generation
+        gmsh.option.setNumber("Mesh.Algorithm3D", 10)
+        gmsh.model.occ.synchronize()
+        gmsh.model.mesh.generate(3)
+        gmsh.write(self.MeshFilename)
+        gmsh.finalize()
+        return gmsh.model
+
+
+
 
     
 class MatrixPores3D(Mesh):    

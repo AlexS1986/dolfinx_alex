@@ -22,7 +22,7 @@ for folder_path in "${BASE_DIR}"/simulation_*; do
         folder_name=$(basename "${folder_path}")
 
         # Set fixed values for memory, processors, and time
-        memory_value=4000
+        memory_value=5000
         processor_number=64
         time=10080
 

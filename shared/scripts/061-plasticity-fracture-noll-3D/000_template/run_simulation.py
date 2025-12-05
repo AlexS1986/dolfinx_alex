@@ -143,8 +143,6 @@ epsilon = dlfx.fem.Constant(domain, 0.1)
 Mob = dlfx.fem.Constant(domain, 1000.0)
 iMob = dlfx.fem.Constant(domain, 1.0/Mob.value)
 
-#E_mod = alex.linearelastic.get_emod(la.value, mu.value)
-#K1 = dlfx.fem.Constant(domain, 1.5 * math.sqrt(gc.value*E_mod))
 
 sig_y = dlfx.fem.Constant(domain, 1.0)
 hard = dlfx.fem.Constant(domain, 0.2222222)
