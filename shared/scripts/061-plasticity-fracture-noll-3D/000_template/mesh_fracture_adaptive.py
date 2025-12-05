@@ -16,6 +16,8 @@ import alex.os as alexos
 import alex.heterogeneous as het
 import basix
 
+script_path = os.path.dirname(__file__)
+
 # -----------------------------------------------------------
 # ARGUMENT PARSING
 # -----------------------------------------------------------
@@ -38,7 +40,7 @@ n_void_y = 3
 n_void_z = 3
 
 n_ref = 1.0
-MeshFile = "domain_mesh.msh"
+MeshFile = os.path.join(script_path,"domain_mesh.msh")
 RecreateMesh = True
 
 # -----------------------------------------------------------
@@ -151,7 +153,7 @@ comm.barrier()
 print(f"Rank {rank}: reading mesh from {MeshFile}")
 
 domain, cell_markers, facet_markers = io.gmshio.read_from_msh(
-    os.path.join("/home/", domain_mesh.MeshFilename), comm, gdim=ModelDim
+    os.path.join(domain_mesh.MeshFilename), comm, gdim=ModelDim
 )
 
 if rank == 0:
