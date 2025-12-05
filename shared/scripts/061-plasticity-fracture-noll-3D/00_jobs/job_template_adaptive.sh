@@ -47,28 +47,30 @@ cd $HPC_SCRATCH
 # --------------------------------------------------
 # Effective stiffness mesh generation
 # --------------------------------------------------
-
+echo "[$(date)] Starting effective stiffness mesh generation..."
 srun -n 1 apptainer exec --bind $HOME/dolfinx_alex/shared:/home,$working_directory:/work \
     $HOME/dolfinx_alex/alex-dolfinx.sif python3 \
     $working_directory/mesh_effective_stiffness.py \
     --dhole "$DHOLE" \
     --wsteg "$WSTEG" \
     --NL "$NL_EFFECTIVE"
+echo "[$(date)] Effective stiffness mesh generation completed."
 
 # --------------------------------------------------
 # Effective stiffness simulation
 # --------------------------------------------------
-
+echo "[$(date)] Starting effective stiffness simulation..."
 srun -n 1 apptainer exec --bind $HOME/dolfinx_alex/shared:/home,$working_directory:/work \
     $HOME/dolfinx_alex/alex-dolfinx.sif python3 \
     $working_directory/run_effective_stiffness.py \
     --lam_micro_param "$LAM_MICRO_PARAM" \
     --mue_micro_param "$MUE_MICRO_PARAM"
+echo "[$(date)] Effective stiffness simulation completed."
 
 # --------------------------------------------------
 # Fracture mesh generation (adaptive)
 # --------------------------------------------------
-
+echo "[$(date)] Starting fracture mesh generation (adaptive)..."
 srun -n 1 apptainer exec --bind $HOME/dolfinx_alex/shared:/home,$working_directory:/work \
     $HOME/dolfinx_alex/alex-dolfinx.sif python3 \
     $working_directory/mesh_fracture_adaptive.py \
@@ -76,20 +78,22 @@ srun -n 1 apptainer exec --bind $HOME/dolfinx_alex/shared:/home,$working_directo
     --dhole "$DHOLE" \
     --wsteg "$WSTEG" \
     --NL "$NL_FRACTURE"
+echo "[$(date)] Fracture mesh generation completed."
 
 # --------------------------------------------------
 # Mesh info extraction
 # --------------------------------------------------
-
+echo "[$(date)] Extracting mesh info..."
 srun -n 1 apptainer exec --bind $HOME/dolfinx_alex/shared:/home,$working_directory:/work \
     $HOME/dolfinx_alex/alex-dolfinx.sif python3 \
     $working_directory/get_mesh_info.py \
     --mesh_file "$MESH_FILE"
+echo "[$(date)] Mesh info extraction completed."
 
 # --------------------------------------------------
 # Final full simulation
 # --------------------------------------------------
-
+echo "[$(date)] Starting final full simulation..."
 srun -n {PROCESSOR_NUMBER} apptainer exec --bind $HOME/dolfinx_alex/shared:/home,$working_directory:/work \
     $HOME/dolfinx_alex/alex-dolfinx.sif python3 \
     $working_directory/run_simulation.py \
@@ -99,10 +103,8 @@ srun -n {PROCESSOR_NUMBER} apptainer exec --bind $HOME/dolfinx_alex/shared:/home
     --mue_micro_param "$MUE_MICRO_PARAM" \
     --gc_micro_param "$GC_MICRO_PARAM" \
     --eps_param "$EPS_PARAM" \
-    --element_order "$ELEMENT_ORDER"
+    --element
 
-EXITCODE=$?
-exit $EXITCODE
 
 
 
