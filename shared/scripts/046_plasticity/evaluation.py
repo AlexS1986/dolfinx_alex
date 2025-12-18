@@ -49,7 +49,7 @@ data_directory_ramberg_osgoods = os.path.join(script_path,'..','044_ramberg_osgo
 data_directory_Jc = os.path.join(script_path,'..','045_standard_holes_PAPER','results','gc_1.0')
 
 # 3. von Mises plasticity (user fills this)
-data_directory_vonmises = os.path.join(script_path,'.','results')
+data_directory_vonmises = os.path.join(script_path,'.','results','clusterDec2025')
 
 
 # -------------------------------

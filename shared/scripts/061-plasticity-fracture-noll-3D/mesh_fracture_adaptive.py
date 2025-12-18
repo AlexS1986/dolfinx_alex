@@ -140,7 +140,10 @@ if RecreateMesh and rank == 0:
         n_void_z=n_void_z
     )
 
+    #domain_mesh.mesh_refinement(n_ref=n_ref,scope="dynamic")
     domain_mesh.create(n_ref=n_ref)
+
+   
 
 comm.barrier()
 

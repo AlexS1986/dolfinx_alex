@@ -114,7 +114,7 @@ zero_array = np.zeros_like(num_dofs_component)'''
     e_p_11_n_tmp, e_p_22_n_tmp, e_p_33_n_tmp,
     e_p_12_n_tmp, e_p_13_n_tmp, e_p_23_n_tmp
 ) = alex.plasticity.define_internal_state_variables_basix_3D(
-        gdim, domain, deg_quad, quad_scheme="default"
+         domain, deg_quad, quad_scheme="default"
 )
 W0e = basix.ufl.quadrature_element(domain.basix_cell(), value_shape=(), scheme="default", degree=deg_quad)
 W0 = fem.functionspace(domain, W0e)

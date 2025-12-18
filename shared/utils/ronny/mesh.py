@@ -830,7 +830,7 @@ class MatrixPores3D(Mesh):
             if self.Hertzian:
                 self.mesh_refinement_Hertzian(n_ref)
             else:
-                self.mesh_refinement(n_ref, "full") #n_ref
+                self.mesh_refinement(n_ref, "dynamic") #n_ref
             
             # if self.Hexa: #TODO
             #     # gmsh.option.setNumber("Mesh.RecombinationAlgorithm", 3) # blossom, full-quad
