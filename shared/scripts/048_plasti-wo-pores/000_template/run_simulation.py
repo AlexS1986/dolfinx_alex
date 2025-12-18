@@ -110,12 +110,11 @@ effective_material_cells = mesh_tags.find(effective_material_marker)
 
 # Simulation parameters ####
 dt_start = 0.001
-dt_max_in_critical_area = 2.0e-7
 dt_global = dlfx.fem.Constant(domain, dt_start)
 t_global = dlfx.fem.Constant(domain,0.0)
 trestart_global = dlfx.fem.Constant(domain,0.0)
 # Tend = 10.0 * dt_global.value
-dt_global.value = dt_max_in_critical_area
+dt_global.value = dt_start
 dt_max = dlfx.fem.Constant(domain,0.01)
 
 

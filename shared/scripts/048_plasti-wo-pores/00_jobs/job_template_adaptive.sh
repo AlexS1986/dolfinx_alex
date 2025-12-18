@@ -4,6 +4,7 @@
 #SBATCH -t {TIME}  # "minutes", "minutes:seconds", "hours:minutes:seconds", "days-hours", "days-hours:minutes" and "days-hours:minutes:seconds"
 #SBATCH --mem-per-cpu={MEMORY_VALUE}
 #SBATCH -n {PROCESSOR_NUMBER}
+#SBATCH -N 1
 #SBATCH -e /work/scratch/as12vapa/048_plasti-wo-pores/{FOLDER_NAME}/%x.err.%j
 #SBATCH -o /work/scratch/as12vapa/048_plasti-wo-pores/{FOLDER_NAME}/%x.out.%j
 #SBATCH --mail-type=End
