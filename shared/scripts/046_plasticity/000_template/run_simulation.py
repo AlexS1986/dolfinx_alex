@@ -26,6 +26,7 @@ from datetime import datetime
 class StopSimulation(Exception):
     pass
 
+dlfx.log.set_log_level(dlfx.log.LogLevel.INFO)
 
 script_path = os.path.dirname(__file__)
 script_name_without_extension = os.path.splitext(os.path.basename(__file__))[0]

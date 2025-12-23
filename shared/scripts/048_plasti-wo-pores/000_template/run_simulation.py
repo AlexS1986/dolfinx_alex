@@ -154,10 +154,6 @@ _,alpha_n,alpha_tmp, e_p_11_n, e_p_22_n, e_p_12_n, e_p_33_n, e_p_11_n_tmp, e_p_2
 dx = alex.plasticity.define_custom_integration_measure_that_matches_quadrature_degree_and_scheme(domain, deg_quad, "default")
 #dx = ufl.dx
 quadrature_points, cells = alex.plasticity.get_quadraturepoints_and_cells_for_inter_polation_at_gauss_points(domain, deg_quad)
-# H.x.array[:] = np.zeros_like(H.x.array[:])
-
-
-
 
 
 K1 = dlfx.fem.Constant(domain, 1.0 * math.sqrt(1.0 * 2.5))

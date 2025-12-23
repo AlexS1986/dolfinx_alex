@@ -33,6 +33,8 @@ parameter_path = os.path.join(script_path,"parameters.txt")
 comm, rank, size = alex.os.set_mpi()
 alex.os.print_mpi_status(rank, size)
 
+dlfx.log.set_log_level(dlfx.log.LogLevel.INFO)
+
 if rank == 0:
     alex.util.print_dolfinx_version()
 

@@ -36,10 +36,10 @@ wsteg = args.wsteg if args.wsteg is not None else 1.0
 nl = args.NL if args.NL is not None else 200
 
 n_void_x = Nholes
-n_void_y = 1
-n_void_z = 1
+n_void_y = 3
+n_void_z = 3
 
-n_ref = 1.0
+n_ref = 15.0
 MeshFile = os.path.join(script_path,"domain_mesh.msh")
 RecreateMesh = True
 
@@ -55,10 +55,10 @@ sys.stdout.flush()
 # DOMAIN DIMENSIONS
 # -----------------------------------------------------------
 
-#wby =  (20.0 - (n_void_y * (dhole + wsteg))) / 2 
+wby =  (20.0 - (n_void_y * (dhole + wsteg))) / 2 
 
 wb = (dhole+wsteg)
-wby = wb
+#wby = wb
 L = n_void_x * (dhole + wsteg) + 2 * wb
 H = n_void_y * (dhole + wsteg) + 2 * wby
 W = n_void_z * (dhole + wsteg) + 2 * wb

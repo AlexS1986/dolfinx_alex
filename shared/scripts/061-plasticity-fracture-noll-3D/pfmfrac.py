@@ -29,6 +29,8 @@ outputfile_vtk_path = alex.os.outputfile_vtk_full_path(script_path,script_name_w
 # dlfx.log.set_log_level(log.LogLevel.INFO)
 # dlfx.log.set_output_file('xxx.log')
 
+dlfx.log.set_log_level(dlfx.log.LogLevel.INFO)
+
 # set and start stopwatch
 timer = dlfx.common.Timer()
 timer.start()

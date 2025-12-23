@@ -119,6 +119,19 @@ class Mesh:
             gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "Thickness", 2.0*self.W)
             gmsh.model.mesh.field.setAsBackgroundMesh(10*(self.n_i+1))
         
+        elif scope == "middle_section":
+            gmsh.model.mesh.field.add("Box", 10*(self.n_i+1))
+            gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "VIn", h_el/n_ref)
+            gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "VOut", h_el)
+            gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "XMin", -2.0*self.L/2)
+            gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "XMax", 2.0*self.L/2)
+            gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "YMin", -1.5*self.voids[(0,0,0)]['length'])
+            gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "YMax", 1.5*self.voids[(0,0,0)]['length'])
+            gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "ZMin", -2.0*self.W/2)
+            gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "ZMax", 2.0*self.W/2)
+            gmsh.model.mesh.field.setNumber(10*(self.n_i+1), "Thickness", 2.0*self.W)
+            gmsh.model.mesh.field.setAsBackgroundMesh(10*(self.n_i+1))
+        
         gmsh.model.occ.synchronize()
 
     def mesh_refinement_Hertzian(self, n_ref:float):  #TODO: should be above + contact zone refinement
@@ -830,7 +843,7 @@ class MatrixPores3D(Mesh):
             if self.Hertzian:
                 self.mesh_refinement_Hertzian(n_ref)
             else:
-                self.mesh_refinement(n_ref, "dynamic") #n_ref
+                self.mesh_refinement(n_ref, "middle_section") #n_ref
             
             # if self.Hexa: #TODO
             #     # gmsh.option.setNumber("Mesh.RecombinationAlgorithm", 3) # blossom, full-quad
