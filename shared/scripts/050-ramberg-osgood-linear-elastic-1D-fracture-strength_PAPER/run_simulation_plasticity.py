@@ -83,9 +83,9 @@ W = dlfx.fem.functionspace(domain, basix.ufl.mixed_element([Ve, Se]))
 SS = dlfx.fem.functionspace(domain, Se)
 x = ufl.SpatialCoordinate(domain)
 
-gc_val = 1.305
-gc_expr = dlfx.fem.Expression(ufl.conditional(ufl.Or(ufl.le(x[0],-3.0*element_size),
-                            ufl.ge(x[0],3.0*element_size)),gc_val,0.99*gc_val),SS.element.interpolation_points())
+gc_val = 1.0
+gc_expr = dlfx.fem.Expression(ufl.conditional(ufl.Or(ufl.le(x[0],-30.0*element_size),
+                            ufl.ge(x[0],30.0*element_size)),gc_val,0.99*gc_val),SS.element.interpolation_points())
 
 gc = dlfx.fem.Function(SS)
 gc.interpolate(gc_expr)
@@ -294,6 +294,11 @@ Work = dlfx.fem.Constant(domain,0.0)
 success_timestep_counter = dlfx.fem.Constant(domain,0.0)
 postprocessing_interval = dlfx.fem.Constant(domain,10.0)
 TEN = dlfx.fem.functionspace(domain, ("DP", deg_quad-1, (dim, dim)))
+
+
+S0e = basix.ufl.element("DP", domain.basix_cell(), 0, shape=())
+S0 = dlfx.fem.functionspace(domain, S0e)
+
 def after_timestep_success(t,dt,iters):
     # update u from Δu
     
@@ -323,6 +328,8 @@ def after_timestep_success(t,dt,iters):
     A = pf.get_surf_area(s,epsilon=epsilon,dx=ufl.dx, comm=comm)
     
     E_el = phaseFieldProblem.get_E_el_global(s,eta,u,la,mu,dx=ufl.dx,comm=comm)
+    E_total = phaseFieldProblem.get_E_total_global(s,eta,u,la,mu,dx=ufl.dx,comm=comm)
+    E_Plasti = phaseFieldProblem.get_E_plasti_global(s,eta, dx=ufl.dx,comm=comm)
     
     # write to newton-log-file
     if rank == 0:
@@ -339,10 +346,6 @@ def after_timestep_success(t,dt,iters):
     
     
     Jx, Jy = alex.linearelastic.get_J_2D(eshelby_interpolated,n,ds=ds(external_surface_tag),comm=comm)
-    # Jx_vol, Jy_vol = alex.linearelastic.get_J_2D_volume_integral(eshelby,ufl.dx,comm)
-    
-    #alex.os.mpi_print(pp.getJString2D(Jx,Jy),rank)
-    
 
     
     # s_zero_for_tracking.x.array[:] = s.collapse().x.array[:]
@@ -354,7 +357,7 @@ def after_timestep_success(t,dt,iters):
     # if (rank == 0 and in_steg_to_be_measured(x_ct=x_ct) and dt <= dt_max_in_critical_area) or ( rank == 0 and not in_steg_to_be_measured(x_ct=x_ct)):
     if rank == 0:
         print("Crack tip position x: " + str(x_ct))
-        pp.write_to_graphs_output_file(outputfile_graph_path,t,Rx_right,Work.value)
+        pp.write_to_graphs_output_file(outputfile_graph_path,t,Rx_right,Work.value,E_total,E_el,E_Plasti)
 
         # pp.write_to_graphs_output_file(outputfile_graph_path,t,Jx, Jy, Jx_vol, Jy_vol, x_ct)
 
@@ -391,13 +394,14 @@ def after_timestep_success(t,dt,iters):
     
 
     pp.write_phasefield_mixed_solution(domain,outputfile_xdmf_path, w, t, comm)
+    pp.write_field(domain,outputfile_xdmf_path,alpha_n,t,comm,S=S0)
     pp.write_scalar_fields(domain,comm,[gc],["gc"],outputfile_xdmf_path,t)
 
 def after_timestep_restart(t,dt,iters):
     w.x.array[:] = wrestart.x.array[:]
 
 def after_last_timestep():
-    pp.write_phasefield_mixed_solution(domain,outputfile_xdmf_path, w, t_global.value, comm)
+    #pp.write_phasefield_mixed_solution(domain,outputfile_xdmf_path, w, t_global.value, comm)
     # stopwatch stop
     timer.stop()
 

@@ -611,19 +611,20 @@ class StaticPhaseFieldProblem_plasticity_noll:
     
     
     def sigma_undegraded(self,u,lam,mu):
-        #sig = plasticity.Ramberg_Osgood.sig_ramberg_osgood_wiki(u, lam, mu,norm_eps_crit_dev=self.norm_eps_crit_dev,b_hardening_parameter=self.b_hardening_parameter,r_transition_smoothness_parameter=self.r_transition_smoothness_parameter)
         sig = plasticity.sig_plasticity(u,e_p_n=self.e_p_n,alpha_n=self.alpha_n,sig_y=self.sig_y,hard=self.hard,lam=lam,mu=mu)
         return sig
 
     def psiel_undegraded(self,u,la,mu):
         
-        if u.ufl_shape[0] == 2:
-            K = le.get_K_2D(la,mu)
-        elif u.ufl_shape[0] == 3:
-            K = le.get_K(la,mu)
+        # if u.ufl_shape[0] == 2:
+        #     K = le.get_K_2D(la,mu)
+        # elif u.ufl_shape[0] == 3:
+        #     K = le.get_K(la,mu)
+        K = le.get_K(la,mu) #always use 3D 
         eps_3D = plasticity.assemble_3D_representation_of_eps(u)
         
         e_3D = ufl.dev(eps_3D)
+        eps_e_3D = eps_3D  - self.e_p_n
         e_e_3D = e_3D-self.e_p_n
         w_el = 0.5 * K * ufl.tr(eps_3D) * ufl.tr(eps_3D) + mu * ufl.inner(e_e_3D,e_e_3D)
         return w_el
@@ -650,6 +651,14 @@ class StaticPhaseFieldProblem_plasticity_noll:
     def getGlobalFractureSurface(s: dlfx.fem.Function, Gc: dlfx.fem.Function, epsilon: dlfx.fem.Constant, dx: ufl.Measure):
         S = dlfx.fem.assemble_scalar(dlfx.fem.form(psisurf_from_function(s,Gc,epsilon)))
         return S
+    
+    def get_E_total_global(self,s,eta,u,lam,mu, dx: ufl.Measure, comm: MPI.Intercomm) -> float:
+        Pi = dlfx.fem.assemble_scalar(dlfx.fem.form(self.psi_total(u,s,lam,mu,eta) * dx))
+        return comm.allreduce(Pi,MPI.SUM)
+    
+    def get_E_plasti_global(self,s,eta, dx: ufl.Measure, comm: MPI.Intercomm) -> float:
+        Pi = dlfx.fem.assemble_scalar(dlfx.fem.form(self.psi_plasti_degraded(s,eta) * dx))
+        return comm.allreduce(Pi,MPI.SUM)
     
     def get_E_el_global(self,s,eta,u,lam,mu, dx: ufl.Measure, comm: MPI.Intercomm) -> float:
         Pi = dlfx.fem.assemble_scalar(dlfx.fem.form(self.psiel_degraded(s,eta,u,lam,mu) * dx))
