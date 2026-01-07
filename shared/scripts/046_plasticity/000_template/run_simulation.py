@@ -422,32 +422,7 @@ def after_last_timestep():
         sol.print_runtime(runtime)
         sol.write_runtime_to_newton_logfile(logfile_path,runtime)
         pp.print_graphs_plot(outputfile_graph_path,script_path,legend_labels=["Jx", "Jy","x_pf_crack","x_macr","Rx", "Ry", "dW", "W", "A", "dt", "E_el"])
-        
 
-try:
-    sol.solve_with_newton_adaptive_time_stepping(
-        domain,
-        w,
-        Tend,
-        dt_global,
-        before_first_timestep_hook=before_first_time_step,
-        after_last_timestep_hook=after_last_timestep,
-        before_each_timestep_hook=before_each_time_step,
-        get_residuum_and_gateaux=get_residuum_and_gateaux,
-        get_bcs=get_bcs,
-        after_timestep_restart_hook=after_timestep_restart,
-        after_timestep_success_hook=after_timestep_success,
-        comm=comm,
-        print_bool=True,
-        t=t_global,
-        dt_max=dt_max,
-        trestart=trestart_global,
-    )
-
-except StopSimulation as e:
-    print(f"[Rank {comm.rank}] Simulation stopped early: {e}")
-    # possibly broadcast to other ranks:
-    comm.Abort()   # if you need to kill all MPI ranks cleanly
 
 
 parameters_to_write = {
@@ -502,3 +477,76 @@ if rank == 0:
     # Copy the files
     copy_files_to_directory(files_to_copy, target_directory)
     print("Files copied successfully.")
+
+
+
+try:
+    sol.solve_with_newton_adaptive_time_stepping(
+        domain,
+        w,
+        Tend,
+        dt_global,
+        before_first_timestep_hook=before_first_time_step,
+        after_last_timestep_hook=after_last_timestep,
+        before_each_timestep_hook=before_each_time_step,
+        get_residuum_and_gateaux=get_residuum_and_gateaux,
+        get_bcs=get_bcs,
+        after_timestep_restart_hook=after_timestep_restart,
+        after_timestep_success_hook=after_timestep_success,
+        comm=comm,
+        print_bool=True,
+        t=t_global,
+        dt_max=dt_max,
+        trestart=trestart_global,
+    )
+
+
+except StopSimulation as e:
+    if rank == 0:
+        print(f"Simulation stopped early: {e}")
+
+except Exception as e:
+    if rank == 0:
+        print("Unhandled exception:", e)
+    raise
+
+finally:
+    # -----------------------------------------------------------------
+    # ALWAYS EXECUTED (even on StopSimulation)
+    # -----------------------------------------------------------------
+    parameters_to_write = {
+        "mesh_file": mesh_file,
+        "lam_eff_simulation": la_effective,
+        "mue_eff_simulation": mu_effective,
+        "lam_micro_simulation": la_micro,
+        "mue_micro_simulation": mu_micro,
+        "Gc_simulation": gc_matrix,
+        "eps_simulation": eps_param,
+        "eps": epsilon.value,
+        "eta": eta.value,
+        "mob": Mob.value,
+        "element_order": 1,
+        "in_crack_length": in_crack_length,
+    }
+
+    if rank == 0:
+        pp.append_to_file(parameters=parameters_to_write,
+                          filename=parameter_path,
+                          comm=comm)
+
+        files_to_copy = [
+            parameter_path,
+            outputfile_graph_path,
+            os.path.join(script_path, script_name_without_extension + ".py"),
+            os.path.join(script_path, "graphs.png"),
+            os.path.join(script_path, script_name_without_extension + ".xdmf"),
+            os.path.join(script_path, script_name_without_extension + ".h5"),
+        ]
+
+        target_directory = create_timestamped_directory(base_dir=script_path)
+        print(f"Created directory: {target_directory}")
+        copy_files_to_directory(files_to_copy, target_directory)
+        print("Files copied successfully.")    
+
+
+

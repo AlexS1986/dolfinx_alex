@@ -26,6 +26,24 @@ data_linear_elastic_gc_scaled_2 = pd.read_csv(path_gc_scaled_2, delim_whitespace
 path_plasticity = os.path.join(script_path, 'run_simulation_plasticity_graphs.txt')
 data_plasticity = pd.read_csv(path_plasticity, delim_whitespace=True, header=None, skiprows=1)
 
+
+E_total_vm = data_plasticity[2].values
+
+# Index of peak total energy
+idx_peak = E_total_vm.argmax()
+E_peak = E_total_vm[idx_peak]
+
+# Minimum energy after the peak
+E_min_after_peak = E_total_vm[idx_peak + 1:].min()
+
+# Maximal post-peak energy drop
+max_energy_drop_vm = E_peak - E_min_after_peak
+
+print(f"Peak E_total (von Mises): {E_peak:.6e}")
+print(f"Min E_total after peak (von Mises): {E_min_after_peak:.6e}")
+print(f"Maximal post-peak E_total drop (von Mises): {max_energy_drop_vm:.6e}")
+
+
 # Compute maxima (stress)
 max_ro = data_ramberg_osgood[1].max()
 max_gc1 = data_linear_elastic_gc1[1].max()
