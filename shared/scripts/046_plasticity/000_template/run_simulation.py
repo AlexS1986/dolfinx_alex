@@ -366,7 +366,9 @@ def after_timestep_success(t,dt,iters):
     
     #alex.os.mpi_print(pp.getJString2D(Jx,Jy),rank)
     
-
+    E_el = phaseFieldProblem.get_E_el_global(s,eta,u,la,mu,dx=ufl.dx,comm=comm)
+    E_total = phaseFieldProblem.get_E_total_global(s,eta,u,la,mu,dx=ufl.dx,comm=comm)
+    E_Plasti = phaseFieldProblem.get_E_plasti_global(s,eta, dx=ufl.dx,comm=comm)
     
     # s_zero_for_tracking.x.array[:] = s.collapse().x.array[:]
     s_zero_for_tracking_at_nodes.interpolate(s)
@@ -377,7 +379,7 @@ def after_timestep_success(t,dt,iters):
     # if (rank == 0 and in_steg_to_be_measured(x_ct=x_ct) and dt <= dt_max_in_critical_area) or ( rank == 0 and not in_steg_to_be_measured(x_ct=x_ct)):
     if rank == 0:
         print("Crack tip position x: " + str(x_ct))
-        pp.write_to_graphs_output_file(outputfile_graph_path,t, Jx, Jy,x_ct, xxK1.value[0], Rx_top, Ry_top, dW, Work.value, A, dt, E_el)
+        pp.write_to_graphs_output_file(outputfile_graph_path,t, Jx, Jy,x_ct, xxK1.value[0], Rx_top, Ry_top, dW, Work.value, A, dt, E_el, E_total, E_Plasti)
 
    
     if x_ct >= 0.9 * x_max_all:
@@ -421,7 +423,7 @@ def after_last_timestep():
         runtime = timer.elapsed()
         sol.print_runtime(runtime)
         sol.write_runtime_to_newton_logfile(logfile_path,runtime)
-        pp.print_graphs_plot(outputfile_graph_path,script_path,legend_labels=["Jx", "Jy","x_pf_crack","x_macr","Rx", "Ry", "dW", "W", "A", "dt", "E_el"])
+        pp.print_graphs_plot(outputfile_graph_path,script_path,legend_labels=["Jx", "Jy","x_pf_crack","x_macr","Rx", "Ry", "dW", "W", "A", "dt", "E_el", "E_total", "E_Plasti"])
 
 
 
