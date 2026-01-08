@@ -106,6 +106,17 @@ srun -n {PROCESSOR_NUMBER} apptainer exec --bind $HOME/dolfinx_alex/shared:/home
     --element_order "$ELEMENT_ORDER"
 
 
+# srun -n {PROCESSOR_NUMBER} apptainer exec --bind $HOME/dolfinx_alex/shared:/home,$working_directory:/work \
+#     $HOME/dolfinx_alex/alex-dolfinx.sif python3 \
+#     $working_directory/run_simulation_linearelastic.py \
+#     --mesh_file "$MESH_FILE" \
+#     --lam_param "1.0" \
+#     --mue_param "1.0" \
+#     --Gc_param "$GC_MICRO_PARAM" \
+#     --eps_factor_param {"$EPS_PARAM" \
+#     --element_order "$ELEMENT_ORDER"
+
+
 
 
 
