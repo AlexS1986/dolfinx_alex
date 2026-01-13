@@ -47,16 +47,18 @@ def run_simulation(mesh_file, lam_param, mue_param, Gc_param, eps_factor_param,e
     # generate domain
     #domain = dlfx.mesh.create_unit_square(comm, N, N, cell_type=dlfx.mesh.CellType.quadrilateral)
     # domain = dlfx.mesh.create_unit_cube(comm,N,N,N,cell_type=dlfx.mesh.CellType.hexahedron)
-
-    with dlfx.io.XDMFFile(comm, os.path.join(alex.os.resources_directory,mesh_file+".xdmf"), 'r') as mesh_inp: 
-        domain = mesh_inp.read_mesh()
+    
+    with dlfx.io.XDMFFile(comm, os.path.join(script_path,mesh_file), 'r') as mesh_inp: 
+        domain = mesh_inp.read_mesh(name="mesh")
+        mesh_tags = mesh_inp.read_meshtags(domain,name="Cell tags")
 
     dt = 0.0001
 
     t_global = dlfx.fem.Constant(domain,0.0)
     dt_global = dlfx.fem.Constant(domain, dt)
     
-    Tend = 10.0 * dt
+    v_crack = 1.0 # const for all simulations
+    Tend = (x_max_all-0.0) * 2.0 / v_crack
 
 
 
@@ -86,11 +88,13 @@ def run_simulation(mesh_file, lam_param, mue_param, Gc_param, eps_factor_param,e
     
     sig_c = pf.sig_c_quadr_deg(Gc.value,mu.value,epsilon.value)
     L = (y_max_all-y_min_all)
-    K1 = dlfx.fem.Constant(domain, 1.0 * sig_c * math.sqrt(L))
+ 
+    K1 = dlfx.fem.Constant(domain, 1.0 * math.sqrt(1.0 * 2.5))
 
 
     # define crack by boundary
-    crack_tip_start_location_x = 0.1*(x_max_all-x_min_all) + x_min_all
+# define crack by boundary
+    crack_tip_start_location_x = 0.2*(x_max_all-x_min_all) + x_min_all
     crack_tip_start_location_y = (y_max_all + y_min_all) / 2.0
     def crack(x):
         x_log = x[0] < (crack_tip_start_location_x)
@@ -153,33 +157,80 @@ def run_simulation(mesh_file, lam_param, mue_param, Gc_param, eps_factor_param,e
     s_zero_for_tracking_at_nodes.interpolate(sub_expr)
 
 
-    xtip = np.array([0.0,0.0],dtype=dlfx.default_scalar_type)
+    # surfing BCs
+    vcrack_const = dlfx.fem.Constant(domain, np.array([v_crack,0.0,0.0],dtype=dlfx.default_scalar_type))
+    crack_start = dlfx.fem.Constant(domain, np.array([0.0,crack_tip_start_location_y,0.0],dtype=dlfx.default_scalar_type))
+    w_D = dlfx.fem.Function(W) # for dirichlet BCs
+    xxK1 = dlfx.fem.Constant(domain, np.array([0.0,0.0,0.0],dtype=dlfx.default_scalar_type))
+
+
+    def compute_surf_displacement():
+        x = ufl.SpatialCoordinate(domain)
+        
+
+
+        #xxK1 = crack_start + vcrack_const * t_global 
+        dx = x[0] - xxK1[0]
+        dy = x[1] - xxK1[1]
+        
+        nu = alex.linearelastic.get_nu(lam=lam, mu=mu) # should be effective values?
+        r = ufl.sqrt(ufl.inner(dx,dx) + ufl.inner(dy,dy))
+        theta = ufl.atan2(dy, dx)
+        
+        u_x = K1 / (2.0 * mu * math.sqrt(2.0 * math.pi))  * ufl.sqrt(r) * (3.0 - 4.0 * nu - ufl.cos(theta)) * ufl.cos(0.5 * theta)
+        u_y = K1 / (2.0 * mu * math.sqrt(2.0 * math.pi))  * ufl.sqrt(r) * (3.0 - 4.0 * nu - ufl.cos(theta)) * ufl.sin(0.5 * theta)
+        return ufl.as_vector([u_x, u_y, 0.0]) 
 
     atol=(x_max_all-x_min_all)*0.02 # for selection of boundary
-    def get_bcs(t):
-        x_min_all, x_max_all, y_min_all, y_max_all, z_min_all, z_max_all = bc.get_dimensions(domain,comm)
-        
-        # def left(x):
-        #     return np.isclose(x[0], x_min_all,atol=0.01)
-        
-        # leftfacets = dlfx.mesh.locate_entities_boundary(domain, fdim, left)
-        # leftdofs_x = dlfx.fem.locate_dofs_topological(V.sub(0), fdim, leftfacets)
-        # bcleft_x = dlfx.fem.dirichletbc(1.0, leftdofs_x, V.sub(0))
-        
-        v_crack = 2.0*(x_max_all-crack_tip_start_location_x)/Tend
-        # xtip = np.array([crack_tip_start_location_x + v_crack * t, crack_tip_start_location_y])
-        xtip[0] = crack_tip_start_location_x + v_crack * t
-        xtip[1] = crack_tip_start_location_y
-        # xtip = np.array([ crack_tip_start_location_x + v_crack * t, crack_tip_start_location_y],dtype=dlfx.default_scalar_type)
-        xK1 = dlfx.fem.Constant(domain, xtip)
 
-        bcs = bc.get_total_surfing_boundary_condition_at_box(domain=domain,comm=comm,functionSpace=W,subspace_idx=0,K1=K1,xK1=xK1,lam=lam,mu=mu,epsilon=0.0*epsilon.value, atol=atol)
-        # bcs = bc.get_total_surfing_boundary_condition_at_box(domain=domain,comm=comm,functionSpace=V,subspace_idx=-1,K1=K1,xK1=xK1,lam=lam,mu=mu,epsilon=0.0, atol=0.01)
+    boundary_surfing_bc = bc.get_boundary_of_box_as_function(domain, comm,atol=atol,epsilon=0.0)
+    bc_expression = dlfx.fem.Expression(compute_surf_displacement(),W.sub(0).element.interpolation_points())
+    facets_at_boundary = dlfx.mesh.locate_entities_boundary(domain, fdim, boundary_surfing_bc)
+    dofs_at_boundary = dlfx.fem.locate_dofs_topological(W.sub(0), fdim, facets_at_boundary) 
+
+    # def get_bcs(t):
+    #     x_min_all, x_max_all, y_min_all, y_max_all, z_min_all, z_max_all = bc.get_dimensions(domain,comm)
+        
+    #     # def left(x):
+    #     #     return np.isclose(x[0], x_min_all,atol=0.01)
+        
+    #     # leftfacets = dlfx.mesh.locate_entities_boundary(domain, fdim, left)
+    #     # leftdofs_x = dlfx.fem.locate_dofs_topological(V.sub(0), fdim, leftfacets)
+    #     # bcleft_x = dlfx.fem.dirichletbc(1.0, leftdofs_x, V.sub(0))
+        
+    #     v_crack = 2.0*(x_max_all-crack_tip_start_location_x)/Tend
+    #     # xtip = np.array([crack_tip_start_location_x + v_crack * t, crack_tip_start_location_y])
+    #     xtip[0] = crack_tip_start_location_x + v_crack * t
+    #     xtip[1] = crack_tip_start_location_y
+    #     # xtip = np.array([ crack_tip_start_location_x + v_crack * t, crack_tip_start_location_y],dtype=dlfx.default_scalar_type)
+    #     xK1 = dlfx.fem.Constant(domain, xtip)
+
+    #     bcs = bc.get_total_surfing_boundary_condition_at_box(domain=domain,comm=comm,functionSpace=W,subspace_idx=0,K1=K1,xK1=xK1,lam=lam,mu=mu,epsilon=0.0*epsilon.value, atol=atol)
+    #     # bcs = bc.get_total_surfing_boundary_condition_at_box(domain=domain,comm=comm,functionSpace=V,subspace_idx=-1,K1=K1,xK1=xK1,lam=lam,mu=mu,epsilon=0.0, atol=0.01)
+        
+    #     # irreversibility
+    #     if(abs(t)> sys.float_info.epsilon*5): # dont do before first time step
+    #         bcs.append(pf.irreversibility_bc(domain,W,wm1))
+    #     bcs.append(bccrack)
+        
+    #     return bcs
+    
+    def get_bcs(t):
+        xxK1.value = np.array([crack_start.value[0] + vcrack_const.value[0] * t_global.value,
+                            crack_start.value[1] + vcrack_const.value[1] * t_global.value,
+                            0.0],dtype=dlfx.default_scalar_type)
+        
+        
+        bcs = []
+        w_D.sub(0).interpolate(bc_expression)
+        bc_surf : dlfx.fem.DirichletBC = dlfx.fem.dirichletbc(w_D,dofs_at_boundary)
+
         
         # irreversibility
         if(abs(t)> sys.float_info.epsilon*5): # dont do before first time step
             bcs.append(pf.irreversibility_bc(domain,W,wm1))
         bcs.append(bccrack)
+        bcs.append(bc_surf)
         
         return bcs
 
@@ -233,7 +284,7 @@ def run_simulation(mesh_file, lam_param, mue_param, Gc_param, eps_factor_param,e
         x_tip, max_y, max_z, min_x, min_y, min_z = pp.crack_bounding_box_3D(domain, pf.get_dynamic_crack_locator_function(wm1,s_zero_for_tracking_at_nodes),comm)
         if rank == 0:
             print("Crack tip position x: " + str(x_tip))
-            pp.write_to_graphs_output_file(outputfile_graph_path,t, J3D_glob_x, J3D_glob_y, J3D_glob_z,x_tip, xtip[0], Rx_top, Ry_top, Rz_top, dW, Work.value, A)
+            pp.write_to_graphs_output_file(outputfile_graph_path,t, J3D_glob_x, J3D_glob_y, J3D_glob_z,x_tip, xxK1.value[0], Rx_top, Ry_top, Rz_top, dW, Work.value, A)
         
         
         # update

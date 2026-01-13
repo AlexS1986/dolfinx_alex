@@ -681,9 +681,7 @@ class Ramberg_Osgood:
         sig = K * ufl.tr(eps)* ufl.Identity(2) + Z * ufl.dev(eps)
         return sig
     
-    
-    
-    
+      
 def f_tr_func(u,e_p_n,alpha_n,sig_y,hard,mu):
         eps_np1 = assemble_3D_representation_of_eps(u)
         
