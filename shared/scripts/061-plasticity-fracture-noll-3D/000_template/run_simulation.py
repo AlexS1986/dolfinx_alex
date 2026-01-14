@@ -135,15 +135,15 @@ Tend = (x_max_all-0.0) * 2.0 / v_crack
 micro_material_marker = 1
 effective_material_marker = 0
 
-# micro_material_cells = mesh_tags.find(micro_material_marker)
-# effective_material_cells = mesh_tags.find(effective_material_marker)
+micro_material_cells = mesh_tags.find(micro_material_marker)
+effective_material_cells = mesh_tags.find(effective_material_marker)
 
-# # elastic constants
-# la = het.set_cell_function_heterogeneous_material(domain,la_micro, la_effective, micro_material_cells, effective_material_cells)
-# mu = het.set_cell_function_heterogeneous_material(domain,mu_micro, mu_effective, micro_material_cells, effective_material_cells)
+# elastic constants
+la = het.set_cell_function_heterogeneous_material(domain,la_micro, la_effective, micro_material_cells, effective_material_cells)
+mu = het.set_cell_function_heterogeneous_material(domain,mu_micro, mu_effective, micro_material_cells, effective_material_cells)
 
-la =  dlfx.fem.Constant(domain, 1.0) # TODO REMOVE
-mu =  dlfx.fem.Constant(domain, 1.0) # TODO REMOVE
+#la =  dlfx.fem.Constant(domain, 1.0) # TODO REMOVE
+#mu =  dlfx.fem.Constant(domain, 1.0) # TODO REMOVE
 
 # residual stiffness
 eta = dlfx.fem.Constant(domain, 0.001)
