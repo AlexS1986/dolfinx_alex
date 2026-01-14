@@ -99,17 +99,19 @@ sys.stdout.flush()
 #domain = dlfx.mesh.create_unit_cube(comm,N,N,N,cell_type=dlfx.mesh.CellType.tetrahedron)
 
 
-# with dlfx.io.XDMFFile(comm, os.path.join(script_path,mesh_file), 'r') as mesh_inp: 
-#     domain = mesh_inp.read_mesh(name="mesh")
-#     mesh_tags = mesh_inp.read_meshtags(domain,name="Cell tags")
+with dlfx.io.XDMFFile(comm, os.path.join(script_path,mesh_file), 'r') as mesh_inp: 
+    domain = mesh_inp.read_mesh(name="mesh")
+    mesh_tags = mesh_inp.read_meshtags(domain,name="Cell tags")
     
     
-with dlfx.io.XDMFFile(comm, os.path.join(alex.os.resources_directory,'cube_with_hole.xdmf'), 'r') as mesh_inp: 
-    domain = mesh_inp.read_mesh(name="Grid") # TODO REMOVE
+# with dlfx.io.XDMFFile(comm, os.path.join(alex.os.resources_directory,'cube_with_hole.xdmf'), 'r') as mesh_inp: 
+#     domain = mesh_inp.read_mesh(name="Grid") # TODO REMOVE
+
+# with dlfx.io.XDMFFile(comm, os.path.join(script_path,'test.xdmf'), 'r') as mesh_inp: 
+#      domain = mesh_inp.read_mesh(name="Grid") # TODO REMOVE
 
 
-
-dt = 0.0001
+dt = 0.0001 #0.0001
 
 t_global = dlfx.fem.Constant(domain,0.0)
 dt_global = dlfx.fem.Constant(domain, dt)
@@ -180,7 +182,8 @@ crack_tip_start_location_x = 0.2*(x_max_all-x_min_all) + x_min_all
 crack_tip_start_location_y = (y_max_all + y_min_all) / 2.0
 def crack(x):
     x_log = x[0] < (crack_tip_start_location_x)
-    y_log = np.isclose(x[1],crack_tip_start_location_y,atol=(0.02*((y_max_all-y_min_all))))
+    #y_log = np.isclose(x[1],crack_tip_start_location_y,atol=(0.02*((y_max_all-y_min_all))))
+    y_log = np.isclose(x[1],crack_tip_start_location_y,atol=(0.5*epsilon.value))
     # x_log = x[0]< 50
     # y_log = np.isclose(x[1],200,atol=(0.02*(200)))
     return np.logical_and(y_log,x_log)
@@ -323,8 +326,8 @@ TEN = dlfx.fem.functionspace(domain, ("DP", deg_quad-1, (dim, dim)))
 sigma_interpolated = dlfx.fem.Function(TEN) 
 eshelby_interpolated = dlfx.fem.Function(TEN) 
 
-# S0e = basix.ufl.element("DP", domain.basix_cell(), 0, shape=())
-# S0 = dlfx.fem.functionspace(domain, S0e)
+S0e = basix.ufl.element("DP", domain.basix_cell(), 0, shape=())
+S0 = dlfx.fem.functionspace(domain, S0e)
 
 
 def after_timestep_success(t,dt,iters):
@@ -391,7 +394,7 @@ def after_timestep_success(t,dt,iters):
     wrestart.x.array[:] = w.x.array[:]
     
     pp.write_tensor_fields(domain,comm,[sigma_interpolated],["sigma"],outputfile_xdmf_path=outputfile_xdmf_path,t=t)
-    # pp.write_field(domain,outputfile_xdmf_path,alpha_n,t,comm,S=S0)
+    pp.write_field(domain,outputfile_xdmf_path,alpha_n,t,comm,S=S0)
     pp.write_phasefield_mixed_solution(domain,outputfile_xdmf_path, w, t, comm)
 
     

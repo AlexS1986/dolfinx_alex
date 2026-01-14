@@ -29,6 +29,9 @@ outputfile_graph_path = alex.os.outputfile_graph_full_path(script_path,script_na
 outputfile_xdmf_path = alex.os.outputfile_xdmf_full_path(script_path,script_name_without_extension)
 parameter_path = os.path.join(script_path,"parameters.txt")
 
+
+dlfx.log.set_log_level(dlfx.log.LogLevel.INFO)
+
 # set MPI environment
 comm, rank, size = alex.os.set_mpi()
 alex.os.print_mpi_status(rank, size)
@@ -104,6 +107,9 @@ sys.stdout.flush()
 # generate domain
 with dlfx.io.XDMFFile(comm, os.path.join(alex.os.resources_directory,'cube_with_hole.xdmf'), 'r') as mesh_inp: 
     domain = mesh_inp.read_mesh(name="Grid") # TODO REMOVE
+    
+# with dlfx.io.XDMFFile(comm, os.path.join(script_path,'000_template','test.xdmf'), 'r') as mesh_inp: 
+#       domain = mesh_inp.read_mesh(name="Grid") # TODO REMOVE
 
 
 dt = 0.0001
@@ -150,8 +156,10 @@ epsilon = dlfx.fem.Constant(domain, 0.1)
 Mob = dlfx.fem.Constant(domain, 1000.0)
 iMob = dlfx.fem.Constant(domain, 1.0/Mob.value)
 
-E_mod = alex.linearelastic.get_emod(la.value, mu.value)
-K1 = dlfx.fem.Constant(domain, 1.5 * math.sqrt(gc.value*E_mod))
+# E_mod = alex.linearelastic.get_emod(la.value, mu.value)
+# K1 = dlfx.fem.Constant(domain, 1.5 * math.sqrt(gc.value*E_mod))
+
+K1 = dlfx.fem.Constant(domain, 1.0 * math.sqrt(1.0 * 2.5))
 
 sig_y = dlfx.fem.Constant(domain, 1.0)
 hard = dlfx.fem.Constant(domain, 0.2222222)

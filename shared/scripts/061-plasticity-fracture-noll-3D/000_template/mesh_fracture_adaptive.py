@@ -30,16 +30,19 @@ parser.add_argument("--NL", type=int, help="Number of elements along domain leng
 args = parser.parse_args()
 
 # Set default parameters if CLI args are missing
-Nholes = args.Nholes if args.Nholes is not None else 4
+Nholes = args.Nholes if args.Nholes is not None else 1
 dhole = args.dhole if args.dhole is not None else 1.0
-wsteg = args.wsteg if args.wsteg is not None else 1.0
-nl = args.NL if args.NL is not None else 200
+wsteg = args.wsteg if args.wsteg is not None else 0.25
+nl = args.NL if args.NL is not None else 5
 
 n_void_x = Nholes
-n_void_y = 3
-n_void_z = 3
+n_void_y = 1 #3
+n_void_z = 1 #3
 
-n_ref = 15.0
+# NL 4 and nref 4 works
+
+domain_height_y = 2.0 # 20 usually
+n_ref = 10.0#15.0
 MeshFile = os.path.join(script_path,"domain_mesh.msh")
 RecreateMesh = True
 
@@ -55,7 +58,7 @@ sys.stdout.flush()
 # DOMAIN DIMENSIONS
 # -----------------------------------------------------------
 
-wby =  (20.0 - (n_void_y * (dhole + wsteg))) / 2 
+wby =  (domain_height_y - (n_void_y * (dhole + wsteg))) / 2 
 
 wb = (dhole+wsteg)
 #wby = wb
