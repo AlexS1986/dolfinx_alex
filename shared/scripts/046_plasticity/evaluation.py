@@ -28,7 +28,7 @@ import evaluation_utils as ev_ut
 # -------------------------------
 element_size = 0.01
 epsilon_param = 0.1
-gc_num_quotient = 1.12 # from analysis without crack
+gc_num_quotient = 1.0 # from analysis without crack
 
 
 starting_hole_to_evaluate = 2
@@ -49,7 +49,7 @@ data_directory_ramberg_osgoods = os.path.join(script_path,'..','044_ramberg_osgo
 data_directory_Jc = os.path.join(script_path,'..','045_standard_holes_PAPER','results','gc_1.0')
 
 # 3. von Mises plasticity (user fills this)
-data_directory_vonmises = os.path.join(script_path,'.','results','January2026_sameW_as_RO')
+data_directory_vonmises = os.path.join(script_path,'.','results','gc_1.0')
 
 
 # -------------------------------
@@ -159,15 +159,30 @@ ev.plot_multiple_columns(
 
 output_file = os.path.join(script_path, 'PAPER_04_Jx_vs_xct_all_ramberg_osgoods.png')  
 simulation_results_ramberg_osgoods = ev.read_all_simulation_data(data_directory_ramberg_osgoods)
-data_to_plot_sorted_ramberg_osgoods, legend_entries_sorted = ev_ut.data_for_plot_wsteg_in_legend(ev_ut.normalize_Jx_to_Gc_num, gc_num_quotient, simulation_results_ramberg_osgoods, starting_hole_to_evaluate, steg_width_label, ev_ut.filter_data_by_column_bounds, ev_ut.get_x_range_between_ramberg_osgoods, hole_positions)
-ev.plot_multiple_columns(data_objects=data_to_plot_sorted_ramberg_osgoods,
-                      col_x=3,
-                      col_y=1,
-                      output_filename=output_file,
-                      legend_labels=legend_entries_sorted,
-                      xlabel="$x_{ct} / L$",ylabel=J_x_label,
-                      usetex=True,markers_only=True,use_colors=True,
-                      y_range=[0,2])
+data_to_plot_sorted_ramberg_osgoods, legend_entries_sorted = ev_ut.data_for_plot_wsteg_in_legend(
+    ev_ut.normalize_Jx_to_Gc_num,
+    gc_num_quotient,
+    simulation_results_ramberg_osgoods,
+    starting_hole_to_evaluate,
+    steg_width_label,
+    ev_ut.filter_data_by_column_bounds,
+    ev_ut.get_x_range_between_ramberg_osgoods,
+    hole_positions
+)
+
+ev.plot_multiple_columns(
+    data_objects=data_to_plot_sorted_ramberg_osgoods,
+    col_x=3,
+    col_y=1,
+    output_filename=output_file,
+    legend_labels=legend_entries_sorted,
+    xlabel="$x_{ct} / L$",
+    ylabel=J_x_label,
+    usetex=True,
+    markers_only=True,
+    use_colors=True,
+    y_range=[0,2]
+)
 
 ###############################################
 # 2. VON MISES PLASTICITY MULTI-SIMULATION PLOT
@@ -186,7 +201,7 @@ data_to_plot_sorted_vonmises, legend_entries_sorted_vonmises = \
         starting_hole_to_evaluate,
         steg_width_label,
         ev_ut.filter_data_by_column_bounds,
-        ev_ut.get_x_range_between_ramberg_osgoods,   # same function works
+        ev_ut.get_x_range_between_ramberg_osgoods,
         hole_positions
     )
 
@@ -203,3 +218,66 @@ ev.plot_multiple_columns(
     use_colors=True,
     y_range=[0, 2]
 )
+
+# =====================================================
+# NEW: PAPER_01 PLOTS (ADDED ONLY)
+# =====================================================
+
+# --- PAPER_01: von Mises ---
+output_file_vm_01 = os.path.join(
+    script_path,
+    "PAPER_01_Jx_vs_xct_vonMises.png"
+)
+
+ev.plot_columns(
+    data_vonmises,
+    col_x=3,
+    col_y=1,
+    output_filename=output_file_vm_01,
+    vlines=hole_positions,
+    xlabel=xlabel,
+    ylabel=J_x_label,
+    usetex=True,
+    title=" ",
+    plot_dots=False
+)
+
+# --- PAPER_01: Ramberg–Osgood ---
+output_file_ro_01 = os.path.join(
+    script_path,
+    "PAPER_01_Jx_vs_xct_RO.png"
+)
+
+ev.plot_columns(
+    data_ro,
+    col_x=3,
+    col_y=1,
+    output_filename=output_file_ro_01,
+    vlines=hole_positions,
+    xlabel=xlabel,
+    ylabel=J_x_label,
+    usetex=True,
+    title=" ",
+    plot_dots=False
+)
+
+# --- PAPER_01: Linear elastic Jc ---
+output_file_Jc_01 = os.path.join(
+    script_path,
+    "PAPER_01_Jx_vs_xct_Jc.png"
+)
+
+ev.plot_columns(
+    data_Jc,
+    col_x=3,
+    col_y=1,
+    output_filename=output_file_Jc_01,
+    vlines=hole_positions,
+    xlabel=xlabel,
+    ylabel=J_x_label,
+    usetex=True,
+    title=" ",
+    plot_dots=False
+)
+
+print("All original plots kept. PAPER_01 plots added.")

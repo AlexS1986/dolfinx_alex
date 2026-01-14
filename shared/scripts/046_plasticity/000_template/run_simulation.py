@@ -352,7 +352,8 @@ def after_timestep_success(t,dt,iters):
     if rank == 0:
         sol.write_to_newton_logfile(logfile_path,t,dt,iters)
     
-    eshelby = phaseFieldProblem.getEshelby(w,eta,la,mu)
+    # eshelby = phaseFieldProblem.getEshelby(w,eta,la,mu)
+    eshelby = phaseFieldProblem.getEshelbyELastic(w,eta,la,mu)
     tensor_field_expression = dlfx.fem.Expression(eshelby, 
                                                          TEN.element.interpolation_points())
     tensor_field_name = "eshelby"

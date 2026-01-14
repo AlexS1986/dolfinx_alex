@@ -647,6 +647,11 @@ class StaticPhaseFieldProblem_plasticity_noll:
         eshelby = self.psi_total(u,s,lam,mu,eta) * ufl.Identity(u.ufl_shape[0]) - ufl.dot(ufl.grad(u).T,self.sigma_degraded(u,s,lam,mu, eta))
         return ufl.as_tensor(eshelby)
     
+    def getEshelbyELastic(self, w: any, eta: dlfx.fem.Constant, lam: dlfx.fem.Constant, mu: dlfx.fem.Constant):
+        u, s = ufl.split(w)
+        eshelby = self.psiel_degraded(s,eta,u,lam,mu) * ufl.Identity(u.ufl_shape[0]) - ufl.dot(ufl.grad(u).T,self.sigma_degraded(u,s,lam,mu, eta))
+        return ufl.as_tensor(eshelby)
+    
     
     def getGlobalFractureSurface(s: dlfx.fem.Function, Gc: dlfx.fem.Function, epsilon: dlfx.fem.Constant, dx: ufl.Measure):
         S = dlfx.fem.assemble_scalar(dlfx.fem.form(psisurf_from_function(s,Gc,epsilon)))
