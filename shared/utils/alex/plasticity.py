@@ -705,6 +705,8 @@ def assemble_3D_representation_of_eps(u):
         eps_3D_np1 = ufl.sym(ufl.grad(u))
                                                 
     return eps_3D_np1
+
+   
         
     
 def update_e_p(u,e_p_n,alpha_n,sig_y,hard,mu):

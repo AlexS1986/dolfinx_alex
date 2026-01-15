@@ -187,7 +187,7 @@ bccrack = dlfx.fem.dirichletbc(0.0, crackdofs, W.sub(1))
 
 e_p_n_3D = ufl.as_tensor([[e_p_11_n, e_p_12_n, 0.0], 
                           [e_p_12_n, e_p_22_n, 0.0],
-                          [0.0         ,          0.0, e_p_33_n]])
+                          [0.0     ,      0.0, e_p_33_n]])
 
 # phaseFieldProblem = pf.StaticPhaseFieldProblem2D_incremental_plasticity(degradationFunction=pf.degrad_cubic,
 #                                                    psisurf=pf.psisurf_from_function,dx=dx, sig_y=sig_y.value, hard=hard.value,alpha_n=alpha_n,e_p_n=e_p_n_3D,H=H)

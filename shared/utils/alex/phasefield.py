@@ -631,7 +631,19 @@ class StaticPhaseFieldProblem_plasticity_noll:
            
      
     def psiel_degraded(self,s,eta,u,lam,mu):
-        return self.degradation_function(s,eta) * self.psiel_undegraded(u,lam,mu)
+        eps_3D = plasticity.assemble_3D_representation_of_eps(u)
+        eps_e_3D = eps_3D  - self.e_p_n
+        sigma_degraded_tmp = self.sigma_degraded(u,s,lam,mu,eta)
+        
+        if u.ufl_shape[0] == 2: 
+            sigma_degraded = ufl.as_tensor([[sigma_degraded_tmp[0,0], sigma_degraded_tmp[0,1], 0.0],
+                                                [ sigma_degraded_tmp[1,0], sigma_degraded_tmp[1,1], 0.0],
+                                                [ 0.0,             0.0,             0.0]]) # not real stress for plane strain but okay bc. of inner product
+        elif u.ufl_shape[0] == 3:
+            sigma_degraded = sigma_degraded_tmp
+            
+        return 0.5 * ufl.inner(sigma_degraded,eps_e_3D)
+        #return self.degradation_function(s,eta) * self.psiel_undegraded(u,lam,mu)
     
     def psi_plasti_undegraded(self):
         return  (0.5 * (self.hard * self.alpha_n ** 2) + self.sig_y * self.alpha_n)
