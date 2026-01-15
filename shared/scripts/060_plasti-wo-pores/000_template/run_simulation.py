@@ -371,6 +371,10 @@ Work = dlfx.fem.Constant(domain,0.0)
 success_timestep_counter = dlfx.fem.Constant(domain,0.0)
 postprocessing_interval = dlfx.fem.Constant(domain,20.0)
 TEN = dlfx.fem.functionspace(domain, ("DP", deg_quad-1, (dim, dim)))
+
+S0e = basix.ufl.element("DP", domain.basix_cell(), 0, shape=())
+S0 = dlfx.fem.functionspace(domain, S0e)
+
 def after_timestep_success(t,dt,iters):
     um1, _ = ufl.split(wm1)
     
@@ -404,12 +408,15 @@ def after_timestep_success(t,dt,iters):
     A = pf.get_surf_area(s,epsilon=epsilon,dx=ufl.dx, comm=comm)
     
     E_el = phaseFieldProblem.get_E_el_global(s,eta,u,la,mu,dx=ufl.dx,comm=comm)
+    E_total = phaseFieldProblem.get_E_total_global(s,eta,u,la,mu,dx=ufl.dx,comm=comm)
+    E_Plasti = phaseFieldProblem.get_E_plasti_global(s,eta, dx=ufl.dx,comm=comm)
+    
     
     # write to newton-log-file
     if rank == 0:
         sol.write_to_newton_logfile(logfile_path,t,dt,iters)
     
-    eshelby = phaseFieldProblem.getEshelby(w,eta,la,mu)
+    eshelby = phaseFieldProblem.getEshelbyELastic(w,eta,la,mu)
     tensor_field_expression = dlfx.fem.Expression(eshelby, 
                                                          TEN.element.interpolation_points())
     tensor_field_name = "eshelby"
@@ -446,7 +453,8 @@ def after_timestep_success(t,dt,iters):
     if not int(success_timestep_counter.value) % int(postprocessing_interval.value) == 0: 
         return 
     
-
+    pp.write_tensor_fields(domain,comm,[sigma_interpolated],["sigma"],outputfile_xdmf_path=outputfile_xdmf_path,t=t)
+    pp.write_field(domain,outputfile_xdmf_path,alpha_n,t,comm,S=S0)
     pp.write_phasefield_mixed_solution(domain,outputfile_xdmf_path, w, t, comm)
 
 def after_timestep_restart(t,dt,iters):
