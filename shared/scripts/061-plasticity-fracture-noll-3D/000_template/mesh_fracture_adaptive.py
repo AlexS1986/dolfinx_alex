@@ -36,12 +36,12 @@ wsteg = args.wsteg if args.wsteg is not None else 0.25
 nl = args.NL if args.NL is not None else 5
 
 n_void_x = Nholes
-n_void_y = 1 #3
-n_void_z = 1 #3
+n_void_y = 3 #3
+n_void_z = 2 #3
 
 # NL 4 and nref 4 works
 
-domain_height_y = 2.0 # 20 usually
+domain_height_y = 20.0 # 20 usually
 n_ref = 15.0
 MeshFile = os.path.join(script_path,"domain_mesh.msh")
 RecreateMesh = True
