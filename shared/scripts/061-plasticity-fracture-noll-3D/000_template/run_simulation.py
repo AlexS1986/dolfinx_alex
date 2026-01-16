@@ -135,8 +135,8 @@ Tend = (x_max_all-x_min_all) * 2.0 / v_crack
 micro_material_marker = 1
 effective_material_marker = 0
 
-# micro_material_cells = mesh_tags.find(micro_material_marker)
-# effective_material_cells = mesh_tags.find(effective_material_marker)
+micro_material_cells = mesh_tags.find(micro_material_marker)
+effective_material_cells = mesh_tags.find(effective_material_marker)
 
 # # elastic constants
 la = het.set_cell_function_heterogeneous_material(domain,la_micro, la_effective, micro_material_cells, effective_material_cells)
