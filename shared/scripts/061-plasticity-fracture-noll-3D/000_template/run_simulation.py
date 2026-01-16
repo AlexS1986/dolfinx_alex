@@ -99,16 +99,16 @@ sys.stdout.flush()
 #domain = dlfx.mesh.create_unit_cube(comm,N,N,N,cell_type=dlfx.mesh.CellType.tetrahedron)
 
 
-# with dlfx.io.XDMFFile(comm, os.path.join(script_path,mesh_file), 'r') as mesh_inp: 
-#     domain = mesh_inp.read_mesh(name="mesh")
-#     mesh_tags = mesh_inp.read_meshtags(domain,name="Cell tags")
+with dlfx.io.XDMFFile(comm, os.path.join(script_path,mesh_file), 'r') as mesh_inp: 
+    domain = mesh_inp.read_mesh(name="mesh")
+    mesh_tags = mesh_inp.read_meshtags(domain,name="Cell tags")
     
     
 # with dlfx.io.XDMFFile(comm, os.path.join(alex.os.resources_directory,'cube_with_hole.xdmf'), 'r') as mesh_inp: 
 #     domain = mesh_inp.read_mesh(name="Grid") # TODO REMOVE
 
-with dlfx.io.XDMFFile(comm, os.path.join(script_path,'test.xdmf'), 'r') as mesh_inp: 
-     domain = mesh_inp.read_mesh(name="Grid") # TODO REMOVE
+# with dlfx.io.XDMFFile(comm, os.path.join(script_path,'test.xdmf'), 'r') as mesh_inp: 
+#      domain = mesh_inp.read_mesh(name="Grid") # TODO REMOVE
 
 
 dt = 0.0001 #0.0001
@@ -139,11 +139,11 @@ effective_material_marker = 0
 # effective_material_cells = mesh_tags.find(effective_material_marker)
 
 # # elastic constants
-# la = het.set_cell_function_heterogeneous_material(domain,la_micro, la_effective, micro_material_cells, effective_material_cells)
-# mu = het.set_cell_function_heterogeneous_material(domain,mu_micro, mu_effective, micro_material_cells, effective_material_cells)
+la = het.set_cell_function_heterogeneous_material(domain,la_micro, la_effective, micro_material_cells, effective_material_cells)
+mu = het.set_cell_function_heterogeneous_material(domain,mu_micro, mu_effective, micro_material_cells, effective_material_cells)
 
-la =  dlfx.fem.Constant(domain, 1.0) # TODO REMOVE
-mu =  dlfx.fem.Constant(domain, 1.0) # TODO REMOVE
+# la =  dlfx.fem.Constant(domain, 1.0) # TODO REMOVE
+# mu =  dlfx.fem.Constant(domain, 1.0) # TODO REMOVE
 
 # residual stiffness
 eta = dlfx.fem.Constant(domain, 0.001)
