@@ -62,11 +62,11 @@ trestart_global = dlfx.fem.Constant(domain,0.0)
 # Tend = 10.0 * dt_global.value
 dt_global.value = dt_max_in_critical_area
 dt_max = dlfx.fem.Constant(domain,50*dt_start)
-Tend = 2.0
+Tend = 3.0
 
 
 la = dlfx.fem.Constant(domain, 0.0)
-mu = dlfx.fem.Constant(domain, 1.0)
+mu = dlfx.fem.Constant(domain, 0.25)
 
 
 #gc = dlfx.fem.Constant(domain, 1.0)
@@ -87,7 +87,8 @@ W = dlfx.fem.functionspace(domain, basix.ufl.mixed_element([Ve, Se]))
 SS = dlfx.fem.functionspace(domain, Se)
 x = ufl.SpatialCoordinate(domain)
 
-gc_val = 0.912 #0.7346#0.5679#0.371
+#gc_val = 0.912 #0.7346#0.5679#0.371
+gc_val = 1.0
 gc_expr = dlfx.fem.Expression(ufl.conditional(ufl.Or(ufl.le(x[0],-3.0*element_size),
                             ufl.ge(x[0],3.0*element_size)),gc_val,0.99*gc_val),SS.element.interpolation_points())
 

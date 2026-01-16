@@ -99,16 +99,16 @@ sys.stdout.flush()
 #domain = dlfx.mesh.create_unit_cube(comm,N,N,N,cell_type=dlfx.mesh.CellType.tetrahedron)
 
 
-with dlfx.io.XDMFFile(comm, os.path.join(script_path,mesh_file), 'r') as mesh_inp: 
-    domain = mesh_inp.read_mesh(name="mesh")
-    mesh_tags = mesh_inp.read_meshtags(domain,name="Cell tags")
+# with dlfx.io.XDMFFile(comm, os.path.join(script_path,mesh_file), 'r') as mesh_inp: 
+#     domain = mesh_inp.read_mesh(name="mesh")
+#     mesh_tags = mesh_inp.read_meshtags(domain,name="Cell tags")
     
     
 # with dlfx.io.XDMFFile(comm, os.path.join(alex.os.resources_directory,'cube_with_hole.xdmf'), 'r') as mesh_inp: 
 #     domain = mesh_inp.read_mesh(name="Grid") # TODO REMOVE
 
-# with dlfx.io.XDMFFile(comm, os.path.join(script_path,'test.xdmf'), 'r') as mesh_inp: 
-#      domain = mesh_inp.read_mesh(name="Grid") # TODO REMOVE
+with dlfx.io.XDMFFile(comm, os.path.join(script_path,'test.xdmf'), 'r') as mesh_inp: 
+     domain = mesh_inp.read_mesh(name="Grid") # TODO REMOVE
 
 
 dt = 0.0001 #0.0001
@@ -129,21 +129,21 @@ x_min_all, x_max_all, y_min_all, y_max_all, z_min_all, z_max_all = pp.compute_bo
 pp.print_bounding_box(rank, x_min_all, x_max_all, y_min_all, y_max_all, z_min_all, z_max_all)
 
 v_crack = 1.0 # const for all simulations
-Tend = (x_max_all-0.0) * 2.0 / v_crack
+Tend = (x_max_all-x_min_all) * 2.0 / v_crack
 
 
 micro_material_marker = 1
 effective_material_marker = 0
 
-micro_material_cells = mesh_tags.find(micro_material_marker)
-effective_material_cells = mesh_tags.find(effective_material_marker)
+# micro_material_cells = mesh_tags.find(micro_material_marker)
+# effective_material_cells = mesh_tags.find(effective_material_marker)
 
-# elastic constants
-la = het.set_cell_function_heterogeneous_material(domain,la_micro, la_effective, micro_material_cells, effective_material_cells)
-mu = het.set_cell_function_heterogeneous_material(domain,mu_micro, mu_effective, micro_material_cells, effective_material_cells)
+# # elastic constants
+# la = het.set_cell_function_heterogeneous_material(domain,la_micro, la_effective, micro_material_cells, effective_material_cells)
+# mu = het.set_cell_function_heterogeneous_material(domain,mu_micro, mu_effective, micro_material_cells, effective_material_cells)
 
-#la =  dlfx.fem.Constant(domain, 1.0) # TODO REMOVE
-#mu =  dlfx.fem.Constant(domain, 1.0) # TODO REMOVE
+la =  dlfx.fem.Constant(domain, 1.0) # TODO REMOVE
+mu =  dlfx.fem.Constant(domain, 1.0) # TODO REMOVE
 
 # residual stiffness
 eta = dlfx.fem.Constant(domain, 0.001)
@@ -178,7 +178,8 @@ K1 = dlfx.fem.Constant(domain, 1.0 * math.sqrt(1.0 * 2.5))
 
 
 # define crack by boundary
-crack_tip_start_location_x = 0.2*(x_max_all-x_min_all) + x_min_all
+crack_tip_start_location_x = in_crack_length + x_min_all
+#crack_tip_start_location_x = 0.2*(x_max_all-x_min_all) + x_min_all
 crack_tip_start_location_y = (y_max_all + y_min_all) / 2.0
 def crack(x):
     x_log = x[0] < (crack_tip_start_location_x)
@@ -257,7 +258,7 @@ s_zero_for_tracking_at_nodes.interpolate(sub_expr)
 
 # surfing BCs
 vcrack_const = dlfx.fem.Constant(domain, np.array([v_crack,0.0,0.0],dtype=dlfx.default_scalar_type))
-crack_start = dlfx.fem.Constant(domain, np.array([0.0,crack_tip_start_location_y,0.0],dtype=dlfx.default_scalar_type))
+crack_start = dlfx.fem.Constant(domain, np.array([x_min_all,crack_tip_start_location_y,0.0],dtype=dlfx.default_scalar_type))
 w_D = dlfx.fem.Function(W) # for dirichlet BCs
 xxK1 = dlfx.fem.Constant(domain, np.array([0.0,0.0,0.0],dtype=dlfx.default_scalar_type))
 

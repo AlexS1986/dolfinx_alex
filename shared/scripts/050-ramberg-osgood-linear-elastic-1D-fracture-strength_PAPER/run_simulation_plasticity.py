@@ -357,7 +357,7 @@ def after_timestep_success(t,dt,iters):
     # if (rank == 0 and in_steg_to_be_measured(x_ct=x_ct) and dt <= dt_max_in_critical_area) or ( rank == 0 and not in_steg_to_be_measured(x_ct=x_ct)):
     if rank == 0:
         print("Crack tip position x: " + str(x_ct))
-        pp.write_to_graphs_output_file(outputfile_graph_path,t,Rx_right,E_el,Work.value,E_total,E_Plasti,E_total)
+        pp.write_to_graphs_output_file(outputfile_graph_path,t,Rx_right,Work.value,E_total,E_Plasti,E_total,E_el)
 
         # pp.write_to_graphs_output_file(outputfile_graph_path,t,Jx, Jy, Jx_vol, Jy_vol, x_ct)
 
