@@ -34,7 +34,7 @@ generate_job_script() {
     local wsteg_value=$3
 
     # Fixed values for the placeholders in job_script.sh
-    local nholes=5
+    local nholes=6
     local dhole=1.0
 
     # NEW: two separate NL parameters

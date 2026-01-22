@@ -37,7 +37,7 @@ n_void_x = Nholes
 n_void_y = 3
 n_void_z = 3
 
-n_ref = 15.0
+n_ref = 18.0
 MeshFile = "domain_mesh.msh"
 RecreateMesh = True
 

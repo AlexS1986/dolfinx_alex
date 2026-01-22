@@ -284,7 +284,7 @@ def compute_surf_displacement():
 
 atol=(x_max_all-x_min_all)*0.02 # for selection of boundary
 
-boundary_surfing_bc = bc.get_boundary_of_box_as_function(domain, comm,atol=atol,epsilon=0.0)
+boundary_surfing_bc = bc.get_boundary_of_box_as_function(domain, comm,atol=atol,epsilon=2.0*epsilon.value)
 bc_expression = dlfx.fem.Expression(compute_surf_displacement(),W.sub(0).element.interpolation_points())
 facets_at_boundary = dlfx.mesh.locate_entities_boundary(domain, fdim, boundary_surfing_bc)
 dofs_at_boundary = dlfx.fem.locate_dofs_topological(W.sub(0), fdim, facets_at_boundary) 
