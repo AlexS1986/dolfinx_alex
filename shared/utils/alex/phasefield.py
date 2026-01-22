@@ -21,7 +21,7 @@ def degds_quadratic(s: any) -> any:
     degds = 2.0 * s
     return degds
 
-def degrad_cubic(s: any, eta: dlfx.fem.Constant, beta=0.2) -> any:
+def degrad_cubic(s: any, eta: dlfx.fem.Constant, beta=0.01) -> any:
     degrad = beta * ((s ** 2) * s - (s ** 2)) + 3.0 * (s ** 2) - 2.0*(s ** 2) * s + eta
     return degrad
 
