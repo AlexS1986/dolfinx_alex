@@ -184,6 +184,7 @@ crack_tip_start_location_y = (y_max_all + y_min_all) / 2.0
 def crack(x):
     x_log = x[0] < (crack_tip_start_location_x)
     #y_log = np.isclose(x[1],crack_tip_start_location_y,atol=(0.02*((y_max_all-y_min_all))))
+    #y_log = np.isclose(x[1],crack_tip_start_location_y,atol=(3.0*epsilon.value))
     y_log = np.isclose(x[1],crack_tip_start_location_y,atol=(0.5*epsilon.value))
     # x_log = x[0]< 50
     # y_log = np.isclose(x[1],200,atol=(0.02*(200)))
