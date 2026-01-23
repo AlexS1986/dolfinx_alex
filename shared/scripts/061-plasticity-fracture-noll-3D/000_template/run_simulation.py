@@ -282,7 +282,7 @@ def compute_surf_displacement():
 
 atol=(x_max_all-x_min_all)*0.02 # for selection of boundary
 
-boundary_surfing_bc = bc.get_boundary_of_box_as_function(domain, comm,atol=atol,epsilon=epsilon.value)
+boundary_surfing_bc = bc.get_boundary_of_box_as_function(domain, comm,atol=atol,epsilon=2.0*epsilon.value)
 bc_expression = dlfx.fem.Expression(compute_surf_displacement(),W.sub(0).element.interpolation_points())
 facets_at_boundary = dlfx.mesh.locate_entities_boundary(domain, fdim, boundary_surfing_bc)
 dofs_at_boundary = dlfx.fem.locate_dofs_topological(W.sub(0), fdim, facets_at_boundary) 
@@ -319,7 +319,7 @@ ds_top_tagged = ufl.Measure('ds', domain=domain, subdomain_data=top_surface_tags
 
 
 success_timestep_counter = dlfx.fem.Constant(domain,0.0)
-postprocessing_interval = dlfx.fem.Constant(domain,100.0)
+postprocessing_interval = dlfx.fem.Constant(domain,200.0)
 
 Work = dlfx.fem.Constant(domain,0.0)
 
@@ -394,6 +394,9 @@ def after_timestep_success(t,dt,iters):
     # update
     wm1.x.array[:] = w.x.array[:]
     wrestart.x.array[:] = w.x.array[:]
+    
+    if not int(success_timestep_counter.value) % int(postprocessing_interval.value) == 0: 
+        return 
     
     pp.write_tensor_fields(domain,comm,[sigma_interpolated],["sigma"],outputfile_xdmf_path=outputfile_xdmf_path,t=t)
     pp.write_field(domain,outputfile_xdmf_path,alpha_n,t,comm,S=S0)

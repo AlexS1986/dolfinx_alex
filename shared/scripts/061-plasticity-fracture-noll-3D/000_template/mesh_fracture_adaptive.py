@@ -42,7 +42,7 @@ n_void_z = 2 #3
 # NL 4 and nref 4 works
 
 domain_height_y = 20.0 # 20 usually
-n_ref = 15.0
+n_ref = 22.0
 MeshFile = os.path.join(script_path,"domain_mesh.msh")
 RecreateMesh = True
 
