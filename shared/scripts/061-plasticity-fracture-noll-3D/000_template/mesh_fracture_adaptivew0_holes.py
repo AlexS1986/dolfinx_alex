@@ -35,13 +35,16 @@ dhole = args.dhole if args.dhole is not None else 1.0
 wsteg = args.wsteg if args.wsteg is not None else 0.25
 nl = args.NL if args.NL is not None else 5
 
-n_void_x = Nholes
-n_void_y = 3 #3
-n_void_z = 3 #3
+n_void_x = 1
+n_void_y = 1 #3
+n_void_z = 1 #3
 
 # NL 4 and nref 4 works
 
+domain_height_x = 15.0 # 20 usually
 domain_height_y = 20.0 # 20 usually
+domain_height_z = 5.0 # 20 usually
+
 n_ref = 22.0
 MeshFile = os.path.join(script_path,"domain_mesh.msh")
 RecreateMesh = True
@@ -59,12 +62,14 @@ sys.stdout.flush()
 # -----------------------------------------------------------
 
 wby =  (domain_height_y - (n_void_y * (dhole + wsteg))) / 2 
+wbx =  (domain_height_x - (n_void_x * (dhole + wsteg))) / 2 
+wbz =  (domain_height_z - (n_void_z * (dhole + wsteg))) / 2 
 
 wb = (dhole+wsteg)
 #wby = wb
-L = n_void_x * (dhole + wsteg) + 2 * wb
+L = n_void_x * (dhole + wsteg) + 2 * wbx
 H = n_void_y * (dhole + wsteg) + 2 * wby
-W = n_void_z * (dhole + wsteg) #+ 2 * wb
+W = n_void_z * (dhole + wsteg) + 2 * wbz
 
 if rank == 0:
     print("Domain dimensions:", L, H, W)
@@ -99,7 +104,7 @@ voids = {}
 for vx in range(n_void_x):
     for vy in range(n_void_y):
         for vz in range(n_void_z):
-            cx = -L / 2 + wb + (vx + 0.5) * (dhole + wsteg)
+            cx = 16.0
             cy = -H / 2 + wby + (vy + 0.5) * (dhole + wsteg)
             cz = -W / 2 + wb + (vz + 0.5) * (dhole + wsteg)
 
