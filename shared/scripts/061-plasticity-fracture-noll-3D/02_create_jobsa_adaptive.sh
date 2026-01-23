@@ -39,7 +39,7 @@ generate_job_script() {
 
     # NEW: two separate NL parameters
     local nl_effective=5
-    local nl_fracture=15
+    local nl_fracture=12
 
     local mesh_file="mesh_fracture_adaptive.xdmf"
     local lam_micro_param=1.0

@@ -37,12 +37,12 @@ nl = args.NL if args.NL is not None else 5
 
 n_void_x = Nholes
 n_void_y = 3 #3
-n_void_z = 3 #3
+n_void_z = 2 #3
 
 # NL 4 and nref 4 works
 
 domain_height_y = 20.0 # 20 usually
-n_ref = 22.0
+n_ref = 11.0
 MeshFile = os.path.join(script_path,"domain_mesh.msh")
 RecreateMesh = True
 
@@ -80,7 +80,7 @@ inclusions = {
         "shape": "rectangle",
         "center": [0.0, 0.0, 0.0],
         "length": 1.0,
-        "stretch_factor": [L - 2 * wb, H - 2 * wby, W - 2 * wb],
+        "stretch_factor": [L - 2 * wb, H - 2 * wby, W ],
         "rotation_axis": [0, 0, 1],
         "rotation_angle": 0.0
     }
@@ -101,7 +101,7 @@ for vx in range(n_void_x):
         for vz in range(n_void_z):
             cx = -L / 2 + wb + (vx + 0.5) * (dhole + wsteg)
             cy = -H / 2 + wby + (vy + 0.5) * (dhole + wsteg)
-            cz = -W / 2 + wb + (vz + 0.5) * (dhole + wsteg)
+            cz = -W / 2 + (vz + 0.5) * (dhole + wsteg)
 
             voids[(vx, vy, vz)] = {
                 "shape": "ellipsoid",
@@ -219,3 +219,4 @@ params = {
 if rank == 0:
     pp.append_to_file(parameter_path, params)
     print(f"Parameters saved to {parameter_path}")
+
