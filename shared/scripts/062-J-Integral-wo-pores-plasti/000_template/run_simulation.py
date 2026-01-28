@@ -302,9 +302,14 @@ dofs_at_boundary = dlfx.fem.locate_dofs_topological(W.sub(0), fdim, facets_at_bo
 
 
 def get_bcs(t):
+    xxK1.value = np.array([crack_start.value[0] + vcrack_const.value[0] * t_global.value,
+                           crack_start.value[1] + vcrack_const.value[1] * t_global.value,
+                           0.0],dtype=dlfx.default_scalar_type)
+    
+    
     bcs = []
-    xtip[0] = 0.0 + v_crack * t
-    xtip[1] = crack_tip_start_location_y
+    #xtip[0] = 0.0 + v_crack * t
+    #xtip[1] = crack_tip_start_location_y
     w_D.sub(0).interpolate(bc_expression)
     bc_surf : dlfx.fem.DirichletBC = dlfx.fem.dirichletbc(w_D,dofs_at_boundary)
 
