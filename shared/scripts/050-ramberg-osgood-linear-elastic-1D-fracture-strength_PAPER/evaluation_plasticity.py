@@ -166,7 +166,7 @@ output_file_energy = os.path.join(
 )
 
 vlines = [
-    [epsilon_c,epsilon_s,epsilon_c_elastic ]
+    # [epsilon_c,epsilon_s,epsilon_c_elastic ]
 ]
 
 # --------------------------------------------------

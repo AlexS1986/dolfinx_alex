@@ -126,7 +126,7 @@ dim = domain.topology.dim
 alex.os.mpi_print('spatial dimensions: '+str(dim), rank)
 
 x_min_all, x_max_all, y_min_all, y_max_all, z_min_all, z_max_all = pp.compute_bounding_box(comm, domain)
-thickness = z_max_all - z_min_all
+thickness_z = z_max_all - z_min_all
 pp.print_bounding_box(rank, x_min_all, x_max_all, y_min_all, y_max_all, z_min_all, z_max_all)
 
 v_crack = 1.0 # const for all simulations
@@ -376,9 +376,9 @@ def after_timestep_success(t,dt,iters):
     
     J3D_glob_x, J3D_glob_y, J3D_glob_z = alex.linearelastic.get_J_3D(eshelby_interpolated,n,ds=ds(external_surface_tag),comm=comm)
 
-    J3D_glob_x = J3D_glob_x / thickness
-    J3D_glob_y = J3D_glob_y / thickness
-    J3D_glob_z = J3D_glob_z / thickness
+    J3D_glob_x = J3D_glob_x / thickness_z
+    J3D_glob_y = J3D_glob_y / thickness_z
+    J3D_glob_z = J3D_glob_z / thickness_z
     
     if rank == 0:
         print(pp.getJString(J3D_glob_x, J3D_glob_y, J3D_glob_z))

@@ -1050,7 +1050,7 @@ def plot_multiple_columns(data_objects, col_x, col_y, output_filename,
     plt.close()
     print(f"Plot saved as {output_filename}, {pgf_filename}, and {pdf_filename}")
 
-    
+
     
 def plot_multiple_lines(
     x_values, y_values, title='', x_label='', y_label='', 
@@ -1064,16 +1064,15 @@ def plot_multiple_lines(
     arrow_color="black", arrow_linewidth=1.5, arrowhead_size=10,
     use_bw_palette=True, use_colors=False, use_broad_palette=False,
     line_colors=None, line_styles=None,
-    bold_text=False
+    bold_text=False,
+    legend_loc='best',
+    legend_bbox_to_anchor=None,
+    legend_ncol=1,
+    legend_frameon=True
 ):
     """
-    Styled multi-line plot with consistent visual settings. Outputs PNG, PGF, and PDF.
-
-    Parameters
-    ----------
-    bold_text : bool
-        If True, axis labels, title, and tick labels will use bold font.
-        Legend labels will remain normal weight.
+    Styled multi-line plot with consistent visual settings.
+    Outputs PNG, PGF, and PDF.
     """
     import matplotlib.pyplot as plt
     from matplotlib.ticker import LogLocator, MaxNLocator
@@ -1094,7 +1093,8 @@ def plot_multiple_lines(
         colors = ['black', 'dimgray', 'dimgrey', 'darkgray', 'silver', 'lightgray']
         linestyles = ['-', '--', '-.', ':']
     elif use_broad_palette or use_colors:
-        colors = ['blue', 'red', 'green', 'orange', 'purple', 'brown', 'pink', 'cyan', 'magenta', 'yellow']
+        colors = ['blue', 'red', 'green', 'orange', 'purple', 'brown',
+                  'pink', 'cyan', 'magenta', 'yellow']
         linestyles = ['-']
     else:
         colors = list(plt.cm.tab10.colors)
@@ -1107,7 +1107,6 @@ def plot_multiple_lines(
         linestyle = line_styles[i] if line_styles and i < len(line_styles) else linestyles[i % len(linestyles)]
         marker = markers[i % len(markers)] if show_markers or markers_only else None
 
-        # Always use raw label, no bolding for legend entries
         label = legend_labels[i] if legend_labels else f'Line {i+1}'
 
         plt.plot(
@@ -1128,19 +1127,32 @@ def plot_multiple_lines(
         ax.yaxis.set_minor_locator(LogLocator(base=10.0, subs='auto'))
         ax.yaxis.set_minor_formatter(plt.NullFormatter())
 
-    # Set axis ranges if specified
+    # Axis ranges
     if x_range:
-        plt.xlim(x_range)
+        ax.set_xlim(x_range)
     if y_range:
-        plt.ylim(y_range)
+        ax.set_ylim(y_range)
 
-    # Axis labels and title
-    plt.xlabel(x_label, fontsize=xlabel_fontsize, fontweight='bold' if bold_text else 'normal')
-    plt.ylabel(y_label, fontsize=ylabel_fontsize, fontweight='bold' if bold_text else 'normal')
-    plt.title(title, fontsize=title_fontsize, fontweight='bold' if bold_text else 'normal')
+    # Labels and title
+    ax.set_xlabel(x_label, fontsize=xlabel_fontsize,
+                  fontweight='bold' if bold_text else 'normal')
+    ax.set_ylabel(y_label, fontsize=ylabel_fontsize,
+                  fontweight='bold' if bold_text else 'normal')
+    ax.set_title(title, fontsize=title_fontsize,
+                 fontweight='bold' if bold_text else 'normal')
 
-    # Legend (always normal weight)
-    plt.legend(prop={'weight': 'normal', 'size': legend_fontsize})
+    # Legend
+    legend = ax.legend(
+        loc=legend_loc,
+        bbox_to_anchor=legend_bbox_to_anchor,
+        ncol=legend_ncol,
+        frameon=legend_frameon,
+        prop={'weight': 'normal', 'size': legend_fontsize}
+    )
+
+    # Force legend to stay inside axes unless explicitly anchored
+    if legend_bbox_to_anchor is not None:
+        legend.set_bbox_to_anchor(legend_bbox_to_anchor, transform=ax.transAxes)
 
     # Ticks
     ax.tick_params(axis='both', which='major', labelsize=tick_fontsize)
@@ -1154,25 +1166,31 @@ def plot_multiple_lines(
 
     # Optional arrow
     if arrow_x is not None and arrow_y_start is not None and arrow_y_end is not None:
-        plt.annotate(
-            '', 
-            xy=(arrow_x, arrow_y_end), 
+        ax.annotate(
+            '',
+            xy=(arrow_x, arrow_y_end),
             xytext=(arrow_x, arrow_y_start),
             arrowprops=dict(
-                arrowstyle='<->', 
-                color=arrow_color, 
+                arrowstyle='<->',
+                color=arrow_color,
                 linewidth=arrow_linewidth,
                 shrinkA=0, shrinkB=0
             )
         )
 
-    # Save to PNG, PGF, and PDF
-    plt.savefig(output_file, dpi=300)
-    plt.savefig(output_file.replace('.png', '.pgf'))
-    plt.savefig(output_file.replace('.png', '.pdf'))
+    # Save outputs
+    plt.savefig(output_file, dpi=300, bbox_inches='tight')
+    plt.savefig(output_file.replace('.png', '.pgf'), bbox_inches='tight')
+    plt.savefig(output_file.replace('.png', '.pdf'), bbox_inches='tight')
     plt.close()
 
-    print(f"Plot saved as {output_file}, {output_file.replace('.png', '.pgf')}, and {output_file.replace('.png', '.pdf')}")
+    print(
+        f"Plot saved as {output_file}, "
+        f"{output_file.replace('.png', '.pgf')}, and "
+        f"{output_file.replace('.png', '.pdf')}"
+    )
+
+
 
     
 def plot_single_line(x, y, filename, plot_type="line", title="", xlabel="X", ylabel="Y",
