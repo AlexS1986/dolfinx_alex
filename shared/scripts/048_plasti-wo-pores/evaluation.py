@@ -60,11 +60,26 @@ def normalize_Jx_to_Gc_num(gc_num_quotient, data):
 #     header=None,
 #     skiprows=1,
 # )
+# data_vonMises = pd.read_csv(
+#     os.path.join(
+#         script_path,
+#         "results",
+#         "simulation_20251218_144722_WSTEG1.0",
+#         "run_simulation_graphs.txt",
+#     ),
+#     delim_whitespace=True,
+#     header=None,
+#     skiprows=1,
+# )
+
+
 data_vonMises = pd.read_csv(
     os.path.join(
         script_path,
+        "..",
+        "062-J-Integral-wo-pores-plasti",
         "results",
-        "simulation_20251218_144722_WSTEG1.0",
+        "simulation_jan2026",
         "run_simulation_graphs.txt",
     ),
     delim_whitespace=True,
@@ -139,7 +154,7 @@ legend_labels = [vonMises_label, label_1, label_2]
 
 
 # === Plot J_x vs x_ct ===
-output_file = os.path.join(script_path, "PAPER_01_all_Jx_vs_xct_pf_2.png")
+output_file = os.path.join(script_path, "PAPER_01_all_Jx_vs_xct_pf__vM.png")
 ev.plot_multiple_columns(
     [data_vonMises, linear_elastic_1, linear_elastic_2],
     3,
@@ -149,7 +164,7 @@ ev.plot_multiple_columns(
     usetex=True,
     xlabel=r"$x_{ct} / L$",
     ylabel=J_x_label,
-    y_range=[-1.0, 1.5],
+    y_range=[-1.0, 2.0],
     markers_only=False,
     marker_size=4,
     use_colors=True,
@@ -159,7 +174,7 @@ ev.plot_multiple_columns(
 
 # === Plot crack tip position vs time (using von Mises dataset) ===
 output_file = os.path.join(
-    script_path, "PAPER_00_xct_pf_vs_xct_KI_griffith.png"
+    script_path, "PAPER_00_xct_pf_vs_xct_KI_griffith_vM.png"
 )
 ev.plot_columns_multiple_y(
     data=data_vonMises,

@@ -941,24 +941,38 @@ def read_all_simulation_data(base_path, graphs_filename = "run_simulation_graphs
     return simulation_results
 
 
-def plot_multiple_columns(data_objects, col_x, col_y, output_filename, 
-                          vlines=None, hlines=None, xlabel=None, ylabel=None, 
-                          title=None, legend_labels=None, 
-                          xlabel_fontsize=24, ylabel_fontsize=24, title_fontsize=24, 
-                          tick_fontsize=22, legend_fontsize=22, figsize=(10, 7), 
-                          usetex=False, log_y=False, use_broad_palette=False,
-                          x_range=None, y_range=None, use_bw_palette=True, 
-                          use_colors=False, show_markers=False, markers_only=False, marker_size=6,
-                          arrow_x=None, arrow_y_start=None, arrow_y_end=None, 
-                          arrow_color="black", arrow_linewidth=1.5, arrowhead_size=10,
-                          legend_outside=False, vary_linestyles=False):
+def plot_multiple_columns(
+    data_objects, col_x, col_y, output_filename, 
+    vlines=None, hlines=None, xlabel=None, ylabel=None, 
+    title=None, legend_labels=None, 
+    xlabel_fontsize=24, ylabel_fontsize=24, title_fontsize=24, 
+    tick_fontsize=22, legend_fontsize=22, figsize=(10, 7), 
+    usetex=False, log_y=False, use_broad_palette=False,
+    x_range=None, y_range=None, use_bw_palette=True, 
+    use_colors=False, show_markers=False, markers_only=False, marker_size=6,
+    arrow_x=None, arrow_y_start=None, arrow_y_end=None, 
+    arrow_color="black", arrow_linewidth=1.5, arrowhead_size=10,
+    legend_outside=False, vary_linestyles=False,
+    legend_loc="best", legend_bbox=None,
+    mark_peak=False, peak_marker_size=12,
+    vline_colors=None, hline_colors=None
+):
     """
-    Plots multiple datasets with the same x and y columns, allowing individual vertical and horizontal lines for each,
-    with an optional logarithmic y-axis. Saves the plot as PNG, PGF, and PDF for LaTeX integration.
-    
-    New parameter:
-    vary_linestyles: bool - If True, cycles through multiple linestyles to help distinguish datasets.
+    Plots multiple datasets with the same x and y columns, allowing individual
+    vertical and horizontal lines for each, with optional logarithmic y-axis.
+
+    Works with:
+    - pandas DataFrames
+    - dicts of arrays
+    - NumPy structured arrays
+
+    mark_peak:
+        If True, marks the maximum y-value in each dataset with a fat dot.
     """
+
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from matplotlib.ticker import MaxNLocator, LogLocator
 
     if usetex:
         plt.rcParams['text.usetex'] = True
@@ -968,15 +982,16 @@ def plot_multiple_columns(data_objects, col_x, col_y, output_filename,
 
     fig, ax = plt.subplots(figsize=figsize)
 
+    # Color palettes
     if use_bw_palette and not use_colors:
-        greys = ['black', 'dimgray', 'dimgrey', 'darkgray', 'silver', 'lightgray']
-        colors = greys
+        colors = ['black', 'dimgray', 'dimgrey', 'darkgray', 'silver', 'lightgray']
     elif use_broad_palette or use_colors:
-        colors = ['blue', 'red', 'green', 'orange', 'purple', 'brown', 'pink', 'cyan', 'magenta', 'yellow']
+        colors = ['blue', 'red', 'green', 'orange', 'purple',
+                  'brown', 'pink', 'cyan', 'magenta', 'yellow']
     else:
         colors = list(plt.cm.tab10.colors)
 
-    # Define linestyles
+    # Linestyles
     linestyles = ['-', '--', '-.', ':']
     if vary_linestyles:
         linestyle_cycle = linestyles * ((len(data_objects) // len(linestyles)) + 1)
@@ -986,35 +1001,75 @@ def plot_multiple_columns(data_objects, col_x, col_y, output_filename,
     markers = ['o', 's', 'D', '^', 'v', '<', '>', 'p', '*', 'h']
 
     for i, data in enumerate(data_objects):
+
         color = colors[i % len(colors)]
-        linestyle = linestyle_cycle[i % len(linestyle_cycle)]
-        marker = markers[i % len(markers)] if show_markers or markers_only else None
+        linestyle = linestyle_cycle[i]
+        marker = markers[i % len(markers)] if (show_markers or markers_only) else None
 
-        ax.plot(data[col_x], data[col_y], 
-                marker=marker, 
-                markersize=marker_size,
-                linestyle='None' if markers_only else linestyle, 
-                color=color, 
-                label=legend_labels[i] if legend_labels else f'Data {i+1}')
+        # Extract x/y values (robust to numpy or pandas)
+        x_values = data[col_x]
+        y_values = data[col_y]
 
+        ax.plot(
+            x_values,
+            y_values,
+            linestyle='None' if markers_only else linestyle,
+            marker=marker,
+            markersize=marker_size,
+            color=color,
+            label=legend_labels[i] if legend_labels else f'Data {i+1}'
+        )
+
+        # ---- Peak marker (robust version) ----
+        if mark_peak:
+            peak_idx = np.argmax(y_values)
+            peak_x = x_values[peak_idx]
+            peak_y = y_values[peak_idx]
+
+            ax.plot(
+                peak_x,
+                peak_y,
+                'o',
+                markersize=peak_marker_size,
+                color=color,
+                zorder=10
+            )
+
+        # ---- Vertical lines ----
         if vlines and i < len(vlines):
-            for vline in vlines[i]:
-                ax.axvline(x=vline, color="black", linestyle='--', linewidth=0.5)
+            for j, vline in enumerate(vlines[i]):
+                color_v = (
+                    vline_colors[i][j]
+                    if vline_colors and i < len(vline_colors)
+                    and j < len(vline_colors[i])
+                    else 'black'
+                )
+                ax.axvline(vline, color=color_v, linestyle='--', linewidth=0.5)
 
+        # ---- Horizontal lines ----
         if hlines and i < len(hlines):
-            for hline in hlines[i]:
-                ax.axhline(y=hline, color="black", linestyle='--', linewidth=0.5)
+            for j, hline in enumerate(hlines[i]):
+                color_h = (
+                    hline_colors[i][j]
+                    if hline_colors and i < len(hline_colors)
+                    and j < len(hline_colors[i])
+                    else 'black'
+                )
+                ax.axhline(hline, color=color_h, linestyle='--', linewidth=0.5)
 
+    # ---- Log scale ----
     if log_y:
         ax.set_yscale('log')
-        ax.yaxis.set_minor_locator(LogLocator(base=10.0, subs='auto'))
+        ax.yaxis.set_minor_locator(LogLocator(base=10))
         ax.yaxis.set_minor_formatter(plt.NullFormatter())
 
+    # ---- Axis ranges ----
     if x_range:
         ax.set_xlim(x_range)
     if y_range:
         ax.set_ylim(y_range)
 
+    # ---- Labels & Title ----
     ax.set_xlabel(xlabel if xlabel else f'Column {col_x}', fontsize=xlabel_fontsize)
     ax.set_ylabel(ylabel if ylabel else f'Column {col_y}', fontsize=ylabel_fontsize)
     ax.set_title(title if title else ' ', fontsize=title_fontsize)
@@ -1025,20 +1080,36 @@ def plot_multiple_columns(data_objects, col_x, col_y, output_filename,
 
     ax.tick_params(axis='both', which='major', labelsize=tick_fontsize)
 
-    # Add vertical double-tipped arrow if specified
+    # ---- Optional vertical double arrow ----
     if arrow_x is not None and arrow_y_start is not None and arrow_y_end is not None:
-        ax.annotate('', xy=(arrow_x, arrow_y_end), xytext=(arrow_x, arrow_y_start),
-                    arrowprops=dict(arrowstyle='<->', color=arrow_color, linewidth=arrow_linewidth))
+        ax.annotate(
+            '',
+            xy=(arrow_x, arrow_y_end),
+            xytext=(arrow_x, arrow_y_start),
+            arrowprops=dict(
+                arrowstyle='<->',
+                color=arrow_color,
+                linewidth=arrow_linewidth
+            )
+        )
 
-    # Legend configuration
+    # ---- Legend ----
     if legend_outside:
-        ax.legend(fontsize=legend_fontsize, loc='center left', bbox_to_anchor=(1.0, 0.5))
-        plt.tight_layout(rect=[0, 0, 0.85, 1])  # adjust plot area to make room for legend
+        ax.legend(
+            fontsize=legend_fontsize,
+            loc='center left',
+            bbox_to_anchor=(1.0, 0.5)
+        )
+        plt.tight_layout(rect=[0, 0, 0.85, 1])
     else:
-        ax.legend(fontsize=legend_fontsize)
+        ax.legend(
+            fontsize=legend_fontsize,
+            loc=legend_loc,
+            bbox_to_anchor=legend_bbox
+        )
         plt.tight_layout()
 
-    # Save figures
+    # ---- Save outputs ----
     plt.savefig(output_filename, bbox_inches='tight')
 
     pgf_filename = output_filename.replace('.png', '.pgf')
@@ -1048,7 +1119,10 @@ def plot_multiple_columns(data_objects, col_x, col_y, output_filename,
     plt.savefig(pdf_filename, bbox_inches='tight')
 
     plt.close()
+
     print(f"Plot saved as {output_filename}, {pgf_filename}, and {pdf_filename}")
+
+
 
 
     
@@ -1068,7 +1142,12 @@ def plot_multiple_lines(
     legend_loc='best',
     legend_bbox_to_anchor=None,
     legend_ncol=1,
-    legend_frameon=True
+    legend_frameon=True,
+    # 🔹 NEW GRID OPTIONS
+    grid=None,                 # None | 'x' | 'y' | 'both'
+    grid_style='--',
+    grid_alpha=0.4,
+    grid_linewidth=0.8
 ):
     """
     Styled multi-line plot with consistent visual settings.
@@ -1141,6 +1220,19 @@ def plot_multiple_lines(
     ax.set_title(title, fontsize=title_fontsize,
                  fontweight='bold' if bold_text else 'normal')
 
+    # 🔹 GRID HANDLING
+    if grid in ('x', 'both'):
+        ax.grid(True, axis='x',
+                linestyle=grid_style,
+                linewidth=grid_linewidth,
+                alpha=grid_alpha)
+
+    if grid in ('y', 'both'):
+        ax.grid(True, axis='y',
+                linestyle=grid_style,
+                linewidth=grid_linewidth,
+                alpha=grid_alpha)
+
     # Legend
     legend = ax.legend(
         loc=legend_loc,
@@ -1150,7 +1242,6 @@ def plot_multiple_lines(
         prop={'weight': 'normal', 'size': legend_fontsize}
     )
 
-    # Force legend to stay inside axes unless explicitly anchored
     if legend_bbox_to_anchor is not None:
         legend.set_bbox_to_anchor(legend_bbox_to_anchor, transform=ax.transAxes)
 
@@ -1189,6 +1280,7 @@ def plot_multiple_lines(
         f"{output_file.replace('.png', '.pgf')}, and "
         f"{output_file.replace('.png', '.pdf')}"
     )
+
 
 
 

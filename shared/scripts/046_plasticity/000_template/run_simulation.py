@@ -317,8 +317,6 @@ def after_timestep_success(t,dt,iters):
     um1, _ = ufl.split(wm1)
     
     
-    # update 
-    delta_u = u - um1  
     # H_expr = phaseFieldProblem.update_H(u,delta_u=delta_u,lam=la,mu=mu)
     # # H_expr = phaseFieldProblem.update_H(u,s=s,delta_u=delta_u,lam=la,mu=mu,eta=eta)
     # H.x.array[:] = alex.plasticity.interpolate_quadrature(domain, cells, quadrature_points,H_expr)

@@ -20,8 +20,8 @@ import evaluation_utils as ev_ut
 # =====================================================
 element_size = 0.01
 epsilon_param = 0.1
-gc_num_factor = 1.12
-starting_hole_index = 2
+gc_num_factor = 1.50  # plasticity numerical fracture toughness
+starting_hole_index = 1
 
 # =====================================================
 # LABELS
@@ -30,8 +30,8 @@ steg_width_label = "$w_s$"
 xlabel_time = "$t / [ L / {\\dot{x}}_{\\mathrm{bc}} ]$"
 xlabel_xct = "$x_{ct} / L$"
 ylabel_xct = "crack tip position $/ L$"
-ylabel_Jx = "$J_x / J_c^{\\mathrm{num}}$"
-ylabel_Jx_max = "$J_x^{\\mathrm{max}} / J_c^{\\mathrm{num}}$"
+ylabel_Jx = "$J_x / J_c^{\\mathrm{num,pl}}$"
+ylabel_Jx_max = "$J_x^{\\mathrm{max}} / J_c^{\\mathrm{num,pl}}$"
 
 vm2d_label = r"\textbf{von Mises 2D}"
 vm3d_label = r"\textbf{von Mises 3D}"
@@ -85,8 +85,6 @@ def load_single_vm_dataset(results_dir, is_3d=False):
         skiprows=1,
     )
 
-    ev_ut.normalize_Jx_to_Gc_num(gc_num_factor, data)
-
     if is_3d:
         # DROP column 3
         data.drop(columns=[3], inplace=True)
@@ -103,9 +101,17 @@ def load_single_vm_dataset(results_dir, is_3d=False):
 
     return data, sim_folder
 
-
+# =====================================================
+# LOAD DATA ONCE AND NORMALIZE Jx
+# =====================================================
+# Load 2D dataset
 data_vm2d, vm2d_sim_folder = load_single_vm_dataset(vm2d_results_dir, is_3d=False)
+# Load 3D dataset
 data_vm3d, vm3d_sim_folder = load_single_vm_dataset(vm3d_results_dir, is_3d=True)
+
+# Normalize Jx once at the start
+ev_ut.normalize_Jx_to_Gc_num(gc_num_factor, data_vm2d)
+ev_ut.normalize_Jx_to_Gc_num(gc_num_factor, data_vm3d)
 
 # =====================================================
 # TIME EVOLUTION PLOT (von Mises 3D)
@@ -162,7 +168,7 @@ ev.plot_multiple_columns(
     usetex=True,
     xlabel=xlabel_xct,
     ylabel=ylabel_Jx,
-    y_range=[0.0, 2.5],
+    y_range=[0.0, 1.5],
     x_range=[0, 15],
     markers_only=True,
     marker_size=3,
@@ -178,8 +184,6 @@ def prepare_vm_multidata(results_dir, is_3d=False):
 
     processed = []
     for data, param in sim_results:
-        ev_ut.normalize_Jx_to_Gc_num(gc_num_factor, data)
-
         if is_3d:
             data.drop(columns=[3], inplace=True)
             data.reset_index(drop=True, inplace=True)
@@ -191,7 +195,7 @@ def prepare_vm_multidata(results_dir, is_3d=False):
         processed.append((data, param))
 
     return ev_ut.data_for_plot_wsteg_in_legend(
-        ev_ut.normalize_Jx_to_Gc_num,
+        ev_ut.normalize_Jx_to_Gc_num,  # still pass the function, but data is already normalized
         gc_num_factor,
         processed,
         starting_hole_index,
@@ -238,7 +242,7 @@ ev.plot_multiple_columns(
     usetex=True,
     markers_only=True,
     use_colors=True,
-    y_range=[0, 2],
+    y_range=[0, 1.5],
 )
 
 # =====================================================
@@ -251,6 +255,7 @@ def compute_Jxmax_vs_wsteg(results_dir, is_3d=False):
     Jx_max_vals = []
 
     for data, param in sim_results:
+        # Normalize once per dataset
         ev_ut.normalize_Jx_to_Gc_num(gc_num_factor, data)
 
         if is_3d:
@@ -286,6 +291,7 @@ def compute_Jxmax_vs_wsteg(results_dir, is_3d=False):
     )
 
 
+
 w_vm2d, Jxmax_vm2d = compute_Jxmax_vs_wsteg(vm2d_results_dir, is_3d=False)
 w_vm3d, Jxmax_vm3d = compute_Jxmax_vs_wsteg(vm3d_results_dir, is_3d=True)
 
@@ -308,9 +314,12 @@ ev.plot_multiple_lines(
     markers_only=False,
     use_colors=True,
     marker_size=6,
-    y_range=[0, 2.5],
+    y_range=[0, 1.5],
     x_range=[0.375, 3.0],
     bold_text=True,
+    grid='both',          # 👈 full grid
+    grid_alpha=0.3
 )
 
 print("✅ PAPER plots generated successfully (2D + 3D).")
+
