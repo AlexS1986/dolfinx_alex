@@ -389,7 +389,7 @@ for x_value in x_candidates:
         Tend = 50.0 * dt_global.value * x_value
         gc = dlfx.fem.Constant(domain, 1.0)
         eta = dlfx.fem.Constant(domain, 0.001)
-        epsilon = dlfx.fem.Constant(domain, 0.03)
+        epsilon = dlfx.fem.Constant(domain, 0.045) #epsilon = dlfx.fem.Constant(domain, 0.03)
         Mob = dlfx.fem.Constant(domain, 100.0)
         iMob = dlfx.fem.Constant(domain, 1.0 / Mob.value)
         
@@ -407,7 +407,7 @@ for x_value in x_candidates:
         phaseFieldProblem = pf.StaticPhaseFieldProblem2D_split(
             degradationFunction=pf.degrad_quadratic,
             psisurf=pf.psisurf_from_function,
-            split="volumetric",#"volumetric",
+            split="spectral",#"volumetric",
             geometric_nl=False
         )
         
@@ -586,10 +586,23 @@ for x_value in x_candidates:
         
         write_vol_data_to_file()
         
+        
+        TEN = dlfx.fem.functionspace(domain, ("DP", 0, (dim, dim)))
+        sigma_interpolated = dlfx.fem.Function(TEN) 
+
+
+
+        
         def after_timestep_success(t, dt, iters):
             sigma = phaseFieldProblem.sigma_degraded(u, s, lam, mue, eta)
+            tensor_field_expression = dlfx.fem.Expression(sigma, 
+                                                                TEN.element.interpolation_points())
+            tensor_field_name = "sigma"
+            sigma_interpolated.interpolate(tensor_field_expression)
+            sigma_interpolated.name = tensor_field_name
+            
             # Reaction force at top boundary
-            Rx_top, Ry_top = pp.reaction_force(sigma, n=n, ds=ds_top_tagged(top_surface_tag), comm=comm)
+            Rx_top, Ry_top = pp.reaction_force(sigma_interpolated, n=n, ds=ds_top_tagged(top_surface_tag), comm=comm)
 
             # Get vertical displacement u_y at top boundary dofs
             if len(w.x.array[dofs_at_boundary_y]) > 0:
@@ -606,7 +619,7 @@ for x_value in x_candidates:
 
             
             # dW = pp.work_increment_external_forces(sigma,u,um1,n,ds_top_tagged(top_surface_tag),comm=comm)
-            dW = pp.work_increment_external_forces(sigma,u,um1,n,ds,comm=comm)
+            dW = pp.work_increment_external_forces(sigma_interpolated,u,um1,n,ds=ufl.ds,comm=comm)
             Work.value = Work.value + dW
     
             A = pf.get_surf_area(s,epsilon=epsilon,dx=ufl.dx, comm=comm)

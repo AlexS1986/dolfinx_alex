@@ -955,6 +955,8 @@ def plot_multiple_columns(
     legend_outside=False, vary_linestyles=False,
     legend_loc="best", legend_bbox=None,
     mark_peak=False, peak_marker_size=12,
+    annotate_peak=False, peak_label_offset=(5, 5),
+    peak_label_fontsize=12, peak_label_format="{:.2f}",
     vline_colors=None, hline_colors=None
 ):
     """
@@ -968,6 +970,15 @@ def plot_multiple_columns(
 
     mark_peak:
         If True, marks the maximum y-value in each dataset with a fat dot.
+
+    annotate_peak:
+        If True, writes the peak y-value next to the peak marker.
+
+    peak_label_offset:
+        Tuple (x_offset, y_offset) in points to shift the label position.
+
+    peak_label_format:
+        Format string for the peak value (default: two decimals).
     """
 
     import matplotlib.pyplot as plt
@@ -1006,7 +1017,7 @@ def plot_multiple_columns(
         linestyle = linestyle_cycle[i]
         marker = markers[i % len(markers)] if (show_markers or markers_only) else None
 
-        # Extract x/y values (robust to numpy or pandas)
+        # Extract x/y values
         x_values = data[col_x]
         y_values = data[col_y]
 
@@ -1020,20 +1031,33 @@ def plot_multiple_columns(
             label=legend_labels[i] if legend_labels else f'Data {i+1}'
         )
 
-        # ---- Peak marker (robust version) ----
-        if mark_peak:
+        # ---- Peak marker ----
+        if mark_peak or annotate_peak:
             peak_idx = np.argmax(y_values)
             peak_x = x_values[peak_idx]
             peak_y = y_values[peak_idx]
 
-            ax.plot(
-                peak_x,
-                peak_y,
-                'o',
-                markersize=peak_marker_size,
-                color=color,
-                zorder=10
-            )
+            if mark_peak:
+                ax.plot(
+                    peak_x,
+                    peak_y,
+                    'o',
+                    markersize=peak_marker_size,
+                    color=color,
+                    zorder=10
+                )
+
+            if annotate_peak:
+                peak_text = peak_label_format.format(peak_y)
+
+                ax.annotate(
+                    peak_text,
+                    xy=(peak_x, peak_y),
+                    xytext=peak_label_offset,
+                    textcoords='offset points',
+                    fontsize=peak_label_fontsize,
+                    color=color
+                )
 
         # ---- Vertical lines ----
         if vlines and i < len(vlines):

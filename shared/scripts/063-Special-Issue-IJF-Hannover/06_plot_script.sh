@@ -6,8 +6,12 @@ PYTHON_SCRIPT="02_evaluation.py"
 MIN_INDEX=5
 
 # === Input folders ===
-INPUT1="/home/scripts/063-Special-Issue-IJF-Hannover/resources/volumetric_2"
-INPUT2="/home/scripts/063-Special-Issue-IJF-Hannover/resources/spectral_2"
+# INPUT1="/home/scripts/063-Special-Issue-IJF-Hannover/resources/volumetric_large_defos"
+# INPUT2="/home/scripts/063-Special-Issue-IJF-Hannover/resources/spectral_large_defos"
+# INPUT1="/home/scripts/063-Special-Issue-IJF-Hannover/resources/volumetric_2"
+# INPUT2="/home/scripts/063-Special-Issue-IJF-Hannover/resources/spectral_2"
+INPUT1="/home/scripts/063-Special-Issue-IJF-Hannover/resources/volumetric_eps_0.045"
+INPUT2="/home/scripts/063-Special-Issue-IJF-Hannover/resources/spectral_eps_0.015"
 
 # === Output folders (plots inside each input folder) ===
 OUTPUT1="${INPUT1}/plots"
