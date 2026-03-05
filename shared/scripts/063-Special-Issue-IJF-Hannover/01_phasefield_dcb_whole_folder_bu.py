@@ -25,7 +25,7 @@ import json
 # ---------------------------
 # CLI INPUT HANDLING
 # ---------------------------
-DEFAULT_FOLDER = os.path.join(os.path.dirname(__file__), "resources", "dcb_var_bcpos_E_var","export")
+DEFAULT_FOLDER = os.path.join(os.path.dirname(__file__), "resources", "250925_TTO_mbb_festlager_var_a_E_var_min_max","mbb_festlager_var_a_E_var")
 VALID_CASES = {"vary", "min", "max", "all", "fromfile"}
 DEFAULT_CASE = "vary"
 
@@ -231,21 +231,6 @@ for x_value in x_candidates:
                 else:
                     E_Grid[row, col] = np.nan
         return E_Grid
-    
-    def map_porosity_to_grid(cell_id_grid, cell_data_df):
-        porosity_grid = np.full(cell_id_grid.shape, np.nan)
-        porosity_values = cell_data_df['porosity'].values
-        
-        porosity_values = 1.0 - cell_data_df['porosity'].values # correction definition of porosity
-        for row in range(cell_id_grid.shape[0]):
-            for col in range(cell_id_grid.shape[1]):
-                cell_id = cell_id_grid[row, col]
-                if cell_id < len(porosity_values):
-                    porosity_grid[row, col] = porosity_values[cell_id]
-                else:
-                    porosity_grid[row, col] = np.nan
-                    
-        return porosity_grid
 
     def calculate_element_size(nodes_df):
         x1, y1 = nodes_df.iloc[0]['Points_0'], nodes_df.iloc[0]['Points_1']
@@ -268,107 +253,6 @@ for x_value in x_candidates:
 
     def create_emodulus_interpolator(nodes_df, E_grid):
         return lambda x: interpolate_pixel_data(E_grid, calculate_element_size(nodes_df), x[0], x[1])
-    
-    
-    # --------------------------------------------------
-# Generic pixel interpolation (UNCHANGED STYLE)
-# --------------------------------------------------
-    def interpolate_pixel_data(data, element_size, x_coords, y_coords, method='linear'):
-        grid_x, grid_y = np.meshgrid(
-            (np.arange(data.shape[1]) + 0.5) * element_size,
-            (np.arange(data.shape[0]) + 0.5) * element_size
-        )
-
-        points = np.column_stack((grid_x.ravel(), grid_y.ravel()))
-        values = data.ravel()
-        query_points = np.column_stack((x_coords, y_coords))
-
-        interpolated_values = griddata(points, values, query_points, method=method)
-
-        # Fallback to nearest if NaN
-        nan_mask = np.isnan(interpolated_values)
-        if np.any(nan_mask):
-            interpolated_values[nan_mask] = griddata(
-                points, values, query_points[nan_mask], method='nearest'
-            )
-
-        return interpolated_values
-
-
-    import numpy as np
-
-
-    def compute_jmax_grid_from_porosity(
-        porosity_grid,
-        A, B, C,
-        gc_min=0.1,
-        gc_max=1.0
-    ):
-        """
-        Converts a porosity grid into a Jmax grid using:
-
-            x = sqrt(pi / (4 phi)) - 1
-            Jmax = A - B exp(-C x)
-
-        Parameters
-        ----------
-        porosity_grid : ndarray
-        A, B, C : float
-            Fit parameters
-        gc_min : float or None
-            Minimum allowed gc value
-        gc_max : float or None
-            Maximum allowed gc value
-
-        Returns
-        -------
-        jmax_grid : ndarray
-        """
-
-        # Prevent division problems
-        phi = np.clip(porosity_grid, 1e-12, None)
-
-        # Convert porosity → ws/L
-        x = np.sqrt(np.pi / (4.0 * phi)) - 1.0
-
-        # Compute gc
-        jmax_grid = A - B * np.exp(-C * x)
-
-        # Apply bounds if requested
-        if gc_min is not None or gc_max is not None:
-            jmax_grid = np.clip(jmax_grid, gc_min, gc_max)
-
-        return jmax_grid
-
-
-    # --------------------------------------------------
-    # GC interpolator factory (same structure as E-modulus)
-    # --------------------------------------------------
-    def create_gc_interpolator(
-        nodes_df,
-        porosity_grid,
-        A, B, C,
-        gc_min=None,
-        gc_max=None
-    ):
-
-        element_size = calculate_element_size(nodes_df)
-
-        jmax_grid = compute_jmax_grid_from_porosity(
-            porosity_grid,
-            A, B, C,
-            gc_min=gc_min,
-            gc_max=gc_max
-        )
-
-        return lambda x: interpolate_pixel_data(
-            jmax_grid,
-            element_size,
-            x[0],
-            x[1]
-        )
-        
-        
     
       # Helper to read vol JSON produced previously (vol_{x_value}_vary.json)
     def read_E_average_from_vol_json(x_val):
@@ -398,7 +282,6 @@ for x_value in x_candidates:
     mesh_dims = infer_mesh_dimensions_from_nodes(nodes_df)
     cell_id_grid = arrange_cells_2D(connectivity_df, mesh_dims)
     E_grid = map_E_to_grid(cell_id_grid, cell_data_df)
-    porosity_grid = map_porosity_to_grid(cell_id_grid,cell_data_df)
     E_max, E_min = np.max(E_grid), 100000.0 #np.min(E_grid)
 
     # Plot E distribution (once per dataset index)
@@ -407,14 +290,6 @@ for x_value in x_candidates:
     plt.colorbar(label='E')
     plt.title(f'E Distribution for dataset {x_value}')
     plt.savefig(os.path.join(folder_path, f'E_distribution_{x_value}.png'), dpi=300)
-    plt.close()
-    
-    # Plot porosity distribution (once per dataset index)
-    plt.figure(figsize=(10, 8))
-    plt.imshow(porosity_grid, cmap='viridis', interpolation='nearest')
-    plt.colorbar(label='Porosity')
-    plt.title(f'Porosity Distribution for dataset {x_value}')
-    plt.savefig(os.path.join(folder_path, f'porosity_distribution_{x_value}.png'), dpi=300)
     plt.close()
 
     # ---------------------------
@@ -459,21 +334,16 @@ for x_value in x_candidates:
 
         # ---- Material fields
         E = dlfx.fem.Function(S)
-        porosity = dlfx.fem.Function(S)
         nu = dlfx.fem.Constant(domain=domain, c=0.3)
 
         # ---- Set E depending on case
         if case == "vary":
             E.interpolate(create_emodulus_interpolator(nodes_df, E_grid))
-            porosity.interpolate(create_emodulus_interpolator(nodes_df, porosity_grid))
         elif case == "min":
             E.x.array[:] = np.full_like(E.x.array[:], E_min)
-            porosity.interpolate(create_emodulus_interpolator(nodes_df, porosity_grid))
         elif case == "max":
             E.x.array[:] = np.full_like(E.x.array[:], E_max)
-            porosity.interpolate(create_emodulus_interpolator(nodes_df, porosity_grid))
         elif case == "fromfile":
-            
             # read vol_{x}_vary.json and get E_average
             try:
                 E_average_value = read_E_average_from_vol_json(x_value)
@@ -486,7 +356,6 @@ for x_value in x_candidates:
                 continue
             # assign constant value
             E.x.array[:] = np.full_like(E.x.array[:], E_average_value)
-            porosity.x.array[:] = np.full_like(porosity.x.array[:], 1.0)
             if rank == 0:
                 print(f"[INFO] For dataset {x_value} using E_average={E_average_value} from vol_{x_value}_vary.json")
         else:
@@ -518,26 +387,9 @@ for x_value in x_candidates:
         t_global = dlfx.fem.Constant(domain, 0.0000001)
         trestart_global = dlfx.fem.Constant(domain, t_global.value)
         Tend = 50.0 * dt_global.value * x_value
-        
-        # if case == "vary":
-        #     # hard coded from fit 
-        #     A = 1.243657
-        #     B = 3.150239
-        #     C = 2.850765
-        #     gc = dlfx.fem.Function(S)
-        #     gc.interpolate(create_gc_interpolator(nodes_df,porosity_grid,A,B,C))
-        # else:
-        #     gc = dlfx.fem.Constant(domain, 1.0)
-        
-        
-        A = 1.243657
-        B = 3.150239
-        C = 2.850765
-        gc = dlfx.fem.Function(S)
-        gc.interpolate(create_gc_interpolator(nodes_df,porosity_grid,A,B,C,gc_min=0.1,gc_max=1.0))    
-        
+        gc = dlfx.fem.Constant(domain, 1.0)
         eta = dlfx.fem.Constant(domain, 0.001)
-        epsilon = dlfx.fem.Constant(domain, 0.015) #epsilon = dlfx.fem.Constant(domain, 0.03)
+        epsilon = dlfx.fem.Constant(domain, 0.045) #epsilon = dlfx.fem.Constant(domain, 0.03)
         Mob = dlfx.fem.Constant(domain, 100.0)
         iMob = dlfx.fem.Constant(domain, 1.0 / Mob.value)
         
@@ -555,7 +407,7 @@ for x_value in x_candidates:
         phaseFieldProblem = pf.StaticPhaseFieldProblem2D_split(
             degradationFunction=pf.degrad_quadratic,
             psisurf=pf.psisurf_from_function,
-            split="volumetric",#"volumetric",
+            split="spectral",#"volumetric",
             geometric_nl=False
         )
         
@@ -790,8 +642,7 @@ for x_value in x_candidates:
             if int(success_timestep_counter.value) % int(postprocessing_interval.value) == 0:
                 pp.write_phasefield_mixed_solution(domain, results_xdmf_path, w, t, comm)
                 E.name = "E"
-                pp.write_scalar_fields(domain, comm, [E,gc], ["E","gc"], outputfile_xdmf_path=results_xdmf_path, t=t)
-                #pp.write_scalar_fields(domain, comm, [E], ["E"], outputfile_xdmf_path=results_xdmf_path, t=t)
+                pp.write_scalar_fields(domain, comm, [E], ["E"], outputfile_xdmf_path=results_xdmf_path, t=t)
                 pp.write_tensor_fields(domain, comm, [sigma], ["sig"], outputfile_xdmf_path=results_xdmf_path, t=t)
 
         def after_timestep_restart(t, dt, iters):

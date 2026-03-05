@@ -2,7 +2,7 @@
 #SBATCH -J dcb_phasefield_job
 #SBATCH -A p0023647
 #SBATCH -t 1440
-#SBATCH --mem-per-cpu=6000
+#SBATCH --mem-per-cpu=4000
 #SBATCH -n 4
 #SBATCH -N 1
 #SBATCH -e /home/as12vapa/dolfinx_alex/shared/scripts/063-Special-Issue-IJF-Hannover/slurm_logs/%x.err.%j
@@ -11,19 +11,23 @@
 #SBATCH -C i01
 
 # ==========================================
-# Set working directory
+# Host paths
 # ==========================================
 
-WORKDIR="/home/as12vapa/dolfinx_alex/shared/scripts/063-Special-Issue-IJF-Hannover"
-LOGDIR="$WORKDIR/slurm_logs"
+HOST_WORKDIR="/home/as12vapa/dolfinx_alex/shared/scripts/063-Special-Issue-IJF-Hannover"
+LOGDIR="$HOST_WORKDIR/slurm_logs"
+
+# Container setup
+CONTAINER="$HOME/dolfinx_alex/alex-dolfinx.sif"
+BINDPATH="$HOME/dolfinx_alex/shared:/home"
 
 mkdir -p "$LOGDIR"
 
-cd "$WORKDIR" || { echo "Failed to enter working directory"; exit 1; }
+cd "$HOST_WORKDIR" || { echo "Failed to enter working directory"; exit 1; }
 
 echo "========================================="
 echo "Job started at $(date)"
-echo "Running in $(pwd)"
+echo "Running in $HOST_WORKDIR"
 echo "========================================="
 
 # ==========================================
@@ -40,15 +44,23 @@ run_case () {
     echo "Started at $(date)"
     echo "-----------------------------------------"
 
-    # Mesh conversion
-    srun -n 1 python3 04_mesh2dlfxmesh.py "$FOLDER"
+    # Mesh conversion (serial)
+    srun -n 1 apptainer exec \
+        --bind $BINDPATH \
+        $CONTAINER \
+        python3 /home/scripts/063-Special-Issue-IJF-Hannover/04_mesh2dlfxmesh.py "$FOLDER"
+
     if [ $? -ne 0 ]; then
         echo "Mesh conversion failed!"
         exit 1
     fi
 
-    # Phasefield
-    srun -n 4 python3 01_phasefield_dcb_whole_folder.py "$FOLDER" "$MODE" 1 20
+    # Phasefield simulation (MPI parallel)
+    srun -n 4 apptainer exec \
+        --bind $BINDPATH \
+        $CONTAINER \
+        python3 /home/scripts/063-Special-Issue-IJF-Hannover/01_phasefield_dcb_whole_folder.py "$FOLDER" "$MODE" 1 20
+
     if [ $? -ne 0 ]; then
         echo "Phasefield simulation failed!"
         exit 1
@@ -62,16 +74,16 @@ run_case () {
 # ==========================================
 
 # --- E_var ---
-FOLDER="$WORKDIR/resources/dcb_var_bcpos_E_var/export"
+FOLDER="/home/scripts/063-Special-Issue-IJF-Hannover/resources/dcb_var_bcpos_E_var/export"
 run_case "$FOLDER" "vary"
 run_case "$FOLDER" "fromfile"
 
 # --- E_max ---
-FOLDER="$WORKDIR/resources/dcb_var_bcpos_E_max/export"
+FOLDER="/home/scripts/063-Special-Issue-IJF-Hannover/resources/dcb_var_bcpos_E_max/export"
 run_case "$FOLDER" "max"
 
 # --- E_min ---
-FOLDER="$WORKDIR/resources/dcb_var_bcpos_E_min/export"
+FOLDER="/home/scripts/063-Special-Issue-IJF-Hannover/resources/dcb_var_bcpos_E_min/export"
 run_case "$FOLDER" "min"
 
 echo "========================================="
