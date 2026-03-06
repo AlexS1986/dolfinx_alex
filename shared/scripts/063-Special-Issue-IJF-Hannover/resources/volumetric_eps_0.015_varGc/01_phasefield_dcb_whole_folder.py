@@ -381,24 +381,6 @@ for x_value in x_candidates:
             raise KeyError(f"'E_average' not found in {vol_filename}. File contents: {list(data.keys())}")
         return float(data["E_average"])
     
-    def read_field_from_vol_json(x_val, field):
-        vol_filename = os.path.join(folder_path, f"vol_{x_val}_vary.json")
-        
-        if not os.path.exists(vol_filename):
-            raise FileNotFoundError(
-                f"Expected volume file for case 'fromfile' not found: {vol_filename}"
-            )
-
-        with open(vol_filename, "r") as f:
-            data = json.load(f)
-
-        if field not in data:
-            raise KeyError(
-                f"'{field}' not found in {vol_filename}. File contents: {list(data.keys())}"
-            )
-
-        return float(data[field])
-    
 
     def log_convergence_status(x_value, case, status):
         if rank == 0:
@@ -494,8 +476,7 @@ for x_value in x_candidates:
             
             # read vol_{x}_vary.json and get E_average
             try:
-                E_average_value = read_field_from_vol_json(x_value,"E_average") #read_E_average_from_vol_json(x_value)
-                porosity_average_value = read_field_from_vol_json(x_value,"porosity_average")
+                E_average_value = read_E_average_from_vol_json(x_value)
             except Exception as e:
                 # ensure we report and stop this case cleanly
                 if rank == 0:
@@ -505,10 +486,9 @@ for x_value in x_candidates:
                 continue
             # assign constant value
             E.x.array[:] = np.full_like(E.x.array[:], E_average_value)
-            porosity.x.array[:] = np.full_like(porosity.x.array[:], porosity_average_value)
+            porosity.x.array[:] = np.full_like(porosity.x.array[:], 1.0)
             if rank == 0:
                 print(f"[INFO] For dataset {x_value} using E_average={E_average_value} from vol_{x_value}_vary.json")
-                print(f"[INFO] For dataset {x_value} using porosity_average={E_average_value} from vol_{x_value}_vary.json")
         else:
             # should not happen, but guard
             raise ValueError(f"Unhandled case: {case}")
@@ -557,7 +537,7 @@ for x_value in x_candidates:
         gc.interpolate(create_gc_interpolator(nodes_df,porosity_grid,A,B,C,gc_min=0.1,gc_max=1.0))    
         
         eta = dlfx.fem.Constant(domain, 0.001)
-        epsilon = dlfx.fem.Constant(domain, 0.03) #epsilon = dlfx.fem.Constant(domain, 0.03)
+        epsilon = dlfx.fem.Constant(domain, 0.015) #epsilon = dlfx.fem.Constant(domain, 0.03)
         Mob = dlfx.fem.Constant(domain, 100.0)
         iMob = dlfx.fem.Constant(domain, 1.0 / Mob.value)
         
@@ -740,8 +720,6 @@ for x_value in x_candidates:
         dx = ufl.Measure("dx", domain=domain)
         vol = alex.homogenization.get_filled_vol(dx=dx,comm=comm)
         E_average = pp.get_volume_average_of_field(E,vol,dx=ufl.dx,comm=comm)
-        porosity_average = pp.get_volume_average_of_field(porosity,vol,dx=ufl.dx,comm=comm)
-        
         
         def write_vol_data_to_file():
             if rank == 0:
@@ -749,7 +727,6 @@ for x_value in x_candidates:
                 volumes_data = {
                         "vol": vol,
                         "E_average": E_average,
-                        "porosity_average": porosity_average,
                     }
                 with open(vol_path, "w") as f:
                     json.dump(volumes_data, f, indent=4)
