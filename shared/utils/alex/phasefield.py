@@ -13,21 +13,49 @@ import alex.hyperelastic as hyp
 
 
 
-def degrad_quadratic(s: any, eta: dlfx.fem.Constant) -> any:
-    degrad = s**2+eta
+# def degrad_quadratic(s: any, eta: dlfx.fem.Constant) -> any:
+#     degrad = s**2+eta
+#     return degrad
+
+# def degds_quadratic(s: any) -> any:
+#     degds = 2.0 * s
+#     return degds
+
+
+
+def quadratic_degradation():
+
+    def degrad(s, eta):
+        return s**2 + eta
+
+    def degds(s):
+        return 2.0 * s
+
+    degrad.derivative = degds
+    degrad.name = "quadratic"
+
     return degrad
 
-def degds_quadratic(s: any) -> any:
-    degds = 2.0 * s
-    return degds
+def cubic_degradation(beta=0.1):
 
-def degrad_cubic(s: any, eta: dlfx.fem.Constant, beta=0.01) -> any:
-    degrad = beta * ((s ** 2) * s - (s ** 2)) + 3.0 * (s ** 2) - 2.0*(s ** 2) * s + eta
+    def degrad(s, eta):
+        return beta*((s**2)*s-(s**2)) + 3.0*(s**2) - 2.0*(s**2)*s + eta
+
+    def degds(s):
+        return beta*(3.0*(s**2)-2.0*s) + 6.0*s - 6.0*s**2
+
+    degrad.derivative = degds
+    degrad.name = "cubic"
+
     return degrad
 
-def degds_cubic(s: any, beta=0.2) -> any:
-    degds = beta * (3.0*(s ** 2)  - 2.0*s) + 6.0 * s - 6.0 * s ** 2
-    return degds
+# def degrad_cubic(s: any, eta: dlfx.fem.Constant, beta=0.1) -> any:
+#     degrad = beta * ((s ** 2) * s - (s ** 2)) + 3.0 * (s ** 2) - 2.0*(s ** 2) * s + eta
+#     return degrad
+
+# def degds_cubic(s: any, beta=0.1) -> any:
+#     degds = beta * (3.0*(s ** 2)  - 2.0*s) + 6.0 * s - 6.0 * s ** 2
+#     return degds
 
 def sig_c_quadr_deg(Gc, mu, epsilon):
     return 9.0/16.0 * math.sqrt(Gc*2.0*mu/(6.0*epsilon))
@@ -203,10 +231,13 @@ class StaticPhaseFieldProblem2D_split:
         self.geometric_nl = geometric_nl
         self.traction = 0.0
         
-        if degradationFunction.__name__.__contains__("quadratic"):
-            self.degds = degds_quadratic
-        elif degradationFunction.__name__.__contains__("cubic"):
-            self.degds = degds_cubic
+        self.degrad = degradationFunction
+        self.degds = degradationFunction.derivative
+        
+        # if degradationFunction.__name__.__contains__("quadratic"):
+        #     self.degds = degds_quadratic
+        # elif degradationFunction.__name__.__contains__("cubic"):
+        #     self.degds = degds_cubic
         # self.z = dlfx.fem.Constant(domain,0.0)
         # self.Id = ufl.as_matrix([[1,self.z],
         #             [self.z,1]])
@@ -455,10 +486,12 @@ class StaticPhaseFieldProblem2D_incremental:
                        dx: any = ufl.dx,
                  ):
         self.degradation_function = degradationFunction
-        if degradationFunction.__name__.__contains__("quadratic"):
-            self.degds = degds_quadratic
-        elif degradationFunction.__name__.__contains__("cubic"):
-            self.degds = degds_cubic
+        # if degradationFunction.__name__.__contains__("quadratic"):
+        #     self.degds = degds_quadratic
+        # elif degradationFunction.__name__.__contains__("cubic"):
+        #     self.degds = degds_cubic
+        self.degrad = degradationFunction
+        self.degds = degradationFunction.derivative
 
         # Set all parameters here! Material etc
         self.psisurf : Callable = psisurf
@@ -555,11 +588,13 @@ class StaticPhaseFieldProblem_plasticity_noll:
                        e_p_n: any,
                        dx: any = ufl.dx,
                  ):
-        self.degradation_function = degradationFunction
-        if degradationFunction.__name__.__contains__("quadratic"):
-            self.degds = degds_quadratic
-        elif degradationFunction.__name__.__contains__("cubic"):
-            self.degds = degds_cubic
+        # self.degradation_function = degradationFunction
+        # if degradationFunction.__name__.__contains__("quadratic"):
+        #     self.degds = degds_quadratic
+        # elif degradationFunction.__name__.__contains__("cubic"):
+        #     self.degds = degds_cubic
+        self.degrad = degradationFunction
+        self.degds = degradationFunction.derivative
 
         # Set all parameters here! Material etc
         self.psisurf : Callable = psisurf
@@ -694,11 +729,13 @@ class StaticPhaseFieldProblem2D_incremental_plasticity:
                        H: any,
                        dx: any = ufl.dx,
                  ):
-        self.degradation_function = degradationFunction
-        if degradationFunction.__name__.__contains__("quadratic"):
-            self.degds = degds_quadratic
-        elif degradationFunction.__name__.__contains__("cubic"):
-            self.degds = degds_cubic
+        # self.degradation_function = degradationFunction
+        # if degradationFunction.__name__.__contains__("quadratic"):
+        #     self.degds = degds_quadratic
+        # elif degradationFunction.__name__.__contains__("cubic"):
+        #     self.degds = degds_cubic
+        self.degrad = degradationFunction
+        self.degds = degradationFunction.derivative
 
         # Set all parameters here! Material etc
         self.psisurf : Callable = psisurf

@@ -23,6 +23,10 @@ import basix
 import shutil
 from datetime import datetime
 
+from functools import partial
+
+
+
 class StopSimulation(Exception):
     pass
 
@@ -192,7 +196,9 @@ e_p_n_3D = ufl.as_tensor([[e_p_11_n, e_p_12_n, 0.0],
 # phaseFieldProblem = pf.StaticPhaseFieldProblem2D_incremental_plasticity(degradationFunction=pf.degrad_cubic,
 #                                                    psisurf=pf.psisurf_from_function,dx=dx, sig_y=sig_y.value, hard=hard.value,alpha_n=alpha_n,e_p_n=e_p_n_3D,H=H)
 
-phaseFieldProblem = pf.StaticPhaseFieldProblem_plasticity_noll(degradationFunction=pf.degrad_cubic,
+degrad_beta05 = partial(pf.degrad_cubic, beta=0.1)
+
+phaseFieldProblem = pf.StaticPhaseFieldProblem_plasticity_noll(degradationFunction=degrad_beta05,
                                                    psisurf=pf.psisurf_from_function,dx=dx, sig_y=sig_y.value, hard=hard.value,alpha_n=alpha_n,e_p_n=e_p_n_3D)
 
 

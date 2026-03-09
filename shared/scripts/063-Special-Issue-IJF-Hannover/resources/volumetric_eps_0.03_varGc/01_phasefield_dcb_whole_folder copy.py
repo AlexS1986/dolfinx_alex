@@ -557,7 +557,7 @@ for x_value in x_candidates:
         gc.interpolate(create_gc_interpolator(nodes_df,porosity_grid,A,B,C,gc_min=0.1,gc_max=1.0))    
         
         eta = dlfx.fem.Constant(domain, 0.001)
-        epsilon = dlfx.fem.Constant(domain, 0.015) #epsilon = dlfx.fem.Constant(domain, 0.03)
+        epsilon = dlfx.fem.Constant(domain, 0.03) #epsilon = dlfx.fem.Constant(domain, 0.03)
         Mob = dlfx.fem.Constant(domain, 100.0)
         iMob = dlfx.fem.Constant(domain, 1.0 / Mob.value)
         

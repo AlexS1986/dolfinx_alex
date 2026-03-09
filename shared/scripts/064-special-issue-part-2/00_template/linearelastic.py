@@ -110,38 +110,60 @@ atol=(x_max_all-x_min_all)*0.05 # for selection of boundary
 
 u_D = dlfx.fem.Function(V)
 
-u_scalar = dlfx.fem.Function(S)
+x = ufl.SpatialCoordinate(domain)
+
+alpha=1.0
+beta=0.05
+
+def compute_mixed_bc_u(eps_rate,t,direction=0):
+    u = eps_rate*x[direction]*t
+    return ufl.as_ufl(u)
+     
 
 
+# boundary = bc.get_boundary_of_box_as_function(domain,comm,atol=atol)
+# facets_at_boundary = dlfx.mesh.locate_entities_boundary(domain, fdim, boundary)
+# dofs_at_boundary = dlfx.fem.locate_dofs_topological(V, fdim, facets_at_boundary) 
 
-boundary = bc.get_boundary_of_box_as_function(domain,comm,atol=atol)
-facets_at_boundary = dlfx.mesh.locate_entities_boundary(domain, fdim, boundary)
-dofs_at_boundary = dlfx.fem.locate_dofs_topological(V, fdim, facets_at_boundary) 
-
-left_right_boundary = bc.get_leftright_boundary_of_box_as_function(domain,atol=atol)
+left_right_boundary = bc.get_leftright_boundary_of_box_as_function(domain,atol=atol,comm=comm)
 facets_at_left_right_boundary = dlfx.mesh.locate_entities_boundary(domain, fdim, left_right_boundary)
-dofs_at_left_right_boundary = dlfx.fem.locate_dofs_topological(V, fdim, facets_at_left_right_boundary) 
+dofs_at_left_right_boundary = dlfx.fem.locate_dofs_topological(V.sub(0), fdim, facets_at_left_right_boundary) 
+#bc_expression_left_right = dlfx.fem.Expression(compute_mixed_bc_u(eps_rate=(alpha+beta),direction=0,t=t),V.sub(0).element.interpolation_points())
 
 
-eps_mac = dlfx.fem.Constant(domain, np.array([[0.0, 0.0, 0.0],
-                     [0.0, 0.0, 0.0],
-                     [0.0, 0.0, 0.0]]))
+top_bottom_boundary = bc.get_top_boundary_of_box_as_function(domain,atol=atol,comm=comm)
+facets_at_top_bottom_boundary = dlfx.mesh.locate_entities_boundary(domain, fdim, top_bottom_boundary)
+dofs_at_top_bottom_boundary = dlfx.fem.locate_dofs_topological(V.sub(1), fdim, facets_at_top_bottom_boundary) 
+#bc_expression_top_bottom = dlfx.fem.Expression(compute_mixed_bc_u(eps_rate=(-alpha+beta),direction=1,t=t),V.sub(1).element.interpolation_points())
+
+
+front_back_boundary = bc.get_frontback_boundary_of_box_as_function(domain,atol=atol,comm=comm)
+facets_at_front_back_boundary = dlfx.mesh.locate_entities_boundary(domain, fdim, front_back_boundary)
+dofs_at_front_back_boundary = dlfx.fem.locate_dofs_topological(V.sub(2), fdim, facets_at_front_back_boundary) 
+#bc_expression_front_back = dlfx.fem.Expression(compute_mixed_bc_u(eps_rate=beta,direction=2,t=t),V.sub(2).element.interpolation_points())
+
+
+
+
+eps_mac = dlfx.fem.Constant(domain, np.array([[(alpha+beta)*t.value, 0.0, 0.0],
+                     [0.0, (-alpha+beta)*t.value, 0.0],
+                     [0.0, beta*t.value, 0.0]]))
 
 
 def get_bcs(t):
-    Eps_Voigt = np.zeros((6,))
-    Eps_Voigt[int(t)] = 1.0
+    # Eps_Voigt = np.zeros((6,))
+    # Eps_Voigt[int(t)] = 1.0
     
-    eps_mac.value = np.array([[Eps_Voigt[0], Eps_Voigt[5]/2.0, Eps_Voigt[4]/2.0],
-                                              [Eps_Voigt[5]/2.0, Eps_Voigt[1], Eps_Voigt[3]/2.0],
-                                              [Eps_Voigt[4]/2.0, Eps_Voigt[3]/2.0, Eps_Voigt[2]]])
+    # eps_mac.value = np.array([[Eps_Voigt[0], Eps_Voigt[5]/2.0, Eps_Voigt[4]/2.0],
+    #                                           [Eps_Voigt[5]/2.0, Eps_Voigt[1], Eps_Voigt[3]/2.0],
+    #                                           [Eps_Voigt[4]/2.0, Eps_Voigt[3]/2.0, Eps_Voigt[2]]])
         
-    if (t>5):
-         eps_mac.value = np.array([[0.0, 0.0, 0.0],
-                     [0.0, 0.0, 0.0],
-                     [0.0, 0.0, 0.0]])
+    # if (t>5):
+    #      eps_mac.value = np.array([[0.0, 0.0, 0.0],
+    #                  [0.0, 0.0, 0.0],
+    #                  [0.0, 0.0, 0.0]])
     
-    comm.barrier()
+    # comm.barrier()
     
     def compute_linear_displacement():
         x = ufl.SpatialCoordinate(domain)
@@ -153,23 +175,35 @@ def get_bcs(t):
         return ufl.as_vector([u_x, u_y, u_z])
     
     
-    x = ufl.SpatialCoordinate(domain)
-    def compute_mixed_bc_u(eps,direction=0):
-         u = eps*x[direction]
-         return ufl.as_ufl(u)
+
      
-     
-    bc_expression_left_right = dlfx.fem.Expression(compute_mixed_bc_u(direction=0),V.sub(0).element.interpolation_points())
+   
     bc_expression = dlfx.fem.Expression(compute_linear_displacement(),V.element.interpolation_points())
-    u_scalar.interpolate(bc_expression_left_right)
-    bc_left_right = dlfx.fem.dirichletbc(u_scalar,dofs_at_left_right_boundary)
-    
-    
     u_D.interpolate(bc_expression)
     
-    bc_linear_displacement = dlfx.fem.dirichletbc(u_D,dofs_at_boundary)
+    # u_D.sub(0).interpolate(bc_expression_left_right)
+    # u_D.sub(1).interpolate(bc_expression_top_bottom )
+    # u_D.sub(2).interpolate(bc_expression_front_back)
     
-    bcs = [bc_linear_displacement]
+    bc_left_right = dlfx.fem.dirichletbc(u_D,dofs_at_left_right_boundary,V)
+    bc_top_bottom = dlfx.fem.dirichletbc(u_D,dofs_at_top_bottom_boundary,V)
+    bc_front_back = dlfx.fem.dirichletbc(u_D,dofs_at_front_back_boundary,V)
+    
+    
+    # u_D.interpolate(bc_expression)
+    
+    # bc_linear_displacement = dlfx.fem.dirichletbc(u_D,dofs_at_boundary)
+    
+    ux_right = 1.0
+    ux_left = 0.0
+    
+    bc_right = bc.define_dirichlet_bc_from_value(domain,ux_right,0,bc.get_right_boundary_of_box_as_function(domain,comm,atol),V,0)
+    bc_left = bc.define_dirichlet_bc_from_value(domain,ux_left,0,bc.get_left_boundary_of_box_as_function(domain,comm,atol),V,0)
+    
+    
+    bcs = [bc_left, bc_right]
+    
+    #bcs = [bc_left_right, bc_top_bottom, bc_front_back]
     return bcs
 
 #n = ufl.FacetNormal(domain)
