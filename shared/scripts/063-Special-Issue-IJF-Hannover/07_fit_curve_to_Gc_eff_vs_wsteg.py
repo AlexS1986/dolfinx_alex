@@ -13,6 +13,12 @@ x_data = np.array([0.5, 0.8, 1.0, 1.2, 2.0, 3.0, 4.0])  # w_s / L
 y_data = np.array([0.48, 0.95, 1.05, 1.12, 1.22, 1.25, 1.26])  # Jmax / Geff
 
 # --------------------------------------------------
+# J bounds (user-adjustable)
+# --------------------------------------------------
+min_value_J = 0.1
+max_value_J = 1.0
+
+# --------------------------------------------------
 # Model: exponential saturation
 # --------------------------------------------------
 def saturation_model(x, A, B, C):
@@ -38,14 +44,19 @@ x_fit = np.linspace(min(x_data), max(x_data), 500)
 y_fit = saturation_model(x_fit, A, B, C)
 
 # --------------------------------------------------
-# Porosity function
-# phi = (pi/4) * L^2 / (L + w_s)^2
-# Using x = w_s/L  →  phi = (pi/4) / (1 + x)^2
+# Generate porosity range explicitly (0 → 0.5)
+# Avoid phi = 0 to prevent division by zero
 # --------------------------------------------------
-phi_fit = (np.pi / 4.0) / (1.0 + x_fit)**2
+phi_plot = np.linspace(1e-4, 0.5, 500)
 
-# Jmax as function of porosity (parametric form)
-J_phi = y_fit
+# Invert porosity relation to get x
+x_from_phi = np.sqrt(np.pi / (4.0 * phi_plot)) - 1.0
+
+# Compute corresponding J values
+y_from_phi = saturation_model(x_from_phi, A, B, C)
+
+# Apply clipping
+J_phi_clipped = np.clip(y_from_phi, min_value_J, max_value_J)
 
 # --------------------------------------------------
 # Plotting
@@ -73,11 +84,19 @@ ax1.text(0.05, 0.05, param_text,
          verticalalignment='bottom',
          bbox=dict(boxstyle="round"))
 
-# ---- Plot 2: Jmax vs porosity ----
+# ---- Plot 2: Jmax vs porosity (0 → 0.5) ----
 ax2 = fig.add_subplot(1, 2, 2)
-ax2.plot(phi_fit, J_phi)
+
+# Original (unclipped)
+ax2.plot(phi_plot, y_from_phi, linestyle='--', label='Original')
+
+# Clipped
+ax2.plot(phi_plot, J_phi_clipped, label='Clipped')
+
+ax2.set_xlim(0, 0.5)
 ax2.set_xlabel(r'Porosity $\phi$')
 ax2.set_ylabel(r'$J_{max}/G_{eff}$')
+ax2.legend()
 ax2.grid(True)
 
 plt.tight_layout()

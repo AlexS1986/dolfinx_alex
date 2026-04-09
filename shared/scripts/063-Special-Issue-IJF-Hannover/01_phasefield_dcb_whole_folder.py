@@ -21,6 +21,7 @@ import alex.os
 import alex.boundaryconditions as bc
 import alex.solution as sol
 import json
+from pathlib import Path
 
 # ---------------------------
 # CLI INPUT HANDLING
@@ -28,6 +29,54 @@ import json
 DEFAULT_FOLDER = os.path.join(os.path.dirname(__file__), "resources", "dcb_var_bcpos_E_var","export")
 VALID_CASES = {"vary", "min", "max", "all", "fromfile"}
 DEFAULT_CASE = "vary"
+
+
+
+def read_params(file_path):
+    def parse_value(value):
+        value = value.strip()
+
+        # range like 0.5:0.5:10.0
+        if ":" in value:
+            parts = value.split(":")
+            try:
+                start, step, end = map(float, parts)
+                n = int((end - start) / step) + 1
+                return [start + i * step for i in range(n)]
+            except ValueError:
+                pass
+
+        # float
+        try:
+            return float(value)
+        except ValueError:
+            pass
+
+        # boolean
+        if value.lower() == "true":
+            return True
+        if value.lower() == "false":
+            return False
+
+        # empty array like Any[]
+        if value.endswith("[]"):
+            return []
+
+        # fallback (string)
+        return value
+
+    params = {}
+
+    with open(file_path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or "=" not in line:
+                continue
+
+            key, value = line.split("=", 1)
+            params[key.strip()] = parse_value(value)
+
+    return params
 
 def parse_args(argv, rank=0):
     """
@@ -93,6 +142,13 @@ def parse_args(argv, rank=0):
 
 folder_path, dataset_start, dataset_end, case_param = parse_args(sys.argv)
 
+# read optimization parameters
+params_optimization_path = Path(folder_path).parent / "params.txt"
+params_optimization = read_params(params_optimization_path)
+
+E0toE1=params_optimization["E0toE1"]
+E_max = params_optimization["E"]
+E_min = E_max * E0toE1
 print(f"[INFO] Using folder: {folder_path}")
 
 # ---------------------------
@@ -417,7 +473,7 @@ for x_value in x_candidates:
     cell_id_grid = arrange_cells_2D(connectivity_df, mesh_dims)
     E_grid = map_E_to_grid(cell_id_grid, cell_data_df)
     porosity_grid = map_porosity_to_grid(cell_id_grid,cell_data_df)
-    E_max, E_min = np.max(E_grid), 100000.0 #np.min(E_grid)
+    #E_max, E_min = np.max(E_grid), 100000.0 #np.min(E_grid)
 
     # Plot E distribution (once per dataset index)
     plt.figure(figsize=(10, 8))
@@ -557,7 +613,7 @@ for x_value in x_candidates:
         gc.interpolate(create_gc_interpolator(nodes_df,porosity_grid,A,B,C,gc_min=0.1,gc_max=1.0))    
         
         eta = dlfx.fem.Constant(domain, 0.001)
-        epsilon = dlfx.fem.Constant(domain, 0.03) #epsilon = dlfx.fem.Constant(domain, 0.03)
+        epsilon = dlfx.fem.Constant(domain,0.015) #epsilon = dlfx.fem.Constant(domain, 0.03)
         Mob = dlfx.fem.Constant(domain, 100.0)
         iMob = dlfx.fem.Constant(domain, 1.0 / Mob.value)
         
@@ -573,9 +629,9 @@ for x_value in x_candidates:
         ddw = ufl.TrialFunction(W)
 
         phaseFieldProblem = pf.StaticPhaseFieldProblem2D_split(
-            degradationFunction=pf.degrad_quadratic,
+            degradationFunction=pf.quadratic_degradation(),
             psisurf=pf.psisurf_from_function,
-            split="volumetric",#"volumetric",
+            split="spectral",#"volumetric",
             geometric_nl=False
         )
         
@@ -609,9 +665,9 @@ for x_value in x_candidates:
             )
 
         n = ufl.FacetNormal(domain)
-        external_surface_tag = 5
-        external_surface_tags = pp.tag_part_of_boundary(domain,bc.get_boundary_of_box_as_function(domain, comm,atol=atol*0.0),external_surface_tag)
-        ds = ufl.Measure('ds', domain=domain, subdomain_data=external_surface_tags)
+        # external_surface_tag = 5
+        # external_surface_tags = pp.tag_part_of_boundary(domain,bc.get_boundary_of_box_as_function(domain, comm,atol=atol*0.0),external_surface_tag)
+        # ds = ufl.Measure('ds', domain=domain, subdomain_data=external_surface_tags)
         
         
         
@@ -625,42 +681,24 @@ for x_value in x_candidates:
         postprocessing_interval = dlfx.fem.Constant(domain, 50.0)
 
 
-        sigma_at_surface = dlfx.fem.Constant(domain, np.array([[0.0, 0.0],
-                    [0.0, -1.0]]))
-        sigma_amplitude = 1.0
+        
+        load_left_bc_function = bc.get_x_range_at_top_of_box_as_function(domain,comm,width_applied_load,(x_max_all-x_min_all) / 3 + x_min_all,atol=atol_bc)
+        load_right_bc_function = bc.get_x_range_at_top_of_box_as_function(domain,comm,width_applied_load,2*(x_max_all-x_min_all) / 3 + x_min_all,atol=atol_bc)
+
+        left_bc_tag = 1
+        left_bc_surface_tags = pp.tag_part_of_boundary(
+            domain, load_left_bc_function, left_bc_tag
+        )
+        ds_left_bc_tagged = ufl.Measure('ds', domain=domain, subdomain_data=left_bc_surface_tags)
+        
+        right_bc_tag = 1
+        right_bc_surface_tags = pp.tag_part_of_boundary(
+            domain, load_right_bc_function, right_bc_tag
+        )
+        ds_right_bc_tagged = ufl.Measure('ds', domain=domain, subdomain_data=right_bc_surface_tags)
 
         def get_bcs(t):
            
-            # bcs = [
-            #     bc.define_dirichlet_bc_from_value(domain, -t_global.value, 1,
-            #                                       bc.get_top_boundary_of_box_as_function(domain, comm, atol=atol_bc), W, 0),
-            #     bc.define_dirichlet_bc_from_value(domain, 0.0, 1,
-            #                                       bc.get_bottom_boundary_of_box_as_function(domain, comm, atol=atol_bc), W, 0),
-            #     bc.define_dirichlet_bc_from_value(domain, 0.0, 0,
-            #                                       bc.get_left_boundary_of_box_as_function(domain, comm, atol=atol_bc), W, 0),
-            #     bc.define_dirichlet_bc_from_value(domain, 0.0, 0,
-            #                                       bc.get_right_boundary_of_box_as_function(domain, comm, atol=atol_bc), W, 0)
-            # ]
-            
-            # if rank == 0:
-            #     print("x_value:", x_value)
-            #     print("increment_a:", increment_a)
-
-            #     value1 = (2 * float(x_value) * increment_a) / 3
-            #     value2 = (float(x_value) * increment_a) / 3
-
-            #     print("(2 * float(x_value) * increment_a) / 3 =", value1)
-            #     print("(float(x_value) * increment_a) / 3 =", value2)
-
-            #     print("x_min:", x_min_all)
-            #     print("x_max:", x_max_all)
-
-            #     value3 = 2 * (x_max_all - x_min_all) / 3 + x_min_all
-            #     value4 = (x_max_all - x_min_all) / 3 + x_min_all
-
-            #     print("2*(x_max_all - x_min_all)/3 + x_min_all =", value3)
-            #     print("(x_max_all - x_min_all)/3 + x_min_all   =", value4)
-                
             
             bcs = [
                 # left
@@ -681,21 +719,16 @@ for x_value in x_candidates:
                 #                                    bc.get_x_range_at_top_of_box_as_function(domain,comm,width_applied_load,(float(x_value) * increment_a) / 3,atol=atol_bc), W, 0),
                 
                 bc.define_dirichlet_bc_from_value(domain, -t_global.value, 1,
-                                                   bc.get_x_range_at_top_of_box_as_function(domain,comm,width_applied_load,(x_max_all-x_min_all) / 3 + x_min_all,atol=atol_bc), W, 0),
+                                                   load_left_bc_function, W, 0),
                 bc.define_dirichlet_bc_from_value(domain, 0.0, 0,
-                                                   bc.get_x_range_at_top_of_box_as_function(domain,comm,width_applied_load,(x_max_all-x_min_all) / 3 + x_min_all,atol=atol_bc), W, 0),
+                                                   load_left_bc_function, W, 0),
                 
                 
                 #dcb_force_2
-                # bc.define_dirichlet_bc_from_value(domain, -t_global.value, 1,
-                #                                    bc.get_x_range_at_top_of_box_as_function(domain,comm,width_applied_load,(2*float(x_value) * increment_a) / 3,atol=atol_bc), W, 0),
-                # bc.define_dirichlet_bc_from_value(domain, 0.0, 0,
-                #                                    bc.get_x_range_at_top_of_box_as_function(domain,comm,width_applied_load,(2*float(x_value) * increment_a) / 3,atol=atol_bc), W, 0),
-                
                 bc.define_dirichlet_bc_from_value(domain, -t_global.value, 1,
-                                                   bc.get_x_range_at_top_of_box_as_function(domain,comm,width_applied_load,2*(x_max_all-x_min_all) / 3 + x_min_all,atol=atol_bc), W, 0),
+                                                   load_right_bc_function, W, 0),
                 bc.define_dirichlet_bc_from_value(domain, 0.0, 0,
-                                                   bc.get_x_range_at_top_of_box_as_function(domain,comm,width_applied_load,2*(x_max_all-x_min_all) / 3 + x_min_all,atol=atol_bc), W, 0),
+                                                   load_right_bc_function, W, 0),
                 
                 
             ]
@@ -773,7 +806,9 @@ for x_value in x_candidates:
             sigma_interpolated.name = tensor_field_name
             
             # Reaction force at top boundary
-            Rx_top, Ry_top = pp.reaction_force(sigma_interpolated, n=n, ds=ds_top_tagged(top_surface_tag), comm=comm)
+            Rx_top, Ry_top_left = pp.reaction_force(sigma_interpolated, n=n, ds=ds_left_bc_tagged(1), comm=comm)
+            Rx_top, Ry_top_right = pp.reaction_force(sigma_interpolated, n=n, ds=ds_right_bc_tagged(1), comm=comm)
+            #Rx_top, Ry_top = pp.reaction_force(sigma_interpolated, n=n, ds=ds_top_tagged(top_surface_tag), comm=comm)
 
             # Get vertical displacement u_y at top boundary dofs
             if len(w.x.array[dofs_at_boundary_y]) > 0:
@@ -790,15 +825,18 @@ for x_value in x_candidates:
 
             
             # dW = pp.work_increment_external_forces(sigma,u,um1,n,ds_top_tagged(top_surface_tag),comm=comm)
-            dW = pp.work_increment_external_forces(sigma_interpolated,u,um1,n,ds=ufl.ds,comm=comm)
-            Work.value = Work.value + dW
+            #dW = pp.work_increment_external_forces(sigma_interpolated,u,um1,n,ds=ufl.ds,comm=comm)
+            dW_left = pp.work_increment_external_forces(sigma_interpolated,u,um1,n,ds=ds_left_bc_tagged(left_bc_tag),comm=comm)
+            dW_right = pp.work_increment_external_forces(sigma_interpolated,u,um1,n,ds=ds_right_bc_tagged(right_bc_tag),comm=comm)
+            dW = dW_left + dW_right
+            Work.value = Work.value +dW
     
             A = pf.get_surf_area(s,epsilon=epsilon,dx=ufl.dx, comm=comm)
     
             E_el = phaseFieldProblem.get_E_el_global(s,eta,u,lam,mue,dx=ufl.dx,comm=comm)
     
             if rank == 0:
-                pp.write_to_graphs_output_file(outputfile_graph_path, t, u_y_top, Ry_top, dW, Work.value, A, E_el)
+                pp.write_to_graphs_output_file(outputfile_graph_path, t, u_y_top, Ry_top_left, dW, Work.value, A, E_el,Ry_top_right)
 
             if rank == 0:
                 sol.write_to_newton_logfile(logfile_path, t, dt, iters)
