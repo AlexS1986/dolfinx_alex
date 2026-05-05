@@ -1,7 +1,6 @@
 # Fdb version 3
-["pdflatex"] 1777894026 "/home/scripts/046_plasticity/KLAIM_2025/schlueter_medda_mueller_klaim_2025.tex" "schlueter_medda_mueller_klaim_2025.pdf" "schlueter_medda_mueller_klaim_2025" 1777894032
+["pdflatex"] 1777906836 "schlueter_medda_mueller_klaim_2025.tex" "schlueter_medda_mueller_klaim_2025.pdf" "schlueter_medda_mueller_klaim_2025" 1777906840
   "/etc/texmf/web2c/texmf.cnf" 1750235077 475 c0e671620eb5563b2130f56340a5fde8 ""
-  "/home/scripts/046_plasticity/KLAIM_2025/schlueter_medda_mueller_klaim_2025.tex" 1777894020 121562 0ffff4a730f68578861c5e2ad8a8466c ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/jknappen/ec/ectt1000.tfm" 1136768653 1536 06717a2b50de47d4087ac0e6cd759455 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/jknappen/ec/tcrm1000.tfm" 1136768653 1536 e07581a4bb3136ece9eeb4c3ffab8233 ""
@@ -317,9 +316,9 @@
   "pics/num_experiment.pdf_t" 1769411518 882 c70850b61939633b1008c100a3ab16fc ""
   "pics/s_t_2.9998_wsteg_0.25.png" 1769430820 644074 34dcab3fcb530000f2111a1d73fb61d6 ""
   "pics/setup.png" 1769411520 431746 8f46e4843f6920a7d86a6eb5ea808caf ""
-  "schlueter_medda_mueller_klaim_2025.aux" 1777894031 16845 c940d3cc89357c4b4001d85d4fafa773 "pdflatex"
-  "schlueter_medda_mueller_klaim_2025.out" 1777894031 3259 005927291974fc791f7a79469d9fd244 "pdflatex"
-  "schlueter_medda_mueller_klaim_2025.tex" 1777894020 121562 0ffff4a730f68578861c5e2ad8a8466c ""
+  "schlueter_medda_mueller_klaim_2025.aux" 1777906840 26791 c8a448b58cfcc0ea55a16446207ce469 "pdflatex"
+  "schlueter_medda_mueller_klaim_2025.out" 1777906840 3266 bf6c203703ae0c0329851df21e75670a "pdflatex"
+  "schlueter_medda_mueller_klaim_2025.tex" 1777906766 123916 fd921b36aebd1fe917125a678d5924f2 ""
   "sn-jnl.cls" 1769411518 55857 7d4515312123fd1744517a7415d792ff ""
   (generated)
   "schlueter_medda_mueller_klaim_2025.aux"

@@ -18,6 +18,7 @@
 \usepackage{algorithmicx}
 \usepackage{algpseudocode}
 \usepackage{listings}
+\usepackage[markup=underlined,authormarkup=none]{changes}
 \usepackage{pgfplots}
 \usepackage{nicefrac}
 \usepackage{xspace}
@@ -42,6 +43,9 @@
 \begin{document}
 
 \maketitle
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.45\baselineskip}
 
 \section*{Response to Reviewers}
 
@@ -71,7 +75,18 @@ Below we quote the reviewer's points exactly and provide a placeholder for our a
 \noindent
 1. The title is wrong. It should read "Influence of material constitutive laws on *the* effective crack resistance *of* heterogeneous materials". More to the point, the title is overly optimistic. It suggests a level of generality that I do not see. Afaik the authors report on a single periodic microstructure (fixed, not even stochastic) per spatial dimension and J2 plasticity as the sole inelastic constitutive law besides linearized elasticity to be mated with phase-field fracture.
 
-\emph{Response:} [placeholder]
+\emph{Response:} We agree with the reviewer that the original title suggested a degree of generality that is not supported by the scope of the present study. The numerical investigations are restricted to idealized periodic pore arrangements and to linear elasticity or von Mises plasticity coupled with phase-field fracture. To make this limitation clear already in the title, we have changed it to:
+
+\begin{quote}
+``Influence of material constitutive laws on the effective crack resistance of a simplified porous material in a numerical experiment''
+\end{quote}
+
+The revised manuscript displays this modification visibly in the title.
+
+Related changes:
+\begin{itemize}
+\item Page 1: \deleted{Influence of Material Constitutive Laws on Effective Crack Resistance in Heterogeneous Materials} \added{Influence of material constitutive laws on the effective crack resistance of a simplified porous material in a numerical experiment}
+\end{itemize}
 
 \bigskip
 
@@ -159,7 +174,12 @@ Below we quote the reviewer's points exactly and provide a placeholder for our a
 \noindent
 1. "criterions" -> "criteria"
 
-\emph{Response:} [placeholder]
+\emph{Response:} Corrected as suggested.
+
+Related changes:
+\begin{itemize}
+\item Page 2: \deleted{criterions} \added{criteria}
+\end{itemize}
 
 \bigskip
 
@@ -180,21 +200,45 @@ Below we quote the reviewer's points exactly and provide a placeholder for our a
 \noindent
 4. Footnotes are to be avoided. Either it is important, then it should be part of the text, or it is not important. Then, it should be eradicated from the manuscript.
 
-\emph{Response:} [placeholder]
+\emph{Response:} We agree and have moved the footnote content into the main text where it was relevant.
+
+Related changes:
+\begin{itemize}
+\item Page 4: Moved the explanation of the term representative region from a footnote into the main text.
+\item Page 5: Moved the small-strain and homogeneity assumptions from footnotes into the main text.
+\item Pages 16 and 20: Moved the definition of the microscopic crack tip position from footnotes into the main text.
+\end{itemize}
 
 \bigskip
 
 \noindent
 5. Formulas are no words, e.g., $J_c^{\text{eff}}$
 
-\emph{Response:} [placeholder]
+\emph{Response:} We reviewed the manuscript for similar cases in which mathematical symbols were used as grammatical words and rephrased the corresponding sentences.
+
+Related changes:
+\begin{itemize}
+\item Page 4: \deleted{an effective energetic fracture toughness $J_c^{\text{eff}}$, which} \added{an effective energetic fracture toughness, denoted by $J_c^{\text{eff}}$. This quantity}
+\item Page 4: \deleted{whose fracture behavior is to be captured by $J_c^{\text{eff}}$} \added{whose fracture behavior is to be captured by the effective energetic fracture toughness}
+\item Page 4: \deleted{The scale at which $J_c^{\text{eff}}$ is applied} \added{The scale at which this effective energetic fracture toughness is applied}
+\item Page 16: \deleted{for $w_s = L$} \added{for a wall width of $L$}
+\item Page 16: \deleted{for $w_s = 1.0L$} \added{for a wall width of $1.0L$}
+\item Page 17: \deleted{for $w_s = 1.0L$} \added{for a wall width of $1.0L$}
+\item Page 17: \deleted{For $w_s = 1.0L$} \added{For a wall width of $1.0L$}
+\end{itemize}
 
 \bigskip
 
 \noindent
 6. "e.g. " -> "e.g.," (consistently)
 
-\emph{Response:} [placeholder]
+\emph{Response:} Corrected throughout the revised manuscript where this punctuation issue occurred.
+
+Related changes:
+\begin{itemize}
+\item Page 4: \deleted{e.g. the separation of length scales} \added{e.g., the separation of length scales}
+\item Page 8: \deleted{are e.g. described in} \added{are described, e.g., by}
+\end{itemize}
 
 \bigskip
 
@@ -243,14 +287,25 @@ Below we quote the reviewer's points exactly and provide a placeholder for our a
 \noindent
 13. Equations are no words, e.g., "equivalent to eq. (1):"
 
-\emph{Response:} [placeholder]
+\emph{Response:} We have rephrased the sentence so that the equation is referred to as a criterion rather than used as a grammatical word.
+
+Related changes:
+\begin{itemize}
+\item Page 10: \deleted{equivalent to (1)} \added{equivalent to the criterion in Eq. (1)}
+\end{itemize}
 
 \bigskip
 
 \noindent
 14. "c.f." usually means "in contrast to", not "see"
 
-\emph{Response:} [placeholder]
+\emph{Response:} Corrected. We now use ``see'' instead of ``c.f.'' in the revised manuscript.
+
+Related changes:
+\begin{itemize}
+\item Page 17: \deleted{, c.f. also} \added{; see also}
+\item Page 22: \deleted{, c.f. section} \added{; see Section}
+\end{itemize}
 
 \bigskip
 
@@ -271,7 +326,12 @@ Below we quote the reviewer's points exactly and provide a placeholder for our a
 \noindent
 17. "train tensor"
 
-\emph{Response:} [placeholder]
+\emph{Response:} Corrected to ``strain tensor''.
+
+Related changes:
+\begin{itemize}
+\item Page 14: \deleted{train tensor} \added{strain tensor}
+\end{itemize}
 
 \bigskip
 
@@ -285,21 +345,41 @@ Below we quote the reviewer's points exactly and provide a placeholder for our a
 \noindent
 19. Inequalities are no words, e.g., expressions like "for $w_s \geq 2L$ in all cases." must be avoided and rephrased in actual language.
 
-\emph{Response:} [placeholder]
+\emph{Response:} We reviewed the manuscript for similar occurrences and rephrased the relevant inequality and interval expressions in prose.
+
+Related changes:
+\begin{itemize}
+\item Page 12: \deleted{in the region $-3\Delta h \le x \le 3\Delta h$} \added{within a region extending from $x=-3\Delta h$ to $x=3\Delta h$}
+\item Page 16: \deleted{for wall widths $w_s \in \left[0.375L, 4.0L\right]$} \added{with wall widths ranging from $0.375L$ to $4.0L$}
+\item Page 17: \deleted{for $w_s \ge 2L$ in all cases} \added{in all cases for wall widths of at least $2L$}
+\item Page 17: \deleted{For small wall widths $w_s \le 0.6L$} \added{For wall widths up to $0.6L$}
+\item Page 19: \deleted{for $x-x_{\rm min}\le w_c$} \added{from $x=x_{\rm min}$ to $x=x_{\rm min}+w_c$}
+\item Page 20: \deleted{for wall widths $w_s\in\left[0.25L,4.0L\right]$} \added{with wall widths ranging from $0.25L$ to $4.0L$}
+\end{itemize}
 
 \bigskip
 
 \noindent
 20. How does the prefactor in front of the integral enter eq. (38)? A definition is a definition, and should not change. Also, dividing by a length alters the physical dimensions of a quantity.
 
-\emph{Response:} [placeholder]
+\emph{Response:} The definition of the J-integral indeed remains the same. For the 2D plane strain case, the J-integral computed in our work is a quantity per unit thickness in the out-of-plane direction. In the 3D extension, we introduce an explicit thickness of $4w_c$, which has to be accounted for in order to make the two- and three-dimensional results comparable. We have clarified this point in the revised manuscript.
 
+Related changes:
+\begin{itemize}
+\item Page 21: \added{This normalization does not change the definition of the J-integral; it converts the three-dimensional boundary integral to a value per unit out-of-plane thickness.}
+\end{itemize}
 \bigskip
 
 \noindent
 21. "crack tip postion"
 
-\emph{Response:} [placeholder]
+\emph{Response:} Corrected. The explanatory text has also been moved from the footnote into the main sentence.
+
+Related changes:
+\begin{itemize}
+\item Page 16: \deleted{crack tip postion} \added{crack tip position}; the explanatory sentence was moved from the footnote into the main text.
+\item Page 20: \deleted{crack tip postion} \added{crack tip position}; the explanatory sentence was moved from the footnote into the main text.
+\end{itemize}
 
 \bigskip
 
@@ -334,7 +414,13 @@ Below we quote the reviewer's points exactly and provide a placeholder for our a
 \noindent
 26. FEniCSx should be cited.
 
-\emph{Response:} [placeholder]
+\emph{Response:} We have added a citation to FEniCSx in the acknowledgements.
+
+Related changes:
+\begin{itemize}
+\item Page 23: Added a citation to the FEniCSx documentation in the acknowledgements.
+\item Page 26: Added the corresponding FEniCSx documentation entry to the bibliography.
+\end{itemize}
 
 %------------------------------------------------
 

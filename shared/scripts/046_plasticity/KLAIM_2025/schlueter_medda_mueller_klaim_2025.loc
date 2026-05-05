@@ -1,3 +1,56 @@
-\contentsline {added}{Added: \truncate {\Changestruncatewidth }{This sentence is a sample addition in the introduction.}}{2}{section*.2}%
-\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{This sentence is a sample deletion in the introduction.}}{2}{section*.3}%
-\contentsline {replaced}{Replaced: \truncate {\Changestruncatewidth }{This phrase is a sample replacement.}}{2}{section*.4}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{Influence of Material Constitutive Laws on Effective Crack Resistance in Heterogeneous Materials}}{1}{section*.1}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{Influence of material constitutive laws on the effective crack resistance of a simplified porous material in a numerical experiment}}{1}{section*.2}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{This sentence is a sample addition in the introduction.}}{2}{section*.4}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{This sentence is a sample deletion in the introduction.}}{2}{section*.5}%
+\contentsline {replaced}{Replaced: \truncate {\Changestruncatewidth }{This phrase is a sample replacement.}}{2}{section*.6}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{criterions}}{2}{section*.7}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{criteria}}{2}{section*.8}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{ $J_c^{\text {eff}}$, which}}{4}{section*.9}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{, denoted by $J_c^{\text {eff}}$. This quantity}}{4}{section*.10}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{The term representative volume element is deliberately avoided, since the region no longer fulfills classical representativity requirements once fracture occurs, e.g. the separation of length scales.}}{4}{section*.11}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{, rather than a representative volume element,}}{4}{section*.12}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{$J_c^{\text {eff}}$}}{4}{section*.13}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{the effective energetic fracture toughness}}{4}{section*.14}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{The term representative volume element is deliberately avoided because the region no longer fulfills classical representativity requirements once fracture occurs, e.g., the separation of length scales.}}{4}{section*.15}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{$J_c^{\text {eff}}$}}{4}{section*.16}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{this effective energetic fracture toughness}}{4}{section*.17}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{In this work, only small strain assumptions are considered. However, the framework could be extended to finite strains in a straight forward manner.}}{5}{section*.18}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{Only small strain assumptions are considered in this work.}}{5}{section*.19}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{This presumes a sufficiently homogeneous spatial distribution of microstructural features, analogous to assumptions made for representative volume elements in micromechanics.}}{6}{section*.20}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{This presumes a sufficiently homogeneous spatial distribution of microstructural features, analogous to assumptions made for representative volume elements in micromechanics.}}{6}{section*.21}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{ e.g. described in \nobreakspace {}\cite {kuhn_continuum_2010}}}{8}{section*.22}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{ described, e.g., by\nobreakspace {}\cite {kuhn_continuum_2010}}}{8}{section*.23}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{the criterion in Eq.\nobreakspace {}}}{10}{section*.24}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{\nobreakspace {}}}{10}{section*.25}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{in the region $-3\Delta h \le x \le 3\Delta h$}}{12}{section*.26}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{within a region extending from $x=-3\Delta h$ to $x=3\Delta h$}}{12}{section*.27}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{train}}{14}{section*.28}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{strain}}{14}{section*.29}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{for wall widths $w_s \in \left [0.375L, 4.0L\right ]$}}{16}{section*.30}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{with wall widths ranging from $0.375L$ to $4.0L$}}{16}{section*.31}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{for $w_s = L$}}{16}{section*.32}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{for a wall width of $L$}}{16}{section*.33}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{The microscopic crack tip postion $x_{ct}$ is indentified as the node with the largest $x$-coordinate that fulfills $s=0$.}}{16}{section*.34}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{, identified as the node with the largest $x$-coordinate that fulfills $s=0$,}}{17}{section*.35}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{for $w_s = 1.0L$}}{17}{section*.36}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{for a wall width of $1.0L$}}{17}{section*.37}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{for $w_s = 1.0L$}}{17}{section*.38}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{for a wall width of $1.0L$}}{17}{section*.39}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{For $w_s = 1.0L$}}{17}{section*.40}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{For a wall width of $1.0L$}}{17}{section*.41}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{, c.f. also}}{17}{section*.42}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{; see also}}{17}{section*.43}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{for $w_s \ge 2L$ in all cases}}{17}{section*.44}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{in all cases for wall widths of at least $2L$}}{17}{section*.45}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{For small wall widths $w_s \le 0.6L$}}{17}{section*.46}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{For wall widths up to $0.6L$}}{17}{section*.47}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{for $x-x_{\rm min}\le w_c$}}{19}{section*.48}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{from $x=x_{\rm min}$ to $x=x_{\rm min}+w_c$}}{19}{section*.49}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{for wall widths $w_s\in \left [0.25L,4.0L\right ]$}}{20}{section*.50}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{with wall widths ranging from $0.25L$ to $4.0L$}}{20}{section*.51}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{The microscopic crack tip postion $x_{ct}$ is indentified as the node with the largest $x$-coordinate that fulfills $s=0$.}}{20}{section*.52}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{, identified as the node with the largest $x$-coordinate that fulfills $s=0$,}}{20}{section*.53}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{ for comparison with the two-dimensional plane strain results. This normalization does not change the definition of the J-integral; it converts the three-dimensional boundary integral to a value per unit out-of-plane thickness.}}{22}{section*.54}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{, c.f. section}}{22}{section*.55}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{; see Section}}{22}{section*.56}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{\nobreakspace {}\cite {fenicsx_documentation}}}{23}{section*.58}%

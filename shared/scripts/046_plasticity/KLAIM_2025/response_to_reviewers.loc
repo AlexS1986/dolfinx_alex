@@ -1,0 +1,47 @@
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{Influence of Material Constitutive Laws on Effective Crack Resistance in Heterogeneous Materials}}{2}{section*.3}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{Influence of material constitutive laws on the effective crack resistance of a simplified porous material in a numerical experiment}}{2}{section*.4}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{criterions}}{4}{section*.5}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{criteria}}{4}{section*.6}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{an effective energetic fracture toughness $J_c^{\text {eff}}$, which}}{4}{section*.7}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{an effective energetic fracture toughness, denoted by $J_c^{\text {eff}}$. This quantity}}{4}{section*.8}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{whose fracture behavior is to be captured by $J_c^{\text {eff}}$}}{4}{section*.9}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{whose fracture behavior is to be captured by the effective energetic fracture toughness}}{4}{section*.10}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{The scale at which $J_c^{\text {eff}}$ is applied}}{5}{section*.11}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{The scale at which this effective energetic fracture toughness is applied}}{5}{section*.12}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{for $w_s = L$}}{5}{section*.13}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{for a wall width of $L$}}{5}{section*.14}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{for $w_s = 1.0L$}}{5}{section*.15}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{for a wall width of $1.0L$}}{5}{section*.16}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{for $w_s = 1.0L$}}{5}{section*.17}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{for a wall width of $1.0L$}}{5}{section*.18}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{For $w_s = 1.0L$}}{5}{section*.19}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{For a wall width of $1.0L$}}{5}{section*.20}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{e.g. the separation of length scales}}{5}{section*.21}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{e.g., the separation of length scales}}{5}{section*.22}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{are e.g. described in}}{5}{section*.23}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{are described, e.g., by}}{5}{section*.24}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{equivalent to (1)}}{6}{section*.25}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{equivalent to the criterion in Eq. (1)}}{6}{section*.26}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{, c.f. also}}{6}{section*.27}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{; see also}}{6}{section*.28}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{, c.f. section}}{6}{section*.29}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{; see Section}}{6}{section*.30}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{train tensor}}{6}{section*.31}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{strain tensor}}{6}{section*.32}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{in the region $-3\Delta h \le x \le 3\Delta h$}}{7}{section*.33}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{within a region extending from $x=-3\Delta h$ to $x=3\Delta h$}}{7}{section*.34}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{for wall widths $w_s \in \left [0.375L, 4.0L\right ]$}}{7}{section*.35}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{with wall widths ranging from $0.375L$ to $4.0L$}}{7}{section*.36}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{for $w_s \ge 2L$ in all cases}}{7}{section*.37}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{in all cases for wall widths of at least $2L$}}{7}{section*.38}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{For small wall widths $w_s \le 0.6L$}}{7}{section*.39}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{For wall widths up to $0.6L$}}{7}{section*.40}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{for $x-x_{\rm min}\le w_c$}}{7}{section*.41}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{from $x=x_{\rm min}$ to $x=x_{\rm min}+w_c$}}{7}{section*.42}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{for wall widths $w_s\in \left [0.25L,4.0L\right ]$}}{7}{section*.43}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{with wall widths ranging from $0.25L$ to $4.0L$}}{7}{section*.44}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{This normalization does not change the definition of the J-integral; it converts the three-dimensional boundary integral to a value per unit out-of-plane thickness.}}{7}{section*.45}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{crack tip postion}}{7}{section*.46}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{crack tip position}}{7}{section*.47}%
+\contentsline {deleted}{Deleted: \truncate {\Changestruncatewidth }{crack tip postion}}{7}{section*.48}%
+\contentsline {added}{Added: \truncate {\Changestruncatewidth }{crack tip position}}{7}{section*.49}%

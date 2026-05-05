@@ -55,6 +55,8 @@ def read_active_cells_mapping(mapping_file_path):
 
 def read_target_domain_from_csv(folder, x_value):
     csv_path = os.path.join(folder, f"node_coords_{x_value}.csv")
+    if not os.path.isfile(csv_path) and x_value == 1:
+        csv_path = os.path.join(folder, "node_coords.csv")
     if not os.path.isfile(csv_path):
         raise FileNotFoundError(f"Node coords file not found: {csv_path}")
     df = pd.read_csv(csv_path)
@@ -153,7 +155,7 @@ def main():
 
     active_cells_mapping = read_active_cells_mapping(mapping_file_path)
 
-    # Find mesh files
+    # Find mesh files. Old folders use mesh_X.xdmf; 260504 leaf folders use mesh.xdmf.
     pattern = re.compile(r"mesh_(\d+)\.xdmf$")
     mesh_files = []
     for filename in os.listdir(folder_path):
@@ -161,6 +163,8 @@ def main():
         if m:
             x_val = int(m.group(1))
             mesh_files.append((x_val, filename))
+    if not mesh_files and os.path.isfile(os.path.join(folder_path, "mesh.xdmf")):
+        mesh_files.append((1, "mesh.xdmf"))
     mesh_files.sort(key=lambda t: t[0])
 
     if not mesh_files:
@@ -182,6 +186,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
 

@@ -26,9 +26,19 @@ from pathlib import Path
 # ---------------------------
 # CLI INPUT HANDLING
 # ---------------------------
-DEFAULT_FOLDER = os.path.join(os.path.dirname(__file__), "resources", "dcb_var_bcpos_E_var","export")
-VALID_CASES = {"vary", "min", "max", "all", "fromfile"}
-DEFAULT_CASE = "vary"
+DEFAULT_FOLDER = os.path.join(
+    os.path.dirname(__file__),
+    "resources",
+    "260504_dcb_beta_phi_a_rho_var_min_max",
+)
+VALID_CASES = {"auto", "vary", "min", "max", "all", "fromfile"}
+VALID_SPLITS = {"spectral", "volumetric", "all"}
+DEFAULT_CASE = "auto"
+DEFAULT_SPLIT = "spectral"
+STATIC_OPTIMIZATION_PARAMS = {
+    "E0toE1": 0.6,
+    "E": 210000.0,
+}
 
 
 
@@ -82,18 +92,17 @@ def parse_args(argv, rank=0):
     """
     Accepted forms:
       python script.py
-      python script.py FOLDER
-      python script.py FOLDER CASE
-      python script.py FOLDER INDEX
-      python script.py FOLDER START END
-      python script.py FOLDER START END CASE
-      python script.py FOLDER INDEX CASE
-    CASE in {vary|min|max|all}
+      python script.py ROOT_OR_LEAF
+      python script.py ROOT_OR_LEAF SPLIT
+      python script.py ROOT_OR_LEAF CASE SPLIT
+      python script.py ROOT_OR_LEAF START END CASE SPLIT
+    CASE in {auto|vary|min|max|all|fromfile}; SPLIT in {spectral|volumetric|all}
     """
     folder = DEFAULT_FOLDER
     ds_start = None
     ds_end = None
-    case = None
+    case = DEFAULT_CASE
+    split = DEFAULT_SPLIT
     used_defaults = []
 
     if len(argv) >= 2:
@@ -120,55 +129,97 @@ def parse_args(argv, rank=0):
     else:
         used_defaults.append("dataset indices")
 
-    if others:
-        last = others[-1]
-        if last in VALID_CASES:
-            case = last
+    for token in others:
+        if token in VALID_CASES:
+            case = token
+        elif token in VALID_SPLITS:
+            split = token
         else:
-            raise ValueError(f"Unknown case '{last}'. Valid: {sorted(VALID_CASES)}")
-    else:
-        case = DEFAULT_CASE
+            raise ValueError(
+                f"Unknown argument '{token}'. Valid cases: {sorted(VALID_CASES)}, "
+                f"valid splits: {sorted(VALID_SPLITS)}"
+            )
+
+    if not any(token in VALID_CASES for token in others):
         used_defaults.append("case")
+    if not any(token in VALID_SPLITS for token in others):
+        used_defaults.append("split")
 
     # Print warnings for defaults if rank == 0
     if rank == 0 and used_defaults:
         print(f"[WARNING] Using default values for: {', '.join(used_defaults)}")
 
     if rank == 0:
-        print(f"[INFO] Using folder: {folder}")
-        print(f"[INFO] Dataset start: {ds_start}, end: {ds_end}, case: {case}")
+        print(f"[INFO] Using folder/root: {folder}")
+        print(f"[INFO] Dataset start: {ds_start}, end: {ds_end}, case: {case}, split: {split}")
 
-    return folder, ds_start, ds_end, case
+    return folder, ds_start, ds_end, case, split
 
-folder_path, dataset_start, dataset_end, case_param = parse_args(sys.argv)
+folder_path, dataset_start, dataset_end, case_param, split_param = parse_args(sys.argv)
 
 # read optimization parameters
 params_optimization_path = Path(folder_path).parent / "params.txt"
-params_optimization = read_params(params_optimization_path)
+if params_optimization_path.exists():
+    params_optimization = read_params(params_optimization_path)
+else:
+    params_optimization = STATIC_OPTIMIZATION_PARAMS
 
 E0toE1=params_optimization["E0toE1"]
 E_max = params_optimization["E"]
 E_min = E_max * E0toE1
-print(f"[INFO] Using folder: {folder_path}")
+print(f"[INFO] Using folder/root: {folder_path}")
 
 # ---------------------------
-# AUTO-DETECT INTEGER SUFFIXES
+# AUTO-DETECT DATASET FOLDERS
 # ---------------------------
-available_files = os.listdir(folder_path)
-pattern = re.compile(r"cell_data_(\d+)\.csv")
-all_x_candidates = sorted([int(pattern.match(f).group(1)) for f in available_files if pattern.match(f)])
+def is_dataset_folder(path):
+    required = ["node_coords.csv", "points_data.csv", "cell_data.csv", "connectivity.csv", "mesh.xdmf"]
+    return all((Path(path) / name).is_file() for name in required)
 
-if not all_x_candidates:
-    raise FileNotFoundError(f"No 'cell_data_x.csv' file found in {folder_path}")
 
-# Filter if range is specified
+def discover_dataset_folders(root):
+    root = Path(root)
+    if is_dataset_folder(root):
+        return [root]
+    return sorted(path for path in root.rglob("*") if path.is_dir() and is_dataset_folder(path))
+
+
+def infer_case_from_folder(path):
+    name = Path(path).name.lower()
+    if name.endswith("_min"):
+        return "min"
+    if name.endswith("_max"):
+        return "max"
+    return "vary"
+
+
+def infer_a_value_from_folder(path, fallback):
+    match = re.search(r"_a_([0-9]+(?:_[0-9]+)?)_", Path(path).name)
+    if match:
+        return float(match.group(1).replace("_", "."))
+    return float(fallback)
+
+
+def safe_dataset_label(path):
+    return re.sub(r"[^A-Za-z0-9_.-]+", "_", Path(path).name)
+
+
+all_dataset_folders = discover_dataset_folders(folder_path)
+
+if not all_dataset_folders:
+    raise FileNotFoundError(f"No 260504 dataset leaf folders found below {folder_path}")
+
 if dataset_start is not None and dataset_end is not None:
-    x_candidates = [x for x in all_x_candidates if dataset_start <= x <= dataset_end]
+    dataset_specs = [
+        (idx, path)
+        for idx, path in enumerate(all_dataset_folders, start=1)
+        if dataset_start <= idx <= dataset_end
+    ]
 else:
-    x_candidates = all_x_candidates
+    dataset_specs = list(enumerate(all_dataset_folders, start=1))
 
-if not x_candidates:
-    raise ValueError(f"No dataset indices found in the specified range: {dataset_start} to {dataset_end}")
+if not dataset_specs:
+    raise ValueError(f"No dataset folders found in the specified range: {dataset_start} to {dataset_end}")
 
 
 
@@ -179,36 +230,39 @@ comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 if rank == 0:
-    print(f"[INFO] Detected dataset indices to process: {x_candidates}")
+    print(f"[INFO] Detected dataset folders to process: {len(dataset_specs)}")
 
 print('MPI-STATUS: Process:', rank, 'of', size, 'processes.')
 sys.stdout.flush()
 
 # ---------------------------
-# MAIN LOOP OVER SELECTED x_candidates
+# MAIN LOOP OVER SELECTED DATASET FOLDERS
 # ---------------------------
-convergence_log_path = os.path.join(folder_path, "convergence_log.txt")
-if rank == 0:
-        # Start fresh for each run
-        with open(convergence_log_path, "w") as f:
-            f.write("x_value,case,status\n")
+splits_to_run = ["spectral", "volumetric"] if split_param == "all" else [split_param]
 
-for x_value in x_candidates:
+for dataset_index, dataset_folder in dataset_specs:
+    folder_path = str(dataset_folder)
+    dataset_label = safe_dataset_label(dataset_folder)
+    x_value = dataset_index
+    a_value = infer_a_value_from_folder(dataset_folder, dataset_index)
+    convergence_log_path = os.path.join(folder_path, f"convergence_log_{split_param}.txt")
     if rank == 0:
-        print(f"[INFO] Processing dataset index: {x_value}")
+        with open(convergence_log_path, "w") as f:
+            f.write("dataset_index,dataset_label,case,split,status\n")
+        print(f"[INFO] Processing dataset {dataset_index}: {folder_path}")
 
     # ---------------------------
     # BUILD FILE PATHS
     # ---------------------------
-    node_file = os.path.join(folder_path, f"node_coords_{x_value}.csv")
-    point_data_file = os.path.join(folder_path, f"points_data_{x_value}.csv")
-    cell_data_file = os.path.join(folder_path, f"cell_data_{x_value}.csv")
-    connectivity_file = os.path.join(folder_path, f"connectivity_{x_value}.csv")
-    mesh_file = os.path.join(folder_path, f"dlfx_mesh_{x_value}.xdmf")
+    node_file = os.path.join(folder_path, "node_coords.csv")
+    point_data_file = os.path.join(folder_path, "points_data.csv")
+    cell_data_file = os.path.join(folder_path, "cell_data.csv")
+    connectivity_file = os.path.join(folder_path, "connectivity.csv")
+    mesh_file = os.path.join(folder_path, "dlfx_mesh_1.xdmf")
 
     # case-agnostic figure (E-distribution); case-specific outputs will be below
-    base_results_xdmf_path = os.path.join(folder_path, f"results_{x_value}.xdmf")  # kept for mesh write convenience
-    base_output_graph_path = os.path.join(folder_path, f"result_graphs_{x_value}.txt")  # not used directly, but kept
+    base_results_xdmf_path = os.path.join(folder_path, f"results_{dataset_label}.xdmf")  # kept for mesh write convenience
+    base_output_graph_path = os.path.join(folder_path, f"result_graphs_{dataset_label}.txt")  # not used directly, but kept
 
     # ---------------------------
     # VALIDATE FILES
@@ -426,9 +480,9 @@ for x_value in x_candidates:
         
         
     
-      # Helper to read vol JSON produced previously (vol_{x_value}_vary.json)
+      # Helper to read vol JSON produced previously.
     def read_E_average_from_vol_json(x_val):
-        vol_filename = os.path.join(folder_path, f"vol_{x_val}_vary.json")
+        vol_filename = os.path.join(folder_path, f"vol_{dataset_label}_vary_{split_name}.json")
         if not os.path.exists(vol_filename):
             raise FileNotFoundError(f"Expected volume file for case 'fromfile' not found: {vol_filename}")
         with open(vol_filename, "r") as f:
@@ -438,7 +492,7 @@ for x_value in x_candidates:
         return float(data["E_average"])
     
     def read_field_from_vol_json(x_val, field):
-        vol_filename = os.path.join(folder_path, f"vol_{x_val}_vary.json")
+        vol_filename = os.path.join(folder_path, f"vol_{dataset_label}_vary_{split_name}.json")
         
         if not os.path.exists(vol_filename):
             raise FileNotFoundError(
@@ -456,10 +510,10 @@ for x_value in x_candidates:
         return float(data[field])
     
 
-    def log_convergence_status(x_value, case, status):
+    def log_convergence_status(x_value, case, split, status):
         if rank == 0:
             with open(convergence_log_path, "a") as f:
-                f.write(f"{x_value},{case},{status}\n")
+                f.write(f"{x_value},{dataset_label},{case},{split},{status}\n")
 
     # ---------------------------
     # LOAD DATA
@@ -480,7 +534,7 @@ for x_value in x_candidates:
     plt.imshow(E_grid, cmap='viridis', interpolation='nearest')
     plt.colorbar(label='E')
     plt.title(f'E Distribution for dataset {x_value}')
-    plt.savefig(os.path.join(folder_path, f'E_distribution_{x_value}.png'), dpi=300)
+    plt.savefig(os.path.join(folder_path, f'E_distribution_{dataset_label}.png'), dpi=300)
     plt.close()
     
     # Plot porosity distribution (once per dataset index)
@@ -488,7 +542,7 @@ for x_value in x_candidates:
     plt.imshow(porosity_grid, cmap='viridis', interpolation='nearest')
     plt.colorbar(label='Porosity')
     plt.title(f'Porosity Distribution for dataset {x_value}')
-    plt.savefig(os.path.join(folder_path, f'porosity_distribution_{x_value}.png'), dpi=300)
+    plt.savefig(os.path.join(folder_path, f'porosity_distribution_{dataset_label}.png'), dpi=300)
     plt.close()
 
     # ---------------------------
@@ -513,7 +567,9 @@ for x_value in x_candidates:
     # CASE LOOP
     # ---------------------------
     available_cases = ["vary", "min", "max", "fromfile"]
-    if case_param is None or case_param == "all":
+    if case_param == "auto":
+        cases_to_run = [infer_case_from_folder(folder_path)]
+    elif case_param is None or case_param == "all":
         cases_to_run = available_cases
     else:
         if case_param not in available_cases:
@@ -523,13 +579,17 @@ for x_value in x_candidates:
         else:
             cases_to_run = [case_param]
 
-    for case in cases_to_run:
+    for split_name, case in [
+        (split_name, case)
+        for split_name in splits_to_run
+        for case in cases_to_run
+    ]:
         if rank == 0:
-            print(f"[INFO] Running case '{case}' for dataset index {x_value}")
+            print(f"[INFO] Running case '{case}' with split '{split_name}' for dataset {dataset_label}")
 
         # ---- Case-specific output paths to avoid overwrites
-        results_xdmf_path = os.path.join(folder_path, f"results_{x_value}_{case}.xdmf")
-        outputfile_graph_path = os.path.join(folder_path, f"result_graphs_{x_value}_{case}.txt")
+        results_xdmf_path = os.path.join(folder_path, f"results_{dataset_label}_{case}_{split_name}.xdmf")
+        outputfile_graph_path = os.path.join(folder_path, f"result_graphs_{dataset_label}_{case}_{split_name}.txt")
 
         # ---- Material fields
         E = dlfx.fem.Function(S)
@@ -556,15 +616,15 @@ for x_value in x_candidates:
                 # ensure we report and stop this case cleanly
                 if rank == 0:
                     print(f"[ERROR] Could not read E_average for x={x_value}: {e}")
-                log_convergence_status(x_value, case, f"ErrorReadingVolJson: {e}")
+                log_convergence_status(x_value, case, split_name, f"ErrorReadingVolJson: {e}")
                 # skip this case and continue with next case
                 continue
             # assign constant value
             E.x.array[:] = np.full_like(E.x.array[:], E_average_value)
             porosity.x.array[:] = np.full_like(porosity.x.array[:], porosity_average_value)
             if rank == 0:
-                print(f"[INFO] For dataset {x_value} using E_average={E_average_value} from vol_{x_value}_vary.json")
-                print(f"[INFO] For dataset {x_value} using porosity_average={E_average_value} from vol_{x_value}_vary.json")
+                print(f"[INFO] For dataset {dataset_label} using E_average={E_average_value} from vary volume JSON")
+                print(f"[INFO] For dataset {dataset_label} using porosity_average={porosity_average_value} from vary volume JSON")
         else:
             # should not happen, but guard
             raise ValueError(f"Unhandled case: {case}")
@@ -593,7 +653,7 @@ for x_value in x_candidates:
         dt_max = dlfx.fem.Constant(domain, dt_start)
         t_global = dlfx.fem.Constant(domain, 0.0000001)
         trestart_global = dlfx.fem.Constant(domain, t_global.value)
-        Tend = 50.0 * dt_global.value * x_value
+        Tend = 50.0 * dt_global.value * a_value
         
         # if case == "vary":
         #     # hard coded from fit 
@@ -631,7 +691,7 @@ for x_value in x_candidates:
         phaseFieldProblem = pf.StaticPhaseFieldProblem2D_split(
             degradationFunction=pf.quadratic_degradation(),
             psisurf=pf.psisurf_from_function,
-            split="volumetric",#"spectral",
+            split=split_name,
             geometric_nl=False
         )
         
@@ -642,7 +702,7 @@ for x_value in x_candidates:
 
         # ---- Logs
         script_name_without_extension = os.path.splitext(os.path.basename(__file__))[0]
-        logfile_path = alex.os.logfile_full_path(folder_path, f"{script_name_without_extension}_{x_value}_{case}")
+        logfile_path = alex.os.logfile_full_path(folder_path, f"{script_name_without_extension}_{dataset_label}_{case}_{split_name}")
 
         # ---- Hooks
         def before_first_time_step():
@@ -778,7 +838,7 @@ for x_value in x_candidates:
         
         def write_vol_data_to_file():
             if rank == 0:
-                vol_path = os.path.join(folder_path, f"vol_{x_value}_{case}.json")
+                vol_path = os.path.join(folder_path, f"vol_{dataset_label}_{case}_{split_name}.json")
                 volumes_data = {
                         "vol": vol,
                         "E_average": E_average,
@@ -919,14 +979,12 @@ for x_value in x_candidates:
                 λ_arc_length=t_global,
                 dt_max=dt_max
             )
-            log_convergence_status(x_value, case, "OK")
+            log_convergence_status(x_value, case, split_name, "OK")
         except RuntimeError as e:
             if "ConvergenceFailure" in str(e):
-                log_convergence_status(x_value, case, f"ConvergenceFailure at time {t_global.value}")
+                log_convergence_status(x_value, case, split_name, f"ConvergenceFailure at time {t_global.value}")
                 pp.write_phasefield_mixed_solution(domain, results_xdmf_path, w, t_global.value+0.0001, comm)
                 continue  # skip to next case
             else:
-                log_convergence_status(x_value, case, f"RuntimeError: {str(e)}")
+                log_convergence_status(x_value, case, split_name, f"RuntimeError: {str(e)}")
                 raise
-
-
