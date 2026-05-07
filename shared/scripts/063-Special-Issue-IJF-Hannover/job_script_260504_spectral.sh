@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -J dcb260504_spectral
+#SBATCH -J dcb260504_sweep
 #SBATCH -A p0023647
 #SBATCH -t 10080
 #SBATCH --mem-per-cpu=4000
@@ -27,7 +27,8 @@ CONTAINER="$HOME/dolfinx_alex/alex-dolfinx.sif"
 BINDPATH="$HOME/dolfinx_alex/shared:/home"
 
 NP="${SLURM_NTASKS:-6}"
-SPLIT="spectral"
+SPLITS="${SPLITS:-spectral volumetric}"
+EPSILONS="${EPSILONS:-0.015 0.03 0.045 0.060}"
 
 mkdir -p "$LOGDIR"
 
@@ -37,7 +38,8 @@ echo "========================================="
 echo "Job started at $(date)"
 echo "Running in $HOST_WORKDIR"
 echo "Dataset root: $CONTAINER_ROOT"
-echo "Split: $SPLIT"
+echo "Splits: $SPLITS"
+echo "Epsilons: $EPSILONS"
 echo "MPI tasks: $NP"
 echo "========================================="
 
@@ -69,18 +71,22 @@ done < <(
 )
 
 # ==========================================
-# Run all 260504 cases with spectral split
+# Run all 260504 cases for every split and epsilon
 # ==========================================
 
-echo "========================================="
-echo "Running 260504 DCB batch with split=$SPLIT"
-echo "Started at $(date)"
-echo "========================================="
+for SPLIT in $SPLITS; do
+    for EPSILON in $EPSILONS; do
+        echo "========================================="
+        echo "Running 260504 DCB batch with split=$SPLIT, epsilon=$EPSILON"
+        echo "Started at $(date)"
+        echo "========================================="
 
-srun -n "$NP" apptainer exec \
-    --bind "$BINDPATH" \
-    "$CONTAINER" \
-    python3 "$CONTAINER_WORKDIR/01_phasefield_dcb_260504_folder.py" "$CONTAINER_ROOT" auto "$SPLIT"
+        srun -n "$NP" apptainer exec \
+            --bind "$BINDPATH" \
+            "$CONTAINER" \
+            python3 "$CONTAINER_WORKDIR/01_phasefield_dcb_260504_folder.py" "$CONTAINER_ROOT" auto "$SPLIT" --epsilon "$EPSILON"
+    done
+done
 
 echo "========================================="
 echo "Job finished at $(date)"

@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT="/home/scripts/063-Special-Issue-IJF-Hannover/resources/260504_dcb_beta_phi_a_rho_var_min_max"
 NP="${NP:-4}"
 SPLITS="${SPLITS:-spectral volumetric}"
+EPSILON="${EPSILON:-0.015}"
 
 while IFS= read -r FOLDER; do
     MAPPING="${FOLDER}/active_cells_mapping"
@@ -19,6 +20,6 @@ done < <(
 )
 
 for SPLIT in ${SPLITS}; do
-    echo "[INFO] Running 260504 DCB batch with split=${SPLIT}, NP=${NP}"
-    mpirun -np "${NP}" python3 01_phasefield_dcb_260504_folder.py "${ROOT}" auto "${SPLIT}" "$@"
+    echo "[INFO] Running 260504 DCB batch with split=${SPLIT}, NP=${NP}, epsilon=${EPSILON}"
+    mpirun -np "${NP}" python3 01_phasefield_dcb_260504_folder.py "${ROOT}" auto "${SPLIT}" --epsilon "${EPSILON}" "$@"
 done
