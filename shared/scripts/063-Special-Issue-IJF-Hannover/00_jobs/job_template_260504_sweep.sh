@@ -43,7 +43,9 @@ fi
 
 cd "$working_directory"
 
+mesh_folder_count=0
 while IFS= read -r host_folder; do
+    mesh_folder_count=$((mesh_folder_count + 1))
     relative_folder="${host_folder#$working_directory/}"
     container_folder="/work/$relative_folder"
     mapping="$host_folder/active_cells_mapping"
@@ -52,15 +54,32 @@ while IFS= read -r host_folder; do
         printf "# cell_data_X active_cells_to_be_meshed\n1 1\n" > "$mapping"
     fi
 
+    for required_file in cell_data.csv connectivity.csv node_coords.csv points_data.csv mesh.xdmf mesh.h5; do
+        if [ ! -f "$host_folder/$required_file" ]; then
+            echo "Missing required mesh input: $host_folder/$required_file"
+            exit 1
+        fi
+    done
+
     echo "Preparing Dolfinx mesh for: $container_folder"
     srun -n 1 apptainer exec \
         --bind "$bindpath" \
         "$container" \
         python3 /work/04_mesh2dlfxmesh.py "$container_folder" 1
+
+    if [ ! -f "$host_folder/dlfx_mesh_1.xdmf" ]; then
+        echo "Mesh conversion did not create: $host_folder/dlfx_mesh_1.xdmf"
+        exit 1
+    fi
 done < <(
-    find "$input_root_host" -mindepth 3 -maxdepth 3 -type f -name cell_data.csv \
+    find "$input_root_host" -type f -name mesh.xdmf \
         -exec dirname {} \; | sort
 )
+
+if [ "$mesh_folder_count" -eq 0 ]; then
+    echo "No mesh.xdmf leaf folders found below $input_root_host"
+    exit 1
+fi
 
 echo "========================================="
 echo "Running phase-field simulation"

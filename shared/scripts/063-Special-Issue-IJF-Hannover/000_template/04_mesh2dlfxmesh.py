@@ -172,19 +172,24 @@ def main():
         return
 
     output_folder = folder_path
+    wrote_any_mesh = False
 
     for x_val, fname in mesh_files:
         if mesh_number_to_process is not None and x_val != mesh_number_to_process:
             continue
         if x_val not in active_cells_mapping:
-            print(f"[WARNING] No mapping entry for x_value={x_val}, skipping.")
-            continue
+            raise KeyError(f"No mapping entry for x_value={x_val} in {mapping_file_path}")
         active_ids = active_cells_mapping[x_val]
         full_path = os.path.join(folder_path, fname)
         process_mesh_file(comm, full_path, output_folder, x_val, active_ids, x_max_target=10.0)
+        wrote_any_mesh = True
+
+    if not wrote_any_mesh:
+        raise RuntimeError(
+            f"No Dolfinx mesh was written for {folder_path} with mesh_number_to_process={mesh_number_to_process}"
+        )
 
 
 if __name__ == "__main__":
     main()
-
 

@@ -8,7 +8,7 @@ INPUT_ROOT_NAME="${INPUT_ROOT_NAME:-260504_dcb_beta_phi_a_rho_var_min_max}"
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 working_dir=$(basename "$SCRIPT_DIR")
-DATA_SOURCE_ROOT="${DATA_SOURCE_ROOT:-${SCRIPT_DIR}/resources/260504_dcb_beta_phi_a_rho_var_min_max_volumetric}"
+DATA_SOURCE_ROOT="${DATA_SOURCE_ROOT:-${SCRIPT_DIR}/resources/260504_dcb_beta_phi_a_rho_var_min_max}"
 
 if [ -z "${HPC_SCRATCH:-}" ]; then
     echo "Error: HPC_SCRATCH is not defined."

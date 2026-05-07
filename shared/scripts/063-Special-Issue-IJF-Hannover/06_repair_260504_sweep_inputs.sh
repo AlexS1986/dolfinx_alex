@@ -3,6 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 working_dir=$(basename "$SCRIPT_DIR")
+TEMPLATE_FOLDER="${SCRIPT_DIR}/000_template"
 
 if [ -z "${HPC_SCRATCH:-}" ]; then
     echo "Error: HPC_SCRATCH is not defined."
@@ -67,6 +68,7 @@ for folder_path in "${BASE_DIR}"/simulation_*; do
     destination_root="${folder_path}/resources/${input_root_name}"
 
     echo "Repairing inputs for $(basename "$folder_path")"
+    cp -a "${TEMPLATE_FOLDER}/." "$folder_path/"
     if copy_required_inputs "$data_source_root" "$destination_root"; then
         repaired=$((repaired + 1))
     else
