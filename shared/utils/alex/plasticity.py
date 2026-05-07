@@ -769,12 +769,14 @@ def update_e_p_n_and_alpha_arrays_2D(u,e_p_11_n_tmp,e_p_22_n_tmp,e_p_12_n_tmp,e_
                                [0.0         ,          0.0, e_p_33_n_tmp]])
     
     alpha_tmp.x.array[:] = alpha_n.x.array[:]
-    alpha_expr = update_alpha(u,e_p_n=e_p_n_tmp,alpha_n=alpha_n,sig_y=sig_y.value,hard=hard.value,mu=mu)
+    sig_y_expr = sig_y.value if hasattr(sig_y, "value") else sig_y
+    hard_expr = hard.value if hasattr(hard, "value") else hard
+    alpha_expr = update_alpha(u,e_p_n=e_p_n_tmp,alpha_n=alpha_n,sig_y=sig_y_expr,hard=hard_expr,mu=mu)
     alpha_n.x.array[:] = interpolate_quadrature(domain, cells, quadrature_points,alpha_expr)
     
     
     
-    e_p_np1_expr = update_e_p(u,e_p_n=e_p_n_tmp,alpha_n=alpha_tmp,sig_y=sig_y.value,hard=hard.value,mu=mu)
+    e_p_np1_expr = update_e_p(u,e_p_n=e_p_n_tmp,alpha_n=alpha_tmp,sig_y=sig_y_expr,hard=hard_expr,mu=mu)
     
     e_p_11_expr = e_p_np1_expr[0,0]
     e_p_11_n.x.array[:] = interpolate_quadrature(domain, cells, quadrature_points,e_p_11_expr)
@@ -1068,5 +1070,4 @@ class Plasticity_3D:
     def get_E_el_global(self,u,lam,mu, dx: ufl.Measure, comm: MPI.Intercomm) -> float:
         Pi = dlfx.fem.assemble_scalar(dlfx.fem.form(self.psiel(u,lam,mu) * dx))
         return comm.allreduce(Pi,MPI.SUM)
-
 

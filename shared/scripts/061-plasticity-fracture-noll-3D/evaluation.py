@@ -10,10 +10,28 @@ import os
 import numpy as np
 import math
 
-import alex.postprocessing as pp
-import alex.linearelastic as le
 import alex.evaluation as ev
 import evaluation_utils as ev_ut
+
+
+def read_parameters_file(file_path):
+    parameters = {}
+    with open(file_path, "r") as file:
+        for line in file:
+            line = line.strip()
+            if not line:
+                continue
+            key, value = line.split("=")
+            key = key.strip()
+            value = value.strip()
+            try:
+                parameters[key] = int(value)
+            except ValueError:
+                try:
+                    parameters[key] = float(value)
+                except ValueError:
+                    parameters[key] = value
+    return parameters
 
 # =====================================================
 # BASIC PARAMETERS
@@ -31,10 +49,10 @@ xlabel_time = "$t / [ L / {\\dot{x}}_{\\mathrm{bc}} ]$"
 xlabel_xct = "$x_{ct} / L$"
 ylabel_xct = "crack tip position $/ L$"
 ylabel_Jx = "$J_x / J_c^{\\mathrm{num,pl}}$"
-ylabel_Jx_max = "$J_x^{\\mathrm{max}} / J_c^{\\mathrm{num,pl}}$"
+ylabel_Jeff = "$J_{x,c}^{\\mathrm{eff}} / J_c^{\\mathrm{num,pl}}$"
 
-vm2d_label = r"\textbf{von Mises 2D}"
-vm3d_label = r"\textbf{von Mises 3D}"
+vm2d_label = r"\textbf{[vM] 2D}"
+vm3d_label = r"\textbf{[vM] 3D}"
 
 script_path = os.path.dirname(__file__)
 
@@ -139,7 +157,7 @@ ev.plot_columns_multiple_y(
 # READ HOLE GEOMETRY
 # =====================================================
 parameter_file = os.path.join(vm2d_sim_folder, "parameters.txt")
-parameters = pp.read_parameters_file(parameter_file)
+parameters = read_parameters_file(parameter_file)
 
 nholes = int(parameters.get("nholes", parameters.get("Nholes")))
 dhole = parameters["dhole"]
@@ -246,9 +264,9 @@ ev.plot_multiple_columns(
 )
 
 # =====================================================
-# Jx_max vs w_s (2D vs 3D)
+# J_x,c^eff vs w_s (2D vs 3D)
 # =====================================================
-def compute_Jxmax_vs_wsteg(results_dir, is_3d=False):
+def compute_Jeff_vs_wsteg(results_dir, is_3d=False):
     sim_results = ev.read_all_simulation_data(results_dir)
 
     wsteg_vals = []
@@ -292,24 +310,24 @@ def compute_Jxmax_vs_wsteg(results_dir, is_3d=False):
 
 
 
-w_vm2d, Jxmax_vm2d = compute_Jxmax_vs_wsteg(vm2d_results_dir, is_3d=False)
-w_vm3d, Jxmax_vm3d = compute_Jxmax_vs_wsteg(vm3d_results_dir, is_3d=True)
+w_vm2d, Jeff_vm2d = compute_Jeff_vs_wsteg(vm2d_results_dir, is_3d=False)
+w_vm3d, Jeff_vm3d = compute_Jeff_vs_wsteg(vm3d_results_dir, is_3d=True)
 
 # =====================================================
 # FINAL PLOT
 # =====================================================
-output_Jxmax_vs_wsteg = os.path.join(
+output_Jeff_vs_wsteg = os.path.join(
     script_path,
-    "PAPER_VM_Jxmax_vs_wsteg_2D_vs_3D.png",
+    "PAPER_VM_Jeff_vs_wsteg_2D_vs_3D.png",
 )
 
 ev.plot_multiple_lines(
     x_values=[w_vm2d, w_vm3d],
-    y_values=[Jxmax_vm2d, Jxmax_vm3d],
+    y_values=[Jeff_vm2d, Jeff_vm3d],
     x_label="$w_s / L$",
-    y_label=ylabel_Jx_max,
+    y_label=ylabel_Jeff,
     legend_labels=[vm2d_label, vm3d_label],
-    output_file=output_Jxmax_vs_wsteg,
+    output_file=output_Jeff_vs_wsteg,
     usetex=True,
     markers_only=False,
     use_colors=True,
@@ -322,4 +340,3 @@ ev.plot_multiple_lines(
 )
 
 print("✅ PAPER plots generated successfully (2D + 3D).")
-

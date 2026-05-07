@@ -632,7 +632,7 @@ class StaticPhaseFieldProblem_plasticity_noll:
         
     
     def sigma_degraded(self, u,s,lam,mu, eta):
-        return self.degradation_function(s=s,eta=eta) * self.sigma_undegraded(u=u,lam=lam,mu=mu)
+        return self.degrad(s=s,eta=eta) * self.sigma_undegraded(u=u,lam=lam,mu=mu)
         # return 1.0 * le.sigma_as_tensor3D(u=u,lam=lam,mu=mu)
     
     def eps(self,u):
@@ -684,7 +684,7 @@ class StaticPhaseFieldProblem_plasticity_noll:
         return  (0.5 * (self.hard * self.alpha_n ** 2) + self.sig_y * self.alpha_n)
     
     def psi_plasti_degraded(self,s,eta):
-            return self.degradation_function(s,eta) * self.psi_plasti_undegraded()
+            return self.degrad(s,eta) * self.psi_plasti_undegraded()
     
     def psi_total(self,u,s,la,mu,eta):
         return self.psiel_degraded(s,eta,u,la,mu) + self.psi_plasti_degraded(s,eta)

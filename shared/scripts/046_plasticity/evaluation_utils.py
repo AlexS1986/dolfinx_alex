@@ -13,9 +13,49 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator, LogLocator
 
-import alex.postprocessing as pp
-import alex.homogenization as hom
-import alex.linearelastic as le
+try:
+    import alex.postprocessing as pp
+except ModuleNotFoundError:
+    class _PostprocessingFallback:
+        @staticmethod
+        def read_parameters_file(file_path):
+            data_dict = {}
+            with open(file_path, "r") as file:
+                for line in file:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    key, value = line.split("=")
+                    key = key.strip()
+                    value = value.strip()
+                    try:
+                        data_dict[key] = int(value)
+                    except ValueError:
+                        try:
+                            data_dict[key] = float(value)
+                        except ValueError:
+                            data_dict[key] = value
+            return data_dict
+
+    pp = _PostprocessingFallback()
+try:
+    import alex.homogenization as hom
+except ModuleNotFoundError:
+    hom = None
+
+try:
+    import alex.linearelastic as le
+except ModuleNotFoundError:
+    class _LinearElasticFallback:
+        @staticmethod
+        def get_emod(lam, mu):
+            return mu * (3.0 * lam + 2.0 * mu) / (lam + mu)
+
+        @staticmethod
+        def get_nu(lam, mu):
+            return lam / (2.0 * (lam + mu))
+
+    le = _LinearElasticFallback()
 import math
 import alex.evaluation as ev
 from scipy.signal import savgol_filter
@@ -585,4 +625,3 @@ def Gc_eff_estimate(Gc_local,la_local,mu_local,la_eff,mu_eff,epsilon,dhole,wsteg
     E_star = e_star(la_eff,mu_eff)
     
     return Gc_eff(E_star,L,sig_ff)
-

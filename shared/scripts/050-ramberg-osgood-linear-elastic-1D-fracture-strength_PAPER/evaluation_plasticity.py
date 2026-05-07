@@ -88,17 +88,17 @@ max_pi_gc_scaled = data_linear_elastic_gc_scaled[2].max()
 # Labels (stress)
 # --------------------------------------------------
 label_plasticity = (
-    r"\textbf{vM} "
+    r"\textbf{[vM]} "
     r"(max $\sigma^*$ $\approx$ " + f"{max_plasticity:.2f}" + r"$\sigma_y$)"
 )
 
 label_gc1 = (
-    r"\textbf{Eq$\mathbf{J_c}$} "
+    r"\textbf{[Eq$\mathbf{J_c}$]} "
     r"(max $\sigma^*$ $\approx$ " + f"{max_gc1:.2f}" + r"$\sigma_y$)"
 )
 
 label_gc_scaled = (
-    r"\textbf{Eq$\mathbf{\sigma^*}$} "
+    r"\textbf{[Eq$\mathbf{\sigma^*}$]} "
     r"(max $\sigma^*$ $\approx$ " + f"{max_gc_scaled:.2f}" + r"$\sigma_y$)"
 )
 
@@ -106,17 +106,17 @@ label_gc_scaled = (
 # Labels (energy)
 # --------------------------------------------------
 label_pi_plasticity = (
-    r"\textbf{vM} "
+    r"\textbf{[vM]} "
     r"(max $\Pi^*$ $\approx$ " + f"{max_pi_plasticity:.2f}" + r"$J_c^0L$)"
 )
 
 label_pi_gc1 = (
-    r"\textbf{Eq$\mathbf{J_c}$} "
+    r"\textbf{[Eq$\mathbf{J_c}$]} "
     r"(max $\Pi^*$ $\approx$ " + f"{max_pi_gc1:.2f}" + r"$J_c^0L$)"
 )
 
 label_pi_gc_scaled = (
-    r"\textbf{Eq$\mathbf{\sigma^*}$} "
+    r"\textbf{[Eq$\mathbf{\sigma^*}$]} "
     r"(max $\Pi^*$ $\approx$ " + f"{max_pi_gc_scaled:.2f}" + r"$J_c^0L$)"
 )
 
@@ -194,4 +194,3 @@ ev.plot_multiple_columns(
     legend_fontsize=20,
     figsize=(10, 8)
 )
-

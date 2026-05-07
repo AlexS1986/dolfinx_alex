@@ -1,5 +1,5 @@
 % Response to Reviewers
-% Manuscript: Influence of Material Constitutive Laws on Effective Crack Resistance in Heterogeneous Materials
+% Manuscript: Influence of J2-plasticity on the effective crack resistance of a simplified porous material in a numerical experiment
 % Authors: A. Schlüter, R. Medda, R. Müller
 
 \documentclass[pdflatex,sn-mathphys-num]{sn-jnl}
@@ -25,20 +25,27 @@
 
 \DeclareRobustCommand{\mathdefault}[1]{#1}
 
-\newcommand{\vMLabel}{\textbf{vM}\xspace}
-\newcommand{\EqJcLabel}{\textbf{Eq$\boldsymbol{J_c}$}\xspace}
-\newcommand{\EqSigmaStarLabel}{\textbf{Eq$\boldsymbol{\sigma^*}$}\xspace}
-\newcommand{\EqPiStarLabel}{\textbf{Eq$\boldsymbol{\Pi^*}$}\xspace}
+\newcommand{\vMLabel}{[\textbf{vM}]\xspace}
+\newcommand{\EqJcLabel}{[\textbf{Eq$\boldsymbol{J_c}$}]\xspace}
+\newcommand{\EqSigmaStarLabel}{[\textbf{Eq$\boldsymbol{\sigma^*}$}]\xspace}
+\newcommand{\EqPiStarLabel}{[\textbf{Eq$\boldsymbol{\Pi^*}$}]\xspace}
 
 \title{Response to Reviewers}
 
 \author*[1]{\fnm{Alexander} \sur{Schlüter}}
-\author[2]{\fnm{Ronjit} \sur{Medda}}
+\author[1]{\fnm{Ronjit} \sur{Medda}}
 \author[1]{\fnm{Ralf} \sur{Müller}}
 
-\affil*[1]{\orgdiv{Institute of Applied Mechanics}, \orgname{University of Kaiserslautern-Landau}, \orgaddress{\street{Gottlieb-Daimler-Straße 47}, \city{Kaiserslautern}, \postcode{67663}, \country{Germany}}}
-
-\affil[2]{\orgdiv{Department of Mechanical Engineering}, \orgname{Indian Institute of Technology Kharagpur}, \orgaddress{\street{Kharagpur}, \postcode{721302}, \country{India}}}
+\affil*[1]{%
+  \orgdiv{Institut f\"ur Mechanik, FB Bau- und Umweltingenieurwissenschaften},
+  \orgname{TU Darmstadt},
+  \orgaddress{%
+    \street{Franziska-Braun-Stra{\ss}e 7},
+    \city{Darmstadt},
+    \postcode{64287},
+    \country{Germany}
+  }
+}
 
 \begin{document}
 
@@ -59,7 +66,7 @@ Below, we provide detailed responses to each reviewer's comments, organized by r
 
 We thank Reviewer 1 for the careful review and constructive suggestions.
 
-Below we quote the reviewer's points exactly and provide a placeholder for our answer.
+Below we quote the reviewer's points and provide our responses.
 
 \textbf{Major points:}
 
@@ -68,24 +75,40 @@ Below we quote the reviewer's points exactly and provide a placeholder for our a
 \noindent
 0. The authors should work out the scientific contribution of the article more explicitly. On first glance, the authors appear to report on computational experiments only with what seems like a simple extension of what is available already. The work at hand should be put in perspective, discussing both the difficulties and the means to overcome them. Moreover, the findings should be stated in a realistic and modest way (see item 1).
 
-\emph{Response:} [placeholder]
+\emph{Response:} We agree that this general point is central, and we have addressed it throughout the revised manuscript and in several of the detailed responses below. In particular, we have reduced the claimed generality of the manuscript, clarified the distinction between the computed effective crack resistance and a homogenized fracture toughness, and stated more explicitly which assumptions are not verified in the present study.
+
+Concerning the scientific contribution, the reviewer is right that one part of the work is an extension of the previously used phase-field fracture framework to account for J2-plasticity. However, the consequences of this extension for the proposed numerical experiment are not obvious a priori, and, to the best of our knowledge, this comparison has not previously been carried out for the considered effective-crack-resistance setting. The results show that matching the one-dimensional tensile strength alone does not reproduce the crack resistance obtained with the ductile material law; the additional dissipation during plastic deformation and crack re-nucleation plays a decisive role. Similarly, the three-dimensional extension is not meant as a formal homogenization proof, but as a numerical test of whether the toughening and saturation effects observed in the two-dimensional setting persist when the crack front has an additional degree of freedom. The revised manuscript now presents these points more explicitly and more modestly.
+
+We also agree that the approach lacks strict mathematical proof of a homogenized fracture toughness and that representativity is not fully established. These limitations are now stated directly in the introduction, in the definition of the numerical experiment, and in the conclusion. For details, we refer in particular to our responses to points 1, 2, 7, 8, 9, 12, and 22.
+
+Related changes:
+\begin{itemize}
+\item Point 1 / title: \deleted{Influence of Material Constitutive Laws on Effective Crack Resistance in Heterogeneous Materials} \added{Influence of J2-plasticity on the effective crack resistance of a simplified porous material in a numerical experiment}
+\item Point 2 / introduction: \added{In contrast to the effective elastic or plastic properties obtained in classical micromechanics, it is presently not established in general that fracture in a heterogeneous material gives rise to a homogenized macroscopic material model with a well-defined fracture toughness obtained in an RVE limit.}
+\item Point 2 / numerical experiment: \added{The methodology is not used here as a proof of a homogenized fracture toughness in the mathematical sense. Rather, it is interpreted as a numerical counterpart of a fracture experiment. In this experiment-like setting, a representative material region containing microstructural features is subjected to so-called surfing boundary conditions that enforce complete separation, and the energetic driving force required for this process is recorded.}
+\item Point 7 / representativity: \added{In the present work, this requirement is not fully verified: only one prescribed macroscopic crack-growth direction and one initial crack location are considered, and no convergence study with respect to the size of the resolved porous region is performed.}
+\item Point 8 / terminology: \deleted{effective fracture toughness} \added{effective crack resistance}
+\item Point 9 / interpretation of results: \added{The comparison shows that matching this stress level alone does not reproduce the crack resistance obtained with the ductile material law, because the additional energy dissipated during plastic deformation and crack re-nucleation is decisive.}
+\item Point 22 / previous works: \added{These observations should be understood as results for the specific porous material and numerical experiment investigated in those studies, not as a general statement for arbitrary porous materials.}
+\item Conclusion: \added{A further essential step is to investigate representativity more systematically, including variations of the initial crack position, crack-growth direction, microstructure realization, and domain size.}
+\end{itemize}
 
 \bigskip
 
 \noindent
 1. The title is wrong. It should read "Influence of material constitutive laws on *the* effective crack resistance *of* heterogeneous materials". More to the point, the title is overly optimistic. It suggests a level of generality that I do not see. Afaik the authors report on a single periodic microstructure (fixed, not even stochastic) per spatial dimension and J2 plasticity as the sole inelastic constitutive law besides linearized elasticity to be mated with phase-field fracture.
 
-\emph{Response:} We agree with the reviewer that the original title suggested a degree of generality that is not supported by the scope of the present study. The numerical investigations are restricted to idealized periodic pore arrangements and to linear elasticity or von Mises plasticity coupled with phase-field fracture. To make this limitation clear already in the title, we have changed it to:
+\emph{Response:} We agree with the reviewer that the original title suggested a degree of generality that is not supported by the scope of the present study. The numerical investigations are restricted to idealized periodic pore arrangements and focus on the influence of J2-plasticity, compared against linear elasticity, within a phase-field fracture setting. To make this limitation clear already in the title, we have changed it to:
 
 \begin{quote}
-``Influence of material constitutive laws on the effective crack resistance of a simplified porous material in a numerical experiment''
+``Influence of J2-plasticity on the effective crack resistance of a simplified porous material in a numerical experiment''
 \end{quote}
 
 The revised manuscript displays this modification visibly in the title.
 
 Related changes:
 \begin{itemize}
-\item Page 1: \deleted{Influence of Material Constitutive Laws on Effective Crack Resistance in Heterogeneous Materials} \added{Influence of material constitutive laws on the effective crack resistance of a simplified porous material in a numerical experiment}
+\item Page 1: \deleted{Influence of Material Constitutive Laws on Effective Crack Resistance in Heterogeneous Materials} \added{Influence of J2-plasticity on the effective crack resistance of a simplified porous material in a numerical experiment}
 \end{itemize}
 
 \bigskip
@@ -93,77 +116,186 @@ Related changes:
 \noindent
 2. Large parts of the introduction are misleading. There is no meaningful "homogenized fracture toughness". From a mathematical point of view, there should be a useful and naturally emerging "effective material model" at the macroscopic scale. Yet, this is not clear to the best of my knowledge - do micro-cracks coalesce to a "macro-crack", governed by an anisotropic elasticity tensor and an anisotropic fracture toughness? I do not know. To date, the definition of the "effective fracture toughness" by Hossain et al. is debatable. It is not clear that the "definition" is well-defined, e.g., in an RVE limit, and gives rise to a material property. I do not expect the authors to solve the overall question, but at least the underlying issues and the current level of understanding must be made crystal clear.
 
-\emph{Response:} [placeholder]
+\emph{Response:} We agree with the reviewer. The existence of a homogenized fracture toughness in the same sense as homogenized elastic or plastic properties is still an active research question, and our previous wording did not make this limitation sufficiently clear. We also agree that the definition by Hossain et al. should not be presented as a classical homogenization result or as proof of a material property obtained in an RVE limit.
+
+We have therefore revised the introduction and the section introducing the numerical experiment. The manuscript now explicitly states that it is not generally established that fracture in a heterogeneous material gives rise to a macroscopic effective material model with a well-defined fracture toughness. We also clarify that the approach of Hossain et al. is used here in an operational, experiment-like sense: a region containing microstructural features is forced to fracture, and the energetic driving force required for this process is measured. Such a value can only be representative if the resulting fracture pattern is itself representative of the material and loading situation.
+
+We further state explicitly that the present study does not demonstrate convergence with respect to the size of the resolved porous domain, nor does it test different initial crack locations, crack-growth directions, or microstructure realizations. Accordingly, the results are now framed as a controlled numerical experiment on the influence of J2-plasticity for the selected simplified porous microstructure, rather than as the determination of a generally valid homogenized fracture toughness.
+
+Related changes:
+\begin{itemize}
+\item Page 3: \added{In contrast to the effective elastic or plastic properties obtained in classical micromechanics, it is presently not established in general that fracture in a heterogeneous material gives rise to a homogenized macroscopic material model with a well-defined fracture toughness obtained in an RVE limit.}
+\item Page 3: \added{The methodology is not used here as a proof of a homogenized fracture toughness in the mathematical sense. Rather, it is interpreted as a numerical counterpart of a fracture experiment. In this experiment-like setting, a representative material region containing microstructural features is subjected to so-called surfing boundary conditions that enforce complete separation, and the energetic driving force required for this process is recorded.}
+\item Page 4: \added{It should therefore be understood as an operational definition of an effective crack resistance for a prescribed numerical experiment, not as a classical homogenization result.}
+\item Page 4: \added{Such a use is justified only to the extent that the fracture process analyzed by~(1) is representative of the specific material and loading situation considered in the numerical experiment.}
+\item Page 5: \added{This definition should not be confused with a proof that $J_{x,c}^{\text{eff}}$ converges to a material property under enlargement of the representative region.}
+\item Page 5: \added{In the present work, this requirement is not fully verified: only one prescribed macroscopic crack-growth direction and one initial crack location are considered, and no convergence study with respect to the size of the resolved porous region is performed.}
+\item Conclusion: \added{A further essential step is to investigate representativity more systematically, including variations of the initial crack position, crack-growth direction, microstructure realization, and domain size.}
+\end{itemize}
 
 \bigskip
 
 \noindent
 3. Section 2 also discusses "material parameters". Is this meaningful?
 
-\emph{Response:} [placeholder]
+\emph{Response:} We understand this comment to refer in particular to the first paragraph of Section 2, where $J_c^{\text{eff}}$ was described as a material parameter. In view of the clarification in our response to point 2, we agree that this wording was too strong. The quantity obtained from the numerical experiment should not be presented as a classical material parameter unless its representativity for the specific material and loading situation has been established.
+
+We have therefore softened the statement. The revised manuscript now refers to $J_c^{\text{eff}}$ as an input quantity in a macroscopic fracture criterion, and explicitly states that such a use is justified only to the extent that the fracture process analyzed by the criterion is representative of the specific material and loading situation considered in the numerical experiment.
+
+Related changes:
+\begin{itemize}
+\item Page 4: \deleted{$J_c^{\text{eff}}$, which can subsequently be employed as a material parameter for predicting macroscopic crack growth according to the fracture criterion.} \added{$J_c^{\text{eff}}$. This quantity can subsequently be used as an input quantity in a macroscopic fracture criterion.}
+\item Page 4: \added{Such a use is justified only to the extent that the fracture process analyzed by~(1) is representative of the specific material and loading situation considered in the numerical experiment.}
+\end{itemize}
 
 \bigskip
 
 \noindent
 4. "The insensitivity of Jxmax with respect to the precise implementation of boundary conditions has been demonstrated in previous studies such as [1, 17]." Is that so? What is an imprecise boundary condition?
 
-\emph{Response:} [placeholder]
+\emph{Response:} We agree with the reviewer. The term ``precise implementation'' was misleading, and the statement was too broad. The cited works do not provide a general proof that $J_{x,c}^{\text{eff}}$ is independent of boundary conditions. Rather, they compare two formulations of the surfing boundary conditions for the specific numerical experiment introduced by Hossain et al., one of which is the formulation used in the present work. For the investigated cases, no relevant difference in the predicted effective crack resistance was observed.
+
+We have revised the manuscript accordingly and now explicitly state that this observation should not be understood as a general proof of boundary-condition independence.
+
+Related changes:
+\begin{itemize}
+\item Page 5: \deleted{The insensitivity of the computed crack resistance with respect to the precise implementation of boundary conditions has been demonstrated in previous studies.}
+\item Page 5: \added{For the numerical experiment introduced by Hossain et al., two formulations of the surfing boundary conditions were compared in the cited previous studies. For the specific cases investigated there, including the formulation used in the present work, no relevant difference in the predicted value of $J_{x,c}^{\text{eff}}$ was found. This should not be understood as a general proof of independence from the boundary conditions.}
+\end{itemize}
 
 \bigskip
 
 \noindent
 5. Eq. (18) does not make sense physically, as the dimensions do not match. The "crack energy" must be integrated over a volume to create something with the dimensions of an area.
 
-\emph{Response:} [placeholder]
+\emph{Response:} We thank the reviewer for pointing out that the explanation of Eq.~(18) was imprecise. The equation itself is intended as a fracture energy density per unit volume. The crack-surface density $\bar{A}$ only approximates a crack surface after integration over the volume. We have therefore revised the wording in the manuscript to make the dimensional meaning explicit.
+
+Related changes:
+\begin{itemize}
+\item Page 6: \deleted{Finally, the fracture energy contribution is given by}
+\item Page 6: \added{Finally, the fracture energy density per unit volume is given by}
+\item Page 6: \deleted{Here, $\bar{A}$ approximates the crack surface, $J_c$ denotes the material-specific fracture energy per unit crack surface area, and $\epsilon$ controls the width of the diffuse crack zone.}
+\item Page 6: \added{Here, $\bar{A}$ approximates the crack surface when integrated over a volume, $J_c$ denotes the material-specific fracture energy per unit crack surface area, and $\epsilon$ controls the width of the diffuse crack zone.}
+\end{itemize}
 
 \bigskip
 
 \noindent
 6. Which software, which numerical parameters, which time-stepping scheme, which implementation, which hardware is used? Without this data, the results are neither understandable nor reproducible.
 
-\emph{Response:} [placeholder]
+\emph{Response:} We agree that the numerical implementation was described too briefly. We have therefore added a new subsection before the parameter sets that summarizes the implementation and discretization details. The revised manuscript now states that the simulations were carried out with FEniCSx, more specifically \texttt{dolfinx} version 0.7.4, using a monolithic nonlinear solve. The nonlinear problem is solved with the PETSc-based Newton solver provided by FEniCSx, using the residual and tangent of the monolithic formulation. The linear subproblems are solved with the default PETSc Krylov solver GMRES and the default PETSc ILU preconditioner used by this setup.
+
+We also added the time discretization and adaptive time-stepping strategy. The phase-field evolution equation is treated implicitly by a backward Euler scheme. The time step is reduced by a factor of two if Newton's method does not converge within eight iterations and is increased by a factor of two if convergence is reached in fewer than four iterations. The manuscript already provided the specific mesh sizes and phase-field length scales in the individual simulation setups; we now additionally state the general discretization rule that first-order triangular elements are used in two dimensions, first-order tetrahedral elements in three dimensions, and that the mesh along the expected crack path is refined such that $\Delta h \leq \epsilon/2$, usually with a much smaller element size as specified in the respective sections.
+
+Related changes:
+\begin{itemize}
+\item Page 7: \added{A new subsection ``Numerical implementation'' was added before the parameter sets.}
+\item Page 7: \added{The weak forms of the coupled boundary-value problems are implemented in FEniCSx using \texttt{dolfinx} version 0.7.4~[24]. The displacement field, the phase field, and, where applicable, the plastic internal variables are solved in a monolithic nonlinear system. The linear subproblems arising within Newton's method are solved with the default PETSc Krylov solver GMRES and the default PETSc ILU preconditioner used by this setup.}
+\item Page 7: \added{Irreversibility of crack growth is enforced in both the ductile and the linear elastic phase-field formulations by fixing the phase field at fully fractured points: if $s(\boldsymbol{x},t_{\boldsymbol{x}})=0$ for the first time $t_{\boldsymbol{x}}$ at a point $\boldsymbol{x}$, then a Dirichlet condition $s(\boldsymbol{x},t)=0$ is imposed for all later pseudo-times $t>t_{\boldsymbol{x}}$.}
+\item Page 7: \added{The evolution equation for the phase field, Eq.~(22), is discretized in pseudo-time by an implicit backward Euler scheme. The time step is adapted automatically during the simulation.}
+\item Page 7: \added{The spatial discretization uses first-order Lagrange finite elements on triangular meshes in two dimensions and tetrahedral meshes in three dimensions. Along the expected crack path, the mesh is locally refined such that the element edge length satisfies $\Delta h \leq \epsilon/2$ and is usually chosen much smaller; see the respective sections for the specific values.}
+\end{itemize}
 
 \bigskip
 
 \noindent
 7. What happens if the initial crack is shifted? What happens if the pore arrangement is not regular? Only periodic microstructures are used. I would guess that random microstructures behave in a completely different manner taking into account the maximum definition of the crack resistance adopted by the authors. It might be advised to spell out this limitation of the findings explicitly.
 
-\emph{Response:} [placeholder]
+\emph{Response:} We agree with the reviewer. The influence of the initial crack position, the prescribed crack-growth direction, the domain size, and the particular microstructure realization must be investigated before stronger conclusions about representativity or material-property character can be drawn. This is especially relevant for random microstructures, where the maximum value of the J-Integral may depend on the particular fracture path and on statistically rare but mechanically important microstructural configurations.
+
+We have already addressed this limitation in several revisions made in response to the preceding comments. In particular, we have softened the claim that the computed quantity is a generally valid effective fracture toughness. The revised manuscript now presents it as an operational effective crack resistance for the specific numerical experiment and explicitly states that our study uses one initial crack location, one prescribed macroscopic crack-growth direction, and no convergence study with respect to the size of the resolved porous region. We also added to the conclusion that future work must investigate variations of the initial crack position, crack-growth direction, microstructure realization, and domain size.
+
+Related changes already introduced:
+\begin{itemize}
+\item Title: \deleted{Influence of Material Constitutive Laws on Effective Crack Resistance in Heterogeneous Materials} \added{Influence of J2-plasticity on the effective crack resistance of a simplified porous material in a numerical experiment}
+\item Page 3: \added{In contrast to the effective elastic or plastic properties obtained in classical micromechanics, it is presently not established in general that fracture in a heterogeneous material gives rise to a homogenized macroscopic material model with a well-defined fracture toughness obtained in an RVE limit.}
+\item Page 3: \added{The methodology is not used here as a proof of a homogenized fracture toughness in the mathematical sense. Rather, it is interpreted as a numerical counterpart of a fracture experiment. In this experiment-like setting, a representative material region containing microstructural features is subjected to so-called surfing boundary conditions that enforce complete separation, and the energetic driving force required for this process is recorded.}
+\item Page 4: \added{It should therefore be understood as an operational definition of an effective crack resistance for a prescribed numerical experiment, not as a classical homogenization result.}
+\item Page 5: \added{This definition should not be confused with a proof that $J_{x,c}^{\text{eff}}$ converges to a material property under enlargement of the representative region.}
+\item Page 5: \added{In the present work, this requirement is not fully verified: only one prescribed macroscopic crack-growth direction and one initial crack location are considered, and no convergence study with respect to the size of the resolved porous region is performed. The results should therefore be read as a controlled numerical experiment on the influence of J2-plasticity for the selected simplified microstructure, rather than as the determination of a generally valid homogenized fracture toughness.}
+\item Conclusion: \added{A further essential step is to investigate representativity more systematically, including variations of the initial crack position, crack-growth direction, microstructure realization, and domain size.}
+\end{itemize}
 
 \bigskip
 
 \noindent
 8. The terms "crack resistance" and "fracture toughness" are used synonymously. I would suggest to stick to one of the phrases and to discuss potential equivalences to some extent.
 
-\emph{Response:} [placeholder]
+\emph{Response:} We agree with the reviewer. In the revised manuscript, we use the term \textsl{effective crack resistance} for the value computed in the numerical experiment, i.e., the maximum value of the J-Integral required to enforce crack advance through the considered microstructure. In contrast, we reserve the term \textsl{fracture toughness} for a generalized material quantity in the sense of a macroscopic fracture property. As discussed in the revised introduction, the existence of such a homogenized fracture toughness for heterogeneous materials is still an open research question and is not established by the numerical experiment considered here.
+
+We have introduced this terminology explicitly in the introduction and revised the manuscript accordingly. Thus, when referring to the results of the surfing-boundary-condition simulations, we now consistently use \textsl{effective crack resistance}. The term \textsl{fracture toughness} is retained only where the manuscript discusses the broader, still open question of a generalized homogenized material property.
+
+Related changes:
+\begin{itemize}
+\item Abstract: \deleted{effective crack resistance as a macroscopic material parameter} \added{effective crack resistance}
+\item Page 3: \added{To avoid conflating two slightly different concepts, the term \textsl{effective crack resistance} is used in this work for the value obtained from a numerical experiment under specific less general conditions, i.e., the maximum energetic driving force required to force crack advance through the considered microstructure. In contrast, \textsl{fracture toughness} is reserved for a generalized material quantity in the sense of a macroscopic fracture property. Whether such a fracture toughness exists for heterogeneous materials and under which circumstances both concepts might coincide remains an open question of research.}
+\item Page 3: \deleted{effective fracture toughness} \added{effective crack resistance}
+\item Page 4: \deleted{effective energetic fracture toughness} \added{effective energetic crack resistance}
+\item Page 5: \deleted{effective fracture toughness} \added{effective crack resistance}
+\item Section titles: \deleted{Effective Toughness} \added{Effective Crack Resistance}
+\item Results and conclusion: Replaced uses of \deleted{effective fracture toughness}, \deleted{effective toughness}, and \deleted{effective fracture resistance} by \added{effective crack resistance} when referring to the computed value $J_{x,c}^{\text{eff}}$.
+\end{itemize}
 
 \bigskip
 
 \noindent
 9. The conclusion claims that the "tensile strength" plays a minor role. Where exactly does the "tensile strength" enter the model?
 
-\emph{Response:} [placeholder]
+\emph{Response:} We agree that the previous wording was imprecise. The one-dimensional tensile strength is not an explicit model parameter. Instead, it is a derived quantity determined indirectly by the other model parameters. In the linear elastic case, it follows from Eq.~(26). In the ductile case, the critical strain is determined from Eq.~(27), and the corresponding critical stress follows from the stress-strain relation in Eq.~(21).
+
+What we intended to express is that matching this derived one-dimensional tensile strength is not sufficient to predict the effective crack resistance observed in the porous numerical experiment. This is shown by the comparison between the von~Mises-type model and the linear elastic model \EqSigmaStarLabel: both have almost the same one-dimensional tensile strength, see Fig.~6, but the ductile material law gives a much higher effective crack resistance in Fig.~14. Therefore, the conclusion is not that the tensile strength is irrelevant, but that it is a weaker predictor than the energy dissipation capacity associated with plastic deformation and crack re-nucleation.
+
+\textbf{List of changes:}
+\begin{itemize}
+\item End of Section 4: \added{The comparison of \vMLabel and \EqSigmaStarLabel in Fig.~14 shows that the ductile material law leads to a substantially higher effective crack resistance even though the one-dimensional tensile strengths are almost identical.}
+\item Conclusion: \added{The comparison shows that matching this stress level alone does not reproduce the crack resistance obtained with the ductile material law, because the additional energy dissipated during plastic deformation and crack re-nucleation is decisive.}
+\end{itemize}
 
 \bigskip
 
 \noindent
 10. References [13] and [18] are broken. The list of references is largely incomplete, and should be updated. There is even more recent work on the "effective crack resistance". Also, there are many contributions coupling plasticity and phase-field fracture, e.g., from Miehe \& Aldakheel.
 
-\emph{Response:} [placeholder]
+\emph{Response:} We agree that the reference list needed to be corrected and expanded. In particular, we have corrected the previously broken entries [13] and [16]. Reference [13] has been rewritten as a proceedings contribution, avoiding the unstable web link used previously, and reference [16] has been completed by adding the missing publisher location.
+
+We have also expanded the literature discussion in the introduction. Concerning recent work on effective crack resistance and effective fracture properties, we added the publications by Liu and Shen (2025), Aranda and Segurado (2025), Man et al. (2025), and Henry (2025), which were also suggested by Reviewer~3. Concerning phase-field fracture coupled to plasticity, we added representative contributions by Miehe, Aldakheel, and co-workers on variational finite-strain ductile fracture, porous plasticity, and robust numerical implementation.
+
+\textbf{List of changes:}
+\begin{itemize}
+\item Reference [13]: Replaced the broken web reference by a proceedings entry for the DVM contribution.
+\item Reference [16]: Replaced the placeholder \deleted{???} by \added{Amsterdam}.
+\item Introduction: \added{Recent contributions underline that this remains an active field of research. Liu and Shen propose a phase-field formulation for anisotropic effective fracture toughness that accounts for a quasi-worst-case translation of a representative volume element. Aranda and Segurado introduce a crack-length control technique for phase-field fracture in FFT homogenization and use it to estimate effective fracture properties of composites and porous materials. Man et al. study how crack guiding and trapping in bioinspired interfaces control effective toughness, while Henry shows for dynamic crack propagation in disordered heterogeneous materials that the spatial distribution of soft inclusions can strongly affect the apparent fracture energy even when the effective elastic properties are similar.}
+\item Introduction: \added{For ductile materials, phase-field fracture has also been coupled to plasticity in variational finite-strain formulations, for example by Miehe, Aldakheel and co-workers.}
+\item Section 3: \added{Related variational finite-strain phase-field formulations for ductile fracture and porous plasticity were developed by Miehe, Aldakheel and co-workers.}
+\item Bibliography: \added{Added Liu and Shen (2025), Aranda and Segurado (2025), Man et al. (2025), Henry (2025), Miehe, Aldakheel and Raina (2016), Miehe, Kienle, Aldakheel and Teichtmeister (2016), and Miehe, Aldakheel and Teichtmeister (2017).}
+\end{itemize}
 
 \bigskip
 
 \noindent
 11. Terms should be introduced before being used, e.g., the letter "t" presumably stands for the time, which is never mentioned. Is the strain energy density specified?
 
-\emph{Response:} [placeholder]
+\emph{Response:} We agree with the reviewer and have clarified the notation. The variable $t$ is now introduced explicitly as the pseudo-time, or loading parameter, used to move the fictitious crack tip in the surfing boundary condition. We also clarified the statement following the J-Integral: the strain energy density entering this expression is denoted by $\psi_{\mathrm{el}}$ and is specified in the constitutive model section. In the ductile case, it is given by the degraded elastic energy density depending on the elastic strain, plastic strain, and phase field; in the linear elastic case, the same expression is used with vanishing plastic strain.
+
+\textbf{List of changes:}
+\begin{itemize}
+\item Page 5: \added{Here, $t$ denotes the pseudo-time, or loading parameter, used to advance the fictitious crack tip.}
+\item Page 5: \deleted{The strain energy density is given by $\psi_{\text{el}}$} \added{The strain energy density entering the J-Integral is denoted by $\psi_{\text{el}}$ and is specified in Section~2}
+\end{itemize}
 
 \bigskip
 
 \noindent
 12. I wondered about the embedding of the "representative region" in a homogeneous "effective" material. Shouldn't the effective material be cubic in case a single spherical inclusion is used?
 
-\emph{Response:} [placeholder]
+\emph{Response:} The reviewer is correct that the unit cell used to determine the effective stiffness is cubic in the three-dimensional case. Each spherical pore is centered in a cubic cell of edge length $w_c=w_s+L$, and the effective stiffness parameters are computed from this cubic unit cell.
+
+The surrounding homogeneous domain, however, is a different object. It is not a unit cell, but a larger embedding domain used to apply the surfing boundary conditions around the resolved $6\times3\times2$ array of porous unit cells. This embedding domain is cuboidal rather than cubic, but it is assigned the effective stiffness obtained from the cubic porous unit cell. We have added a short clarification in Section 5 to make this distinction explicit.
+
+\textbf{List of changes:}
+\begin{itemize}
+\item Section 5: \added{Thus, the unit cell used to determine the effective stiffness is cubic, whereas the surrounding homogeneous domain is a larger cuboidal embedding region assigned this effective stiffness.}
+\end{itemize}
 
 %------------------------------------------------
 
@@ -172,7 +304,7 @@ Related changes:
 \bigskip
 
 \noindent
-1. "criterions" -> "criteria"
+1. "criterions" $\rightarrow$ "criteria"
 
 \emph{Response:} Corrected as suggested.
 
@@ -186,14 +318,33 @@ Related changes:
 \noindent
 2. The style author [number] must be used to improve readability, e.g., "Gross-Seelig [2]" instead of " [2]" (consistently).
 
-\emph{Response:} [placeholder]
+\emph{Response:} We agree and have revised the manuscript accordingly. Where a citation is part of the sentence, we now mention the author names explicitly, for example ``Gross and Seelig~[2]'', ``Hauser et al.~[3]'', or ``Tanné et al.~[21]''. We applied this change in particular in the introduction and in the sections introducing the numerical experiment and the reference simulations.
+
+Related changes:
+\begin{itemize}
+\item Page 2: \deleted{as discussed in [2]} \added{as discussed by Gross and Seelig [2]}
+\item Page 2: \deleted{as demonstrated in [3]} \added{as demonstrated by Hauser et al. [3]}
+\item Page 3: \deleted{active debate [4]} \added{active debate, as discussed by Lebihain [4]}
+\item Page 3: \deleted{This idea is further pursued in [7] and in [8]} \added{This idea is further pursued by Ernesti and Schneider [7,8]}
+\item Page 4: \added{The statement that the contributions by Hossain et al., Hsueh et al., and Brach et al. were limited to linear-elastic material behavior and two-dimensional problems was placed directly after these works are introduced, so that it clearly refers to this specific line of work.}
+\item Page 4: \deleted{See, for example, [12]} \added{See, for example, the review by Ambati et al. [12] for a comprehensive overview of phase-field models for fracture.}
+\item Page 11: \deleted{As established in the literature [21]} \added{As established by Tanné et al. [21]}
+\end{itemize}
 
 \bigskip
 
 \noindent
 3. What is the difference of the definition [9] compared to the other work [5]? When reading the article [9], I had the impression that identical definitions were used.
 
-\emph{Response:} [placeholder]
+\emph{Response:} We agree with the reviewer. Our previous wording overstated the difference between these works. The variational definition discussed by Michel and Suquet~[9] is essentially the same variational effective surface energy considered by Schneider~[5], based on homogenization results and a weighted-minimal-surface/cell-formula problem. Michel and Suquet do not introduce a fundamentally different cell formula. Their contribution is rather to assess the merits and limitations of Schneider's definition, relate it to limit-load and plasticity formulations, derive bounds, and clarify its interpretation: the variational surface energy is a rigorous lower bound to a physically motivated effective fracture energy associated with the energy dissipated along the actual crack path. They also show examples where this lower bound and the actual dissipated energy differ, in particular because the variational surface energy does not account for elastic contrast in the same way as a simulated crack-propagation process.
+
+We have revised the manuscript to make this clear and to avoid presenting [9] as a separate definition.
+
+Related changes:
+\begin{itemize}
+\item Page 3: \deleted{Michel and Suquet propose the effective fracture energy to be a directionally dependent quantity that corresponds to the dissipated energy of the actual path of a crack through a suitable unit cell.} \added{Michel and Suquet assess essentially the same variational definition and discuss its merits and limitations.}
+\item Page 3: \added{In particular, they relate the variational surface energy to limit-load problems and show that it provides a lower bound to a more physically motivated effective fracture energy based on the energy dissipated along the actual crack path through a unit cell.}
+\end{itemize}
 
 \bigskip
 
@@ -204,9 +355,10 @@ Related changes:
 
 Related changes:
 \begin{itemize}
-\item Page 4: Moved the explanation of the term representative region from a footnote into the main text.
-\item Page 5: Moved the small-strain and homogeneity assumptions from footnotes into the main text.
-\item Pages 16 and 20: Moved the definition of the microscopic crack tip position from footnotes into the main text.
+\item Page 4: \deleted{The term representative volume element is deliberately avoided, since the region no longer fulfills classical representativity requirements once fracture occurs, e.g. the separation of length scales.} \added{The term representative volume element is deliberately avoided because the region no longer fulfills classical representativity requirements once fracture occurs, e.g., the separation of length scales.}
+\item Page 5: \deleted{In this work, only small strain assumptions are considered. However, the framework could be extended to finite strains in a straight forward manner.} \added{Only small strain assumptions are considered in this work.}
+\item Page 5: \deleted{This presumes a sufficiently homogeneous spatial distribution of microstructural features, analogous to assumptions made for representative volume elements in micromechanics.} \added{This presumes a sufficiently homogeneous spatial distribution of microstructural features, analogous to assumptions made for representative volume elements in micromechanics.}
+\item Pages 16 and 20: \deleted{The microscopic crack tip postion $x_{ct}$ is indentified as the node with the largest $x$-coordinate that fulfills $s=0$.} \added{The microscopic crack tip position $x_{ct}$ is identified as the node with the largest $x$-coordinate that fulfills $s=0$.}
 \end{itemize}
 
 \bigskip
@@ -218,19 +370,20 @@ Related changes:
 
 Related changes:
 \begin{itemize}
-\item Page 4: \deleted{an effective energetic fracture toughness $J_c^{\text{eff}}$, which} \added{an effective energetic fracture toughness, denoted by $J_c^{\text{eff}}$. This quantity}
-\item Page 4: \deleted{whose fracture behavior is to be captured by $J_c^{\text{eff}}$} \added{whose fracture behavior is to be captured by the effective energetic fracture toughness}
-\item Page 4: \deleted{The scale at which $J_c^{\text{eff}}$ is applied} \added{The scale at which this effective energetic fracture toughness is applied}
+\item Page 4: \deleted{an effective energetic fracture toughness $J_c^{\text{eff}}$, which} \added{an effective energetic crack resistance, denoted by $J_{x,c}^{\text{eff}}$. This quantity}
+\item Page 4: \deleted{whose fracture behavior is to be captured by $J_c^{\text{eff}}$} \added{whose fracture behavior is to be captured by the effective energetic crack resistance}
+\item Page 4: \deleted{The scale at which $J_c^{\text{eff}}$ is applied} \added{The scale at which this effective energetic crack resistance is applied}
 \item Page 16: \deleted{for $w_s = L$} \added{for a wall width of $L$}
 \item Page 16: \deleted{for $w_s = 1.0L$} \added{for a wall width of $1.0L$}
 \item Page 17: \deleted{for $w_s = 1.0L$} \added{for a wall width of $1.0L$}
 \item Page 17: \deleted{For $w_s = 1.0L$} \added{For a wall width of $1.0L$}
+\item Page 24: \deleted{with a slightly reduced saturation value of $\approx1.15J_c^{\text{num,pl}}$ compared to $\approx1.25J_c^{\text{num,pl}}$ for the 2D case and a weaker dependence on $w_s$} \added{with a slightly reduced saturation value. This value is about $1.15J_c^{\text{num,pl}}$ in the three-dimensional model, whereas it is about $1.25J_c^{\text{num,pl}}$ in the two-dimensional model. The three-dimensional response also shows a weaker dependence on $w_s$}
 \end{itemize}
 
 \bigskip
 
 \noindent
-6. "e.g. " -> "e.g.," (consistently)
+6. "e.g. " $\rightarrow$ "e.g.," (consistently)
 
 \emph{Response:} Corrected throughout the revised manuscript where this punctuation issue occurred.
 
@@ -245,42 +398,86 @@ Related changes:
 \noindent
 7. eq. (4) is not clear. Is $x = c$, s.t. $J_x = J_c$? What is the max taken over?
 
-\emph{Response:} [placeholder]
+\emph{Response:} We thank the reviewer for pointing out this ambiguity. The indices have different meanings. The index $x$ denotes the macroscopic crack-growth direction and the direction onto which the J-Integral is projected; $J_x$ is therefore the energetic driving force for crack extension in this direction. The index $c$ indicates that the value is used as a critical crack-resistance value. We agree that dropping the directional index would implicitly suggest isotropy of the crack resistance, which should not be presumed in view of the limitations discussed above. We therefore keep the directional notation and define the computed quantity as $J_{x,c}^{\mathrm{eff}}$. To avoid carrying two notations for the same quantity, we removed the former notation $J_x^{\mathrm{max}}$ from the manuscript and plots and use $J_{x,c}^{\mathrm{eff}}$ consistently.
+
+The maximum is taken over the pseudo-time/loading history of the numerical experiment, i.e., over the values of the J-Integral attained during characteristic crack growth through the representative region until complete separation.
+
+Related changes:
+\begin{itemize}
+\item Page 4: \deleted{$J_c^{\text{eff}}$} \added{$J_{x,c}^{\text{eff}}$}
+\item Page 5: \added{The index $x$ indicates both the crack-growth direction and the direction onto which the J-Integral is projected.}
+\item Page 5: \deleted{$J_c^{\text{eff}} = \max(J_x) = J_x^{\text{max}}$} \added{$J_{x,c}^{\text{eff}} = \max_t J_x(t)$}
+\item Figures: \added{The axis labels and legends in the plots now use $J_{x,c}^{\mathrm{eff}}$ instead of the former $J_x^{\mathrm{max}}$ notation.}
+\item Page 5: \added{The index $c$ denotes the critical crack-resistance value obtained from this maximum, whereas the index $x$ is retained to avoid implying isotropic crack resistance.}
+\end{itemize}
 
 \bigskip
 
 \noindent
 8. There should be no text between a section and a subsection, e.g., between sections 3 and 3.1.
 
-\emph{Response:} [placeholder]
+\emph{Response:} We agree that the previous structure was not ideal. We have changed the title of Section~3 to a broader heading and introduced the former section title as a new first subsection. As a result, the introductory text on the ductile phase-field model is now placed inside a subsection rather than between a section heading and the first subsection.
+
+Related changes:
+\begin{itemize}
+\item Page 6: \deleted{A phase field model of ductile fracture} \added{Simulation of fracture with phase field models}
+\item Page 6: \added{A phase field model of ductile fracture}
+\end{itemize}
 
 \bigskip
 
 \noindent
 9. J2 plasticity is discussed at length. This is standard material, and references are missing. Also, mentioning dislocations might not be appropriate here.
 
-\emph{Response:} [placeholder]
+\emph{Response:} We agree that the J2-plasticity model is standard material. Nevertheless, we keep the discussion at the present level of detail because the formulation is coupled to the phase-field fracture model and is needed for the manuscript to remain self-contained. We have improved the reference basis by adding a standard reference for computational plasticity, namely the textbook by Simo and Hughes. We also agree that mentioning dislocations is not necessary in the present phenomenological setting and have removed this wording.
+
+Related changes:
+\begin{itemize}
+\item Page 6: \added{The notation and numerical treatment of the underlying small-strain $J_2$ plasticity model follow standard computational plasticity concepts; see, for example, Simo and Hughes.}
+\item Page 6: \deleted{a scalar internal state variable $\alpha$ is introduced that is related to the density of dislocations in the crystallographic microstructure} \added{a scalar internal state variable $\alpha$ is introduced}
+\item Bibliography: \added{Added Simo and Hughes (1998) as a standard reference for computational inelasticity and the numerical treatment of $J_2$ plasticity.}
+\end{itemize}
 
 \bigskip
 
 \noindent
 10. The degradation function (16) appears to be non-standard. Some elaboration would be nice.
 
-\emph{Response:} [placeholder]
+\emph{Response:} We agree that the cubic degradation function should be explained more clearly. Its use is motivated by the ductile phase-field formulation discussed by Kuhn et al. in GAMM-Mitteilungen. A main advantage is that the prescribed yield stress and hardening parameter can be implemented in the phase-field model in a direct manner. For the standard quadratic degradation function, these plasticity parameters require a reinterpretation in order to obtain effective material properties that can be related to measured data.
+
+Related changes:
+\begin{itemize}
+\item Page 10: \added{The cubic degradation function is used because it allows the prescribed yield stress and hardening parameter to be implemented in the phase-field formulation in a direct manner.}
+\item Page 10: \added{Kuhn et al. discuss that, for the standard quadratic degradation function, these parameters require a reinterpretation in order to obtain effective material properties that can be related to measured data.}
+\item References: \added{Added Kuhn, Noll, and Müller, ``On phase field modeling of ductile fracture'', GAMM-Mitteilungen, 2016.}
+\end{itemize}
 
 \bigskip
 
 \noindent
 11. The sentence "For the linear elastic case, it can be shown that the zero set of s minimizing the total energy converges to minimizers obtained with a sharp crack representation as $\epsilon \to 0$, see [19]." appears to be wrong. Afaik, the displacement field converges (in a weak sense) to a displacement field with jumps. The variable s converges to the homogeneous 1 in a weak sense.
 
-\emph{Response:} [placeholder]
+\emph{Response:} We thank the reviewer for pointing out that the original sentence was too imprecise. We do not intend to make a pointwise convergence statement for the phase-field variable itself. The intended statement is the standard one that, for linear elastic brittle fracture, Ambrosio--Tortorelli-type regularizations approximate the corresponding sharp-crack variational formulation in the sense of $\Gamma$-convergence. This is the interpretation given, for example, by Kuhn, who states that the regularized fields $(\boldsymbol{u},s)$ approximate the displacement field and crack set of the variational sharp-crack formulation and that the zero set of the crack field approaches the crack set. For the more general setting of two-dimensional linearized elasticity, Chambolle proves the corresponding approximation result for special functions with bounded deformation. We have therefore softened and clarified the sentence so that it refers to $\Gamma$-convergence of the regularized formulation and to the diffuse crack region represented by low values of $s$, without implying a pointwise convergence statement for $s$.
+
+Related changes:
+\begin{itemize}
+\item Page 10: \deleted{For the linear elastic case, it can be shown that the zero set of $s$ minimizing the total energy converges to minimizers obtained with a sharp crack representation as $\epsilon \to 0$, see [19].}
+\item Page 10: \added{For the linear elastic case, Ambrosio--Tortorelli-type regularizations approximate the sharp-crack variational formulation in the sense of $\Gamma$-convergence as $\epsilon \to 0$. In this sense, the regularized fields $(\boldsymbol{u},s)$ approximate the displacement field and crack set of the corresponding sharp-crack formulation, while the diffuse crack region represented by low values of $s$ approaches the crack set; no pointwise convergence statement for $s$ is intended here.}
+\item References: \added{The statement now refers explicitly to Kuhn's discussion of the regularized formulation and to Chambolle's approximation result for linearized elasticity.}
+\end{itemize}
 
 \bigskip
 
 \noindent
 12. The designation of the parameter scenarios must be revised. They look like typos.
 
-\emph{Response:} [placeholder]
+\emph{Response:} We have revised the notation of the parameter scenarios by placing the abbreviated labels in square brackets throughout the manuscript. This makes clear that \vMLabel, \EqJcLabel, and \EqSigmaStarLabel are labels for parameter sets rather than typographical errors.
+
+Related changes:
+\begin{itemize}
+\item Throughout the manuscript: \deleted{\textbf{vM}}, \deleted{\textbf{Eq}$\boldsymbol{J_c}$}, \deleted{\textbf{Eq}$\boldsymbol{\sigma^*}$} \added{\vMLabel, \EqJcLabel, \EqSigmaStarLabel}
+\item Figures: \added{The legends in the generated plots were updated accordingly, e.g., \textbf{[vM]}, \textbf{[Eq$J_c$]}, and \textbf{[Eq$\sigma^*$].}}
+\end{itemize}
 
 \bigskip
 
@@ -312,14 +509,25 @@ Related changes:
 \noindent
 15. "when" vs "if"!
 
-\emph{Response:} [placeholder]
+\emph{Response:} We checked the manuscript for occurrences of ``when'' used in a conditional rather than temporal sense and rephrased the relevant sentences. We retained occurrences where ``when'' is used in its temporal sense.
+
+Related changes:
+\begin{itemize}
+\item Page 10: \deleted{when solving the problem using a Newton scheme} \added{if the problem is solved using a Newton scheme}
+\item Page 12: \deleted{a crack advances when the energetic driving force equals the fracture resistance} \added{a crack advances if the energetic driving force equals the fracture resistance}
+\end{itemize}
 
 \bigskip
 
 \noindent
 16. In eq. (31), the superindex $k$ is undefined.
 
-\emph{Response:} [placeholder]
+\emph{Response:} We clarified the notation. The index $k$ denotes the load case, i.e., the prescribed macroscopic strain for which the linear displacement boundary condition is applied. Several independent load cases are required to determine the full effective stiffness tensor.
+
+Related changes:
+\begin{itemize}
+\item Page 14: \added{Here, $k$ denotes the load case, i.e., the prescribed macroscopic strain for which the linear displacement boundary condition is applied; several load cases are required to determine the full stiffness tensor.}
+\end{itemize}
 
 \bigskip
 
@@ -338,7 +546,12 @@ Related changes:
 \noindent
 18. Voigt's notation is rather standard. A lot of space is used for explaining it.
 
-\emph{Response:} [placeholder]
+\emph{Response:} We agree that Voigt notation is standard. We nevertheless prefer to retain the short explanation in the manuscript because the notation is used directly in the computation of the effective stiffness tensor and in the transition from the two-dimensional to the three-dimensional setting. Keeping the definitions explicit makes the manuscript more self-consistent, clearer for readers who do not use this notation daily, and more reproducible with respect to the ordering of strain and stress components used in the numerical evaluation.
+
+Related changes:
+\begin{itemize}
+\item No additional manuscript change was made for this point; the explanation was intentionally retained for self-consistency, clarity, and reproducibility.
+\end{itemize}
 
 \bigskip
 
@@ -377,8 +590,8 @@ Related changes:
 
 Related changes:
 \begin{itemize}
-\item Page 16: \deleted{crack tip postion} \added{crack tip position}; the explanatory sentence was moved from the footnote into the main text.
-\item Page 20: \deleted{crack tip postion} \added{crack tip position}; the explanatory sentence was moved from the footnote into the main text.
+\item Page 16: \deleted{The microscopic crack tip postion $x_{ct}$ is indentified as the node with the largest $x$-coordinate that fulfills $s=0$.} \added{The microscopic crack tip position $x_{ct}$ is identified as the node with the largest $x$-coordinate that fulfills $s=0$.}
+\item Page 20: \deleted{The microscopic crack tip postion $x_{ct}$ is indentified as the node with the largest $x$-coordinate that fulfills $s=0$.} \added{The microscopic crack tip position $x_{ct}$ is identified as the node with the largest $x$-coordinate that fulfills $s=0$.}
 \end{itemize}
 
 \bigskip
@@ -386,40 +599,68 @@ Related changes:
 \noindent
 22. The discussion of the results of the works [13,14] pretends a level of generality that appears a bit optimistic. Does this really hold for general porous materials? There are many porous materials (besides porous metals, there are metal/polymer foams, wovens, non-wovens, paper/paperboard, ...)
 
-\emph{Response:} [placeholder]
+\emph{Response:} We agree that the previous wording was too broad. The statements about crack-tip re-nucleation and saturation of the effective crack resistance refer only to the simplified porous material and numerical experiment investigated in our previous works. They should not be read as claims for general porous materials. As also discussed in response to the major comments, the representativity of the crack pattern, the crack-growth direction, the initial crack position, microstructure randomness, and the domain-size limit would have to be studied before such observations could be generalized.
+
+Related changes:
+\begin{itemize}
+\item Page 4: \deleted{porous materials} \added{a simplified porous material}
+\item Page 4: \added{These observations should be understood as results for the specific porous material and numerical experiment investigated in those studies, not as a general statement for arbitrary porous materials.}
+\item Page 4: \deleted{The results indicate that the energy dissipation capacity of the material law, or the fracture resistance of the bulk material, has a more critical influence on effective fracture resistance than the tensile strength.} \added{For the specific idealized porous material and the crack-growth experiment following Hossain et al., the results indicate that the energy dissipation capacity represented by the material law, or the fracture resistance of the bulk material in that setting, has a stronger influence on the computed effective crack resistance than the tensile strength.}
+\item Conclusion: \deleted{of the material} \added{of the simplified porous material considered in these numerical experiments}
+\end{itemize}
 
 \bigskip
 
 \noindent
 23. In Fig. 1, the forces are only shown by arrows, not by a symbol.
 
-\emph{Response:} [placeholder]
+\emph{Response:} We have added the force symbol $F$ to the force arrows in Fig.~1.
+
+Related changes:
+\begin{itemize}
+\item Figure 1: \added{Added the force symbol $F$ next to the force arrows.}
+\end{itemize}
 
 \bigskip
 
 \noindent
 24. Isn't the x-label in Fig. 9 just $x_{bc}/L$?
 
-\emph{Response:} [placeholder]
+\emph{Response:} No, the horizontal axis is not simply $x_{\mathrm{bc}}/L$. The plot shows both the microscopic crack-tip position $x_{\mathrm{ct}}$ and the fictitious crack-tip position of the boundary condition, $x_{\mathrm{bc}}$, over pseudo-time. This pseudo-time is normalized by the time scale $L/\dot{x}_{\mathrm{bc}}$. We have added a short clarification to the figure caption.
+
+Related changes:
+\begin{itemize}
+\item Fig.~9 caption: \added{The horizontal axis denotes the pseudo-time $t$ normalized by the time scale $L/\dot{x}_{\mathrm{bc}}$.}
+\end{itemize}
 
 \bigskip
 
 \noindent
 25. Numbers up to twelve should be spelled out.
 
-\emph{Response:} [placeholder]
+\emph{Response:} We have reviewed the manuscript for prose occurrences of numerals up to twelve and replaced the relevant ones by written-out numbers. We have retained numerals in equations, parameter values, dimensions, figure labels, and standard technical notation where numerical notation is clearer.
+
+Related changes:
+\begin{itemize}
+\item Section titles: \deleted{Simplified 2D/3D Porous Material} \added{Simplified Two-/Three-Dimensional Porous Material}
+\item Page 15: \deleted{2D strain tensor} \added{two-dimensional strain tensor}
+\item Page 15: \deleted{3-component vector} \added{three-component vector}
+\item Page 15: \deleted{factor of 2} \added{factor of two}
+\item Conclusion: \deleted{2D and 3D predictions} \added{two- and three-dimensional predictions}
+\end{itemize}
 
 \bigskip
 
 \noindent
 26. FEniCSx should be cited.
 
-\emph{Response:} We have added a citation to FEniCSx in the acknowledgements.
+\emph{Response:} We have added a citation to FEniCSx in the numerical implementation section and in the acknowledgements.
 
 Related changes:
 \begin{itemize}
-\item Page 23: Added a citation to the FEniCSx documentation in the acknowledgements.
-\item Page 26: Added the corresponding FEniCSx documentation entry to the bibliography.
+\item Page 7: \added{The weak forms of the coupled boundary-value problems are implemented in FEniCSx using \texttt{dolfinx} version 0.7.4~[24].}
+\item Page 23: \deleted{This research was enabled by the FEniCSx library} \added{This research was enabled by the FEniCSx library~[24]}
+\item Page 26: \added{FEniCS Project: FEniCSx Documentation. https://fenicsproject.org/. Accessed 22 July 2025.}
 \end{itemize}
 
 %------------------------------------------------
@@ -428,19 +669,13 @@ Related changes:
 
 This manuscript presents a well-structured and technically rigorous investigation into the effective fracture resistance of porous materials, extending prior phase-field-based homogenization approaches to incorporate ductile behavior via a von Mises plasticity model.
 
-\emph{Response:} [placeholder]
-
 The study is clearly motivated, and the adoption of the numerical “surfing boundary condition” framework provides a compelling and physically interpretable way to define effective toughness. A key strength lies in the systematic comparison between elastic and ductile constitutive laws, leading to the important insight that energy dissipation during crack re-nucleation—not tensile strength or microscopic fracture energy alone—governs macroscopic fracture resistance.
-
-\emph{Response:} [placeholder]
 
 The inclusion of both two-dimensional and three-dimensional analyses enhances the credibility and generality of the findings, with consistent trends such as saturation behavior and pore interaction effects clearly demonstrated. The presentation is generally clear and supported by informative figures, although some sections could benefit from more concise interpretation to guide readers through dense theoretical formulations.
 
-\emph{Response:} [placeholder]
-
 Overall, the work makes a meaningful contribution to computational fracture mechanics, particularly in the context of porous and additively manufactured materials, and provides a solid foundation for future experimental validation and microstructure-informed design.
 
-\emph{Response:} [placeholder]
+\emph{Response:} We thank Reviewer 2 for the positive assessment of our manuscript and for recognizing the motivation, technical rigor, and contribution of the work. We appreciate the reviewer's encouraging comments on the use of surfing boundary conditions, the comparison between elastic and ductile constitutive laws, and the inclusion of both two- and three-dimensional simulations. Since Reviewer 2 did not raise any major criticism or request specific changes, no separate point-by-point response is required. The revisions made in response to the other reviewers nevertheless also improve the clarity, modesty, and reproducibility of the manuscript.
 
 %------------------------------------------------
 
@@ -459,7 +694,7 @@ The manuscript entitled “Influence of Material Constitutive Laws on Effective 
 
 Using numerical simulations based on the phase-field method, they show that the elasto-plastic fracture behavior could not be described neither through equivalent-stress nor equivalent-energy brittle model. In particular, they show that plasticity reduce the distance below which neighboring pores interact during failure.
 
-\emph{Response:} [placeholder]
+\emph{Response:} We thank Reviewer 3 for the positive summary and for recognizing the main scientific message of the manuscript.
 
 \bigskip
 
@@ -469,7 +704,7 @@ Section 3 describes the brittle/plastic phase field model used in the study.
 
 Sections 4 and 5 combine these ingredients to quantify the effective fracture energy of porous 2D/3D elastoplastic materials.
 
-\emph{Response:} [placeholder]
+\emph{Response:} We thank the reviewer for this concise description of the structure of the manuscript.
 
 \bigskip
 
@@ -481,15 +716,36 @@ The science is sound. The results are interesting. But we are loosing the main m
 \item Keep Sections 4 and 5 for results and analysis, which would then follow more naturally.
 \end{itemize}
 
+\emph{Response:} We agree with the reviewer that the structure and guidance through the manuscript can be improved. A similar concern was also raised by Reviewer 1, and we have revised the manuscript accordingly by introducing additional subsections and by clarifying the role of the numerical experiment, the phase-field models, the parameter sets, and the different fracture mechanisms.
+
+At the same time, we would like to keep the numerical experiment in Section 2 separate from the phase-field model in Section 3. The reason is that the numerical experiment based on the J-integral and surfing boundary conditions is conceptually independent of the specific fracture simulation method; in principle, it could also be conducted with competing numerical approaches. Section 3 then specifies the particular phase-field framework used in this manuscript.
+
+We also agree that the placement of the parameter sets requires some explanation. These parameter sets are needed already before the later result sections because they are directly tied to two key aspects of the phase-field model: consistency with the energetic crack-growth criterion and the possibility of stress-driven crack nucleation. For this reason, we keep them as a subsection of the phase-field-model section, while the additional introductory sentence and subsections introduced in Section 3 are intended to guide the reader more clearly through the model ingredients.
+
+Related changes:
+\begin{itemize}
+\item Section 3 title: \deleted{A phase field model of ductile fracture} \added{Simulation of fracture with phase field models}
+\item Section 3: \added{This section introduces the phase-field models and numerical ingredients used in the subsequent numerical experiments.}
+\item Section 3: introduced additional subsections for the ductile model, brittle model, numerical implementation, parameter sets, relation to the energetic fracture criterion, and stress-driven crack nucleation.
+\end{itemize}
+
 In addition, the results are largely descriptive and would benefit from a more explicit discussion of the underlying physical and energetic mechanisms, particularly regarding how plasticity (the main player here!) modifies pore interaction, energy dissipation, and ultimately effective fracture resistance.
 
-\emph{Response:} [placeholder]
+\emph{Response:} We agree that the manuscript should guide the reader more clearly through the physical and energetic interpretation of the results. We have therefore revised the discussion of the one-dimensional nucleation experiment and the conclusion to state more explicitly that the increased effective crack resistance of the ductile model is not explained by the one-dimensional tensile strength alone, but by additional plastic dissipation and crack re-nucleation.
+
+At the same time, we agree that the exact mechanisms require a more detailed dedicated study. In particular, isolating crack nucleation under plasticity from subsequent crack growth, pore interaction, and crack-front effects would require additional numerical experiments beyond the scope of the present manuscript. We consider this a very interesting direction for future work and have outlined it in the conclusion.
+
+Related changes:
+\begin{itemize}
+\item Conclusion: \added{The comparison shows that matching this stress level alone does not reproduce the crack resistance obtained with the ductile material law, because the additional energy dissipated during plastic deformation and crack re-nucleation is decisive.}
+\item Conclusion: \added{A more detailed separation of the individual mechanisms, in particular stress-driven crack nucleation under plasticity, plastic dissipation during ligament failure, and subsequent crack growth between pores, should be addressed in future work.}
+\end{itemize}
 
 \bigskip
 
 I recommend publication in Computational Science and Engineering after major revision.
 
-\emph{Response:} [placeholder]
+\emph{Response:} We thank the reviewer for the positive recommendation and the constructive comments.
 
 \bigskip
 
@@ -506,8 +762,146 @@ The authors will find below some detailed comments on the manuscript.
 
 \emph{Remark 1.1:} The introduction focuses on the contributions of the phase-field/variational approach to fracture on the question of the effective toughness/fracture energy. While I think it would be valuable to acknowledge other seminal contributions, I understand that the authors may focus on the contributions of the phase-field approach. In that case, I think that they should include the recent contributions of other research groups to the topic, see e.g. a non-exhaustive list (Liu \& Che, JMPS, 2025, doi:10.1016/j.jmps.2025.106333), (Aranda \& Segurado, IJNME, 2025, doi:10.1002/nme.7664), (Man et al., Comp. Struct., 2025, doi:10.1016/j.compstruct.2025.119094), (Henry, PRE, 2025, doi:10.1103/PhysRevE.111.055502).
 
-\emph{Response:} [placeholder]
+\emph{Response:} We thank the reviewer for pointing us to these recent contributions. We agree that the literature basis should be broadened, and this is also in line with the related comment by Reviewer 1. We have checked the abstracts and conclusions of the suggested contributions and incorporated them into the introduction where appropriate. The paper corresponding to the DOI given for Liu \& Che is listed in the available PDF metadata as Liu and Shen; we therefore cite it with the author information given in the publication.
 
-% (remaining Reviewer 3 comments continue unchanged in same structured format)
+\emph{Related changes:}
+\begin{itemize}
+\item Page 3: \added{Recent contributions underline that this remains an active field of research. Liu and Shen propose a phase-field formulation for anisotropic effective fracture toughness that accounts for a quasi-worst-case translation of a representative volume element.}
+\item Page 3: \added{Aranda and Segurado introduce a crack-length control technique for phase-field fracture in FFT homogenization and use it to estimate effective fracture properties of composites and porous materials.}
+\item Page 3: \added{Man et al. study how crack guiding and trapping in bioinspired interfaces control effective toughness, while Henry shows for dynamic crack propagation in disordered heterogeneous materials that the spatial distribution of soft inclusions can strongly affect the apparent fracture energy even when the effective elastic properties are similar.}
+\item Bibliography: \added{Added the recent references suggested by the reviewer: Liu and Shen (2025), Aranda and Segurado (2025), Man et al. (2025), and Henry (2025).}
+\end{itemize}
+
+\bigskip
+
+\noindent
+• Section 2
+
+\emph{Remark 2.1:} The J-integral is not path-independent when the crack surface is not a straight line or when the material is elastically heterogeneous. Are the authors computing it ``far enough'' so that the non-planarity of the crack or the pores do not impact J?
+
+\emph{Response:} We agree with the reviewer that the crack pattern and its interaction with the resolved microstructure, including heterogeneities and non-planar or tortuous crack paths, clearly affect the value of the J-Integral recorded at the boundary of the explicitly modelled microstructure. This is precisely why the boundary value is interpreted as the energetic driving force required for the particular crack-growth process in the numerical experiment.
+
+The point we rely on is slightly different: the homogeneous material surrounding the explicitly resolved microstructure is assumed not to alter the recorded J-Integral. In other words, the value evaluated at the boundary of the explicitly modelled microstructure should coincide with the value obtained at the boundary of a larger embedding region assigned representative homogeneous properties. This behavior was also observed by Hossain et al. in their original study, although we have not explicitly repeated such a contour/enlargement study here. We have added a clarifying sentence to the manuscript.
+
+\emph{Related changes:}
+\begin{itemize}
+\item Page 5: \added{The recorded value is, of course, affected by the crack pattern inside the explicitly resolved microstructure; however, following the observation reported by Hossain et al., the additional homogeneous surrounding material is assumed not to change the value of the boundary J-Integral, so that evaluating it at the boundary of the resolved microstructure or at the boundary of an embedding region with representative effective properties gives the same macroscopic driving force.}
+\end{itemize}
+
+\emph{Remark 2.2:} $\partial\Omega$ appears in Section 2 Eq.~(3) but it is defined in Section 3 only.
+
+\emph{Response:} We agree with the reviewer. The boundary notation is now introduced already in Section 2 before the surfing boundary conditions are stated.
+
+\emph{Related changes:}
+\begin{itemize}
+\item Page 5: \added{The union of the representative region and the surrounding matrix is considered as a continuum $\Omega$ with boundary $\partial\Omega$.}
+\item Page 5: \added{Displacements associated with mode I crack opening are prescribed at the boundary $\partial\Omega$ using a fictitious stress intensity factor $K_I^{\mathrm{bc}}$.}
+\end{itemize}
+
+\emph{Remark 2.3:} The authors may be interest by a new method called VSBC (Variable stiffness boundary condition), proposed by M.~Z.~Hossain (Hao et al., CMAME, 2025, doi:10.1016/j.cma.2025.118414).
+
+\emph{Response:} We thank the reviewer for pointing us to this recent contribution. The variable-stiffness boundary condition proposed by Hao et al. is highly relevant for the broader context of numerical and experimental approaches to determine effective fracture properties. In contrast to the surfing boundary condition used in the present manuscript, VSBC translates a simple uniform remote displacement into a non-uniform load through an engineered stiffness gradient, which makes the method more accessible for experimental setups and commercial finite-element software. We have added this contribution to the introduction. In the present study, however, we keep the boundary-condition formulation used in the original approach by Hossain et al.; a systematic comparison with VSBC would require additional simulations and is beyond the scope of the present manuscript.
+
+\emph{Related changes:}
+\begin{itemize}
+\item Introduction: \added{A recent related development is the variable stiffness boundary condition of Hao et al., which builds on the surfing boundary condition but translates a simple uniform remote displacement into a non-uniform load through an engineered stiffness gradient, thereby facilitating implementation in experiments and commercial finite-element software.}
+\item Bibliography: \added{Added Hao, Piel and Hossain (2026).}
+\end{itemize}
+
+\bigskip
+
+\noindent
+• Section 3
+
+\emph{Remark 3.1:} It is not stated whether the model is plane strain or plane stress in the simulations of Section 3.3. I assume plane strain, as it in the case of Section 4 (but stated as such in Section 5).
+
+\emph{Response:} The reviewer is correct; the simulations in the former Section 3.3 are plane strain simulations. We have added this explicitly to the corresponding setup description. We also made the same assumption explicit in the setup description of Section 4, where it was previously only implicit and mentioned elsewhere.
+
+\emph{Related changes:}
+\begin{itemize}
+\item Former Section 3.3: \added{under plane strain assumptions}
+\item Section 4: \added{The two-dimensional simulations in this section are carried out under plane strain assumptions.}
+\end{itemize}
+
+\emph{Remark 3.2:} The authors give more details on the choice of the three models considered in Section 3.2. In particular, the choice of the model Eq$\sigma^*$ is only justified in 3.4 for having a $\sigma^*$ close to the vM model. From this reasoning, I would have expected that the Eq$J_c$ matches max $J_x$ of the vM model, not that of the linear elastic body.
+
+\emph{Response:} We thank the reviewer for pointing out that the motivation of the three parameter sets was not sufficiently explicit. The model \EqSigmaStarLabel is indeed chosen such that the one-dimensional tensile strength is close to that of the von~Mises-type model \vMLabel. In contrast, \EqJcLabel is chosen to have the same prescribed microscopic bulk fracture resistance $J_c$ as \vMLabel. Thus, the intention is not to match the numerical crack resistance measured in the homogeneous surfing-boundary-condition simulation, but to isolate different input quantities of the material model.
+
+\emph{Related changes:}
+\begin{itemize}
+\item Former Section 3.2: \added{The parameter set \EqJcLabel is chosen to have the same prescribed microscopic fracture resistance $J_c$ as \vMLabel, whereas \EqSigmaStarLabel is chosen such that the one-dimensional tensile strength is close to that of \vMLabel.}
+\end{itemize}
+
+\emph{Remark 3.3:} The authors stress out the dependence of $J_c$ on the ratio $\Delta h/\epsilon$ in Section 3.3, but they use different $\Delta h/\epsilon$ for section 3.3 and 3.4.
+
+\emph{Response:} We thank the reviewer for noticing this inconsistency. This was a typographical error in the section on stress-driven crack nucleation. The element edge length used there is $\Delta h = 0.02L$, i.e., the same value as in the preceding crack-growth simulations. We have corrected the manuscript accordingly.
+
+\emph{Related changes:}
+\begin{itemize}
+\item Page 10: \deleted{$\Delta h = 0.01L$} \added{$\Delta h = 0.02L$}
+\end{itemize}
+
+\bigskip
+
+\noindent
+• Section 4
+
+\emph{Remark 4.1:} The section could be divided in subsections, to distinguish the definition of the equivalent elastic medium from the investigation of the fracture behavior.
+
+\emph{Response:} We agree with the reviewer. We have divided Section~4 into two subsections. The first subsection introduces the equivalent elastic medium and the simulation domain, while the second subsection discusses the fracture simulations, crack-growth behavior, and resulting effective crack resistance.
+
+\emph{Related changes:}
+\begin{itemize}
+\item Section 4: \added{\textsl{Equivalent Elastic Medium and Simulation Domain}}
+\item Section 4: \added{\textsl{Fracture Behavior and Effective Crack Resistance}}
+\end{itemize}
+
+\emph{Remark 4.2:} I think that Fig. 10 is a bit misleading. The crack tip is located at the entry of the pore during the pinning phase, while the ``fully-opened'' region extend up the other side of the pore. This is consistent with the definition of $x_{\mathrm{ct}}$ in footnote 4, but not necessarily with our physical intuition.
+
+\emph{Response:} We agree with the reviewer that the crack-tip position during a pinning phase requires clarification. When the crack is trapped inside a pore, there is some ambiguity in assigning a single crack-tip position: one could also define a position on the opposite side of the opened pore. In the present manuscript, we keep the existing definition because it is precise and consistently used in the evaluation, namely the largest $x$-coordinate of a fully damaged material point. With this convention, the plotted crack tip remains at the entry side of the pore until crack re-nucleation occurs in the next intact ligament. We have added this clarification to the manuscript.
+
+\emph{Related changes:}
+\begin{itemize}
+\item Section 4: \added{During phases in which the crack is trapped inside a pore, this definition places $x_{ct}$ at the last fully damaged material point before the void.}
+\item Section 4: \added{A different convention could assign the crack tip to the opposite side of the open pore, but the present definition is used consistently as a tracking quantity for the advance through intact material ligaments.}
+\end{itemize}
+
+\emph{Remark 4.3:} Can the authors comment on the trend observed in Fig. 10 inbetween models? I understand that Eq$J_c$ is macroscopically tougher than vM and Eq$\sigma^*$ because crack nucleation occurs at larger stress values (as shown in 3.4). Eq$\sigma^*$ is weaker than vM because crack nucleation is equally difficult but vM dissipate more energy during crack growth so that the delay in crack growth accumulated up to $x_{\mathrm{ct}} = 2$ just snowball until the end of the simulation.
+
+\emph{Response:} We agree with the reviewer that these are plausible explanations for the trend observed at the fixed wall width shown in Fig.~10. The ordering \EqJcLabel, \vMLabel, \EqSigmaStarLabel is also consistent with the summary in Fig.~14, although Fig.~10 alone does not describe the full dependence on wall width. One purpose of the present study is precisely to clarify which quantities determine the effective crack resistance predicted by this numerical experiment. As the reviewer notes, this is not obvious a priori. Our results indicate that, once the one-dimensional tensile strength is eliminated as the dominant difference between models, dissipation during crack nucleation and ligament failure plays a larger role than the prescribed microscopic fracture resistance alone. We have added a short clarification to the manuscript.
+
+\emph{Related changes:}
+\begin{itemize}
+\item Section 4: \added{For this fixed wall width, the ordering can be interpreted through the different resistance against crack re-nucleation and the additional energy dissipated during ligament failure.}
+\item Section 4: \added{The following parameter study shows that this ordering is representative of the main trend, while the detailed pore interaction length additionally depends on $w_s$.}
+\end{itemize}
+
+\bigskip
+
+\noindent
+• Section 5
+
+\emph{Remark 5.1:} As Section 4, Section 5 would benefit from subsections.
+
+\emph{Response:} We agree with the reviewer. Analogously to Section~4, we have divided Section~5 into two subsections. The first subsection introduces the three-dimensional model, the effective stiffness calculation, and the simulation setup. The second subsection discusses the fracture behavior and compares the three-dimensional results to the two-dimensional model.
+
+\emph{Related changes:}
+\begin{itemize}
+\item Section 5: \added{\textsl{Three-Dimensional Model and Equivalent Elastic Medium}}
+\item Section 5: \added{\textsl{Fracture Behavior and Comparison with the Two-Dimensional Model}}
+\end{itemize}
+
+\emph{Remark 5.2:} Can the authors comment on the occurrence of instabilities during crack growth in the 3D simulations? The behavior appears smoother/less intermittent but it may be just a misinterpretation of Fig. 18.
+
+\emph{Response:} We agree with the reviewer. The crack propagation in the three-dimensional simulations is indeed smoother than in the two-dimensional case. This is caused by the additional degree of freedom of the crack front: in three dimensions, the crack front can propagate between pores and is therefore not trapped completely by a pore as in the two-dimensional plane strain setting. This smoother behavior is visible both in the crack-tip evolution and in the J-Integral response.
+
+However, the propagation is not fully smooth. Fig.~17 still shows phases of nearly instantaneous crack advance, and the peaks in Fig.~18 indicate that the phases in which the crack front is forced to pass between pores still require an increased energetic driving force. As summarized in Fig.~20, the resulting toughening remains comparable in magnitude to the two-dimensional case, although the three-dimensional response is less intermittent. We have added this clarification to the manuscript.
+
+\emph{Related changes:}
+\begin{itemize}
+\item Section 5: \added{The smoother behavior is consistent with the crack-front evolution shown in Fig.~17: in contrast to the two-dimensional case in Fig.~9, the crack front can propagate between pores and is not trapped completely by a pore.}
+\item Section 5: \added{Nevertheless, Figs.~17 and~18 still show phases of nearly instantaneous crack advance and elevated values of the J-Integral when the crack front is forced to pass between pores.}
+\item Section 5: \added{The comparison in Fig.~20 therefore indicates that this mechanism still produces a toughening effect of comparable magnitude to the two-dimensional case.}
+\end{itemize}
 
 \end{document}

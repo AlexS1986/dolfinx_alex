@@ -6,9 +6,6 @@ import os
 import numpy as np
 import math
 
-import alex.postprocessing as pp
-import alex.homogenization as hom
-import alex.linearelastic as le
 import alex.evaluation as ev
 from scipy.signal import savgol_filter
 
@@ -95,7 +92,7 @@ normalize_Jx_to_Gc_num(gc_num_quotient, data_vonMises)
 Jx_max_vonMises = np.max(data_vonMises[1])
 print(f"Jx_max von Mises: {Jx_max_vonMises}")
 
-vonMises_prefix = r"\textbf{vM} (max $J_x$ $\approx$ "
+vonMises_prefix = r"\textbf{[vM]} ($J_{x,c}^{\mathrm{eff}}$ $\approx$ "
 vonMises_value = f"{Jx_max_vonMises:.2f}"
 vonMises_suffix = r"$J_c^0$)"
 vonMises_label = vonMises_prefix + vonMises_value + vonMises_suffix
@@ -119,7 +116,7 @@ normalize_Jx_to_Gc_num(gc_num_quotient, linear_elastic_1)
 Jx_max_1 = np.max(linear_elastic_1[1])
 print(f"Jx_max linear elastic 1: {Jx_max_1}")
 
-label_1_prefix = r"\textbf{Eq$\mathbf{J_c}$} (max $J_x$ $\approx$ "
+label_1_prefix = r"\textbf{[Eq$\mathbf{J_c}$]} ($J_{x,c}^{\mathrm{eff}}$ $\approx$ "
 label_1_value = f"{Jx_max_1:.2f}"
 label_1_suffix = r"$J_c^0$)"
 label_1 = label_1_prefix + label_1_value + label_1_suffix
@@ -143,7 +140,7 @@ normalize_Jx_to_Gc_num(gc_num_quotient, linear_elastic_2)
 Jx_max_2 = np.max(linear_elastic_2[1])
 print(f"Jx_max linear elastic 2: {Jx_max_2}")
 
-label_2_prefix = r"\textbf{Eq$\mathbf{\sigma^*}$} (max $J_x$ $\approx$ "
+label_2_prefix = r"\textbf{[Eq$\mathbf{\sigma^*}$]} ($J_{x,c}^{\mathrm{eff}}$ $\approx$ "
 label_2_value = f"{Jx_max_2:.2f}"
 label_2_suffix = r"$J_c^0$)"
 label_2 = label_2_prefix + label_2_value + label_2_suffix

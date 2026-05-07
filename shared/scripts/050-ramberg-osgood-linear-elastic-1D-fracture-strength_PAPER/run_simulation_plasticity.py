@@ -39,7 +39,7 @@ alex.os.print_mpi_status(rank, size)
 if rank == 0:
     alex.util.print_dolfinx_version()
     
-N=200
+N=100
 element_size = 2.0 / 200.0
 domain = dlfx.mesh.create_rectangle(comm,[np.array([-1.0, 0.0]), np.array([1.0, 1.0])], [N,1], cell_type=dlfx.mesh.CellType.triangle) # Important to use traingle elements, else display wont work
     
@@ -84,8 +84,8 @@ SS = dlfx.fem.functionspace(domain, Se)
 x = ufl.SpatialCoordinate(domain)
 
 gc_val = 1.0
-gc_expr = dlfx.fem.Expression(ufl.conditional(ufl.Or(ufl.le(x[0],-30.0*element_size),
-                            ufl.ge(x[0],30.0*element_size)),gc_val,0.99*gc_val),SS.element.interpolation_points())
+gc_expr = dlfx.fem.Expression(ufl.conditional(ufl.Or(ufl.le(x[0],-15.0*element_size),
+                            ufl.ge(x[0],15.0*element_size)),gc_val,0.99*gc_val),SS.element.interpolation_points())
 
 gc = dlfx.fem.Function(SS)
 gc.interpolate(gc_expr)
@@ -126,7 +126,7 @@ e_p_n_3D = ufl.as_tensor([[e_p_11_n, e_p_12_n, 0.0],
                           [e_p_12_n, e_p_22_n, 0.0],
                           [0.0         ,          0.0, e_p_33_n]])
 
-phaseFieldProblem = pf.StaticPhaseFieldProblem_plasticity_noll(degradationFunction=pf.degrad_cubic,
+phaseFieldProblem = pf.StaticPhaseFieldProblem_plasticity_noll(degradationFunction=pf.cubic_degradation(beta=0.2),
                                                    psisurf=pf.psisurf_from_function,dx=dx, sig_y=sig_y.value, hard=hard.value,alpha_n=alpha_n,e_p_n=e_p_n_3D)
 
 

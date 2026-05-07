@@ -59,35 +59,21 @@
 
 
 %%%% Change Highlighting Packages (for reviewer responses)
-\usepackage[markup=underlined,authormarkup=none]{changes}  % Main change tracking
+% Default build: clean output with all changes accepted.
+% Marked-up build: compile schlueter_medda_mueller_klaim_2025_changes.tex.
+\ifdefined\ShowChanges
+\usepackage[markup=underlined,authormarkup=none]{changes}
+\else
+\usepackage{xparse}
+\NewDocumentCommand{\added}{O{} m}{#2}
+\NewDocumentCommand{\deleted}{O{} m}{}
+\NewDocumentCommand{\replaced}{O{} m m}{#3}
+\NewDocumentCommand{\highlight}{O{} m}{#2}
+\NewDocumentCommand{\definechangesauthor}{O{} m}{}
+\fi
 \usepackage{soul}                                           % Text highlighting
 \usepackage[normalem]{ulem}                                % Underlining and striking
 \usepackage{todonotes}                                     % Marginal notes
-\usepackage{xcolor}                                        % Extended colors (already included above)
-
-% Configure change highlighting
-\definecolor{addition}{RGB}{0,150,0}      % Green for additions
-\definecolor{deletion}{RGB}{150,0,0}      % Red for deletions
-\definecolor{highlight}{RGB}{255,255,0}   % Yellow for highlights
-\definecolor{revision}{RGB}{0,0,150}      % Blue for revisions
-
-% Define change author for tracking revisions
-\definechangesauthor[name={Response to Reviewers}]{REV}
-
-% Example usage (uncomment to use):
-% \added{New text added in revision}
-% \deleted{Old text removed in revision}
-% \replaced{old text}{new text}
-% \hl{yellow}{highlighted important text}
-% \todo{This section was revised based on reviewer comments}
-
-
-%%%% Change Highlighting Packages (for reviewer responses)
-\usepackage[markup=underlined,authormarkup=none]{changes}  % Main change tracking
-\usepackage{soul}                                           % Text highlighting
-\usepackage[normalem]{ulem}                                % Underlining and striking
-\usepackage{todonotes}                                     % Marginal notes
-\usepackage{xcolor}                                        % Extended colors (already included above)
 
 % Configure change highlighting
 \definecolor{addition}{RGB}{0,150,0}      % Green for additions
@@ -127,10 +113,10 @@
 \usepackage{nicefrac}
 \usepackage{xspace}
 
-\newcommand{\vMLabel}{\textbf{vM}\xspace}
-\newcommand{\EqJcLabel}{\textbf{Eq$\boldsymbol{J_c}$}\xspace}
-\newcommand{\EqSigmaStarLabel}{\textbf{Eq$\boldsymbol{\sigma^*}$}\xspace}
-\newcommand{\EqPiStarLabel}{\textbf{Eq$\boldsymbol{\Pi^*}$}\xspace}
+\newcommand{\vMLabel}{[\textbf{vM}]\xspace}
+\newcommand{\EqJcLabel}{[\textbf{Eq$\boldsymbol{J_c}$}]\xspace}
+\newcommand{\EqSigmaStarLabel}{[\textbf{Eq$\boldsymbol{\sigma^*}$}]\xspace}
+\newcommand{\EqPiStarLabel}{[\textbf{Eq$\boldsymbol{\Pi^*}$}]\xspace}
 
 %%%%
 
@@ -167,7 +153,7 @@
 
 \begin{document}
 
-\title[Influence of material constitutive laws on the effective crack resistance of a simplified porous material in a numerical experiment]{\deleted{Influence of Material Constitutive Laws on Effective Crack Resistance in Heterogeneous Materials}\added{Influence of material constitutive laws on the effective crack resistance of a simplified porous material in a numerical experiment}}
+\title[Influence of J2-plasticity on the effective crack resistance of a simplified porous material in a numerical experiment]{\deleted{Influence of Material Constitutive Laws on Effective Crack Resistance in Heterogeneous Materials}\added{Influence of J2-plasticity on the effective crack resistance of a simplified porous material in a numerical experiment}}
 
 %%=============================================================%%
 %% GivenName	-> \fnm{Joergen W.}
@@ -201,20 +187,20 @@
 %%==================================%%
 
 \abstract{  
-      In this work, we investigate the simulation-based determination of the effective fracture
-resistance of porous materials while accounting for nonlinear, ductile material behavior.
+      In this work, we investigate the simulation-based determination of the \deleted{effective fracture
+resistance}\added{effective crack resistance} of porous materials while accounting for nonlinear, ductile material behavior.
 Following the approach of Hossain et al.~\cite{hossain_effective_2014}, numerical experiments
-with surfing boundary conditions are conducted to identify the effective crack resistance as
-a macroscopic material parameter. Crack evolution in the microstructure is modeled using a
+with surfing boundary conditions are conducted to identify the \deleted{effective crack resistance as
+a macroscopic material parameter}\added{effective crack resistance}. Crack evolution in the microstructure is modeled using a
 phase-field formulation without prescribing crack paths or growth continuity. The maximum
 value of the macroscopically acting J-integral defines the driving force required for sustained
-macroscopic crack advance and is taken as the effective fracture resistance. In contrast to
+macroscopic crack advance and is taken as the \deleted{effective fracture resistance}\added{effective crack resistance}. In contrast to
 previous studies, a von~Mises plasticity model is employed to investigate ductile fracture in
-porous metals. The results show that the effective fracture resistance is governed primarily
+porous metals. The results show that the \deleted{effective fracture resistance}\added{effective crack resistance} is governed primarily
 by the energy dissipation capacity of the material during crack renucleation at pores rather
 than by tensile strength or microscopic fracture energy. A complementary three-dimensional
-model confirms these findings, showing similar saturation behavior of the effective fracture
-resistance with respect to microstructural wall width and good quantitative agreement with
+model confirms these findings, showing similar saturation behavior of the \deleted{effective fracture
+resistance}\added{effective crack resistance} with respect to microstructural wall width and good quantitative agreement with
 the two-dimensional predictions.
 }
 
@@ -240,11 +226,6 @@ the two-dimensional predictions.
 
 \section{Introduction}\label{sec:intro}
 
-% Reviewer-style examples for the introduction (do not alter existing text):
-\added{This sentence is a sample addition in the introduction.}
-\deleted{This sentence is a sample deletion in the introduction.}
-\replaced{This phrase is a sample replacement.}{This is the new phrase replacing the sample text.}
-
 While homogenization techniques for elastic and plastic material properties are well established,
 the homogenization of fracture toughness remains a comparatively young field of research.
 Relevant quantities include the critical stress intensity factor \( K_{Ic} \),
@@ -258,7 +239,7 @@ Similarly,  more general fracture formulations based on the J-integral $J$ can b
 where \( J_c \) denotes the critical value of the J-integral and serves as a material parameter.
 Such \deleted{criterions}\added{criteria}
 remain applicable up to the onset of crack growth under monotonic loading even
-in the presence of plasticity, as discussed in~\cite{gross_fracture_2011}.
+in the presence of plasticity, as discussed by Gross and Seelig~\cite{gross_fracture_2011}.
 
 
 
@@ -267,56 +248,71 @@ underlying material and microstructure is of significant
 practical interest, particularly in light of the increasing use of
 additive manufacturing technologies. For example, wire arc additive manufacturing (WAAM) enables the flexible combination of materials
 and targeted microstructural design through the control of process parameters,
-as demonstrated in~\cite{hauser_porosity_2021}. Fracture-mechanics-based criteria are often the appropriate tools
+as demonstrated by Hauser et al.~\cite{hauser_porosity_2021}. Fracture-mechanics-based criteria are often the appropriate tools
 for strength assessment in these defect-rich materials.
 However, their application requires material- and microstructure-dependent
 fracture resistance parameters as mentioned above.
 
 The existence of an effective fracture toughness for a given material
 and the question of how it should be defined remain subjects
-of active debate~\cite{lebihain_brittle_2021},
+of active debate, as discussed by Lebihain~\cite{lebihain_brittle_2021},
 with several approaches proposed in the literature.
+\added{In contrast to the effective elastic or plastic properties obtained in classical micromechanics, it is presently not established in general that fracture in a heterogeneous material gives rise to a homogenized macroscopic material model with a well-defined fracture toughness obtained in an RVE limit.}
+\added{To avoid conflating two slightly different concepts, the term \textsl{effective crack resistance} is used in this work for the value obtained from a numerical experiment under specific less general conditions, i.e., the maximum energetic driving force required to force crack advance through the considered microstructure. In contrast, \textsl{fracture toughness} is reserved for a generalized material quantity in the sense of a macroscopic fracture property. Whether such a fracture toughness exists for heterogeneous materials and under which circumstances both concepts might coincide remains an open question of research.}
 Schneider~\cite{schneider_fftbased_2020} suggests a variational definition that
 relies on rigorous mathematical results for the homogenization of
 the energy functional occurring in Bourdin's popular variational formulation of brittle fracture~\cite{bourdin_variational_2008}.
-This idea is further pursued in~\cite{ernesti_fast_2021} and in
-\cite{ernesti_computing_2022} for anisotropic fracture resistance.
+This idea is further pursued by
+Ernesti and Schneider~\cite{ernesti_fast_2021,ernesti_computing_2022} for anisotropic fracture resistance.
 
-Michel and Suquet~\cite{michel_merits_2022} propose the effective fracture
+Michel and Suquet~\cite{michel_merits_2022} \deleted{propose the effective fracture
 energy to be a directionally dependent quantity that corresponds to
 the dissipated energy of the actual path of a crack through a suitable unit cell,
 leading to full fracture of that unit cell in a given direction.
-The authors also show that this definition yields a rigorous lower bound to the effective fracture energy.
+The authors also show that this definition yields a rigorous lower bound to the effective fracture energy.}
+\added{assess essentially the same variational definition and discuss its merits and limitations. In particular, they relate the variational surface energy to limit-load problems and show that it provides a lower bound to a more physically motivated effective fracture energy based on the energy dissipated along the actual crack path through a unit cell.}
+
+\added{Recent contributions underline that this remains an active field of research. Liu and Shen~\cite{liu_effective_2025} propose a phase-field formulation for anisotropic effective fracture toughness that accounts for a quasi-worst-case translation of a representative volume element. Aranda and Segurado~\cite{aranda_cracklength_2025} introduce a crack-length control technique for phase-field fracture in FFT homogenization and use it to estimate effective fracture properties of composites and porous materials. Man et al.~\cite{man_collaborative_2025} study how crack guiding and trapping in bioinspired interfaces control effective toughness, while Henry~\cite{henry_phasefield_2025} shows for dynamic crack propagation in disordered heterogeneous materials that the spatial distribution of soft inclusions can strongly affect the apparent fracture energy even when the effective elastic properties are similar.}
 
 In this work, we adopt the methodology introduced
 by Hossain et al.~\cite{hossain_effective_2014} and further
-developed and applied in~\cite{hsueh_stress_2018} for layered materials,
-as well as considering anisotropy in~\cite{brach_anisotropy_2019},
-to determine the effective fracture toughness of heterogeneous materials.
-
-Their approach is based on a numerical experiment in which a representative material
-region is subjected to boundary conditions that enforce complete separation.
-The resulting microstructural crack evolution is
-simulated using a phase-field model for fracture.
-See, for example,~\cite{ambati_review_2015} for a comprehensive overview.
+developed and applied by Hsueh et al.~\cite{hsueh_stress_2018} for layered materials,
+as well as by Brach et al.~\cite{brach_anisotropy_2019} for anisotropic effective crack resistance,
+to determine the \deleted{effective fracture toughness}\added{effective crack resistance} of heterogeneous materials.
 All of these contributions were limited to linear-elastic material behavior and two-dimensional problems.
 
-Similarly, in previous studies by the authors of this contribution~\cite{schlueter_ermittlung_2025,schluter_determination_2025},
-this framework was employed to determine the effective fracture toughness of porous materials,
-assuming linear-elastic bulk behavior. For a simplified porous material, it was demonstrated that
+\added{The methodology is not used here as a proof of a homogenized fracture toughness in the mathematical sense. Rather, it is interpreted as a numerical counterpart of a fracture experiment. 
+In this experiment-like setting, 
+a representative material region containing
+ microstructural features is subjected 
+ to so-called surfing boundary conditions that enforce complete separation, and the energetic driving force required for this process is recorded.}
+  \added{A recent related development is the variable stiffness boundary condition of Hao et al.}~\cite{hao_variable_2026}\added{, which builds on the surfing boundary condition but translates a simple uniform remote displacement into a non-uniform load through an engineered stiffness gradient, thereby facilitating implementation in experiments and commercial finite-element software.}
+The resulting microstructural crack evolution is
+then simulated using \deleted{such a}\added{a} phase-field model.
+See, for example, the review by Ambati et al.~\cite{ambati_review_2015} for a comprehensive overview\added{ of phase-field models for fracture}.
+\added{For ductile materials, phase-field fracture has also been coupled to plasticity in variational finite-strain formulations, for example by Miehe, Aldakheel and co-workers}~\cite{miehe_phasefield_ductile_2016,miehe_phasefield_porous_2016}\added{.}
+
+\deleted{Similarly, in }In previous studies by the authors of this contribution~\cite{schlueter_ermittlung_2025,schluter_determination_2025},
+\deleted{this framework}\added{the aforementioned framework} was employed to determine the \deleted{effective fracture toughness}\added{effective crack resistance} of \deleted{porous materials}\added{a simplified porous material},
+assuming linear-elastic bulk behavior. \deleted{For a simplified porous material, it}\added{It} was demonstrated that
 the renucleation mechanism of cracks that are trapped in pores
-determines the effective fracture toughness
+determines the \deleted{effective fracture toughness}\added{effective crack resistance}
 and can act as a toughening factor if the pores are
-spaced far enough apart. A saturation of the effective toughness was obtained above
+spaced far enough apart. A saturation of the \deleted{effective toughness}\added{effective crack resistance} was obtained above
 a specific minimum distance between pores. This minimum distance depends on the
 length at which cracks renucleate after being trapped, which among other factors also
 depends on the pore shape.
+\added{These observations should be understood as results for the specific porous material and numerical experiment investigated in those studies, not as a general statement for arbitrary porous materials.}
 
-As a first step in investigating the effective fracture toughness in ductile materials,
-the effect of a non-linear elastic Ramberg--Osgood-type material law was also studied in~\cite{schluter_influence_2025}.
-The results indicate that the energy dissipation capacity of the material law,
+As a first step toward accounting for ductile bulk behavior in this type of numerical experiment,
+the effect of a non-linear elastic Ramberg--Osgood-type material law was also studied by Schlüter et al.~\cite{schluter_influence_2025}.
+\deleted{The results indicate that the energy dissipation capacity of the material law,
 or the fracture resistance of the bulk material,
-has a more critical influence on effective fracture resistance than the tensile strength.
+has a more critical influence on effective fracture resistance than the tensile strength.}
+\added{For the specific idealized porous material and the crack-growth experiment following Hossain et al.,
+the results indicate that the energy dissipation capacity represented by the material law,
+or the fracture resistance of the bulk material in that setting,
+has a stronger influence on the computed effective crack resistance than the tensile strength.}
 
 In the present work, we aim to extend this analysis
 toward additively manufactured metals, which typically exhibit pronounced ductile behavior.
@@ -337,7 +333,7 @@ proposed by Hossain et al.~\cite{hossain_effective_2014}.
 Section~\ref{sec:phase_fiel_model_ductile} presents the phase-field
 fracture formulation for both linear-elastic and von Mises-type plasticity material models.
 Section~\ref{sec:2Dresults} focuses on the computation
-of the effective fracture toughness for a simplified porous material
+of the \deleted{effective fracture toughness}\added{effective crack resistance} for a simplified porous material
 under two-dimensional plane strain assumptions
  using both constitutive descriptions.
 Lastly, we extend the model to three dimensions and compare our findings for the von Mises-type plasticity model
@@ -346,7 +342,7 @@ for both the two-dimensional and three-dimensional cases.
 
 
 
-\section{A Numerical Experiment to Determine the Effective Toughness
+\section{A Numerical Experiment to Determine the \deleted{Effective Toughness}\added{Effective Crack Resistance}
  of Materials with Complex Microstructure}
 \label{sec:numericalExperiment}
 
@@ -362,30 +358,32 @@ for both the two-dimensional and three-dimensional cases.
     \label{fig:numerical_experiment}
 \end{figure}
 
-The numerical experiment proposed by Hossain et al.~\cite{hossain_effective_2014} for the determination of an effective fracture toughness is conceptually closer to physical experiments than to the classical homogenization concepts commonly presented in micromechanics textbooks such as~\cite{gross_fracture_2011,nemat-nasser_micromechanics_2013}. 
-The objective of this approach is the determination of an effective energetic fracture toughness\deleted{ $J_c^{\text{eff}}$, which}\added{, denoted by $J_c^{\text{eff}}$. This quantity} can subsequently be employed as a material parameter for predicting macroscopic crack growth according to the fracture criterion~(\ref{eq:fracture_criterion_J}).
+The numerical experiment proposed by Hossain et al.~\cite{hossain_effective_2014} for the determination of an \deleted{effective fracture toughness}\added{effective crack resistance} is conceptually closer to physical experiments than to the classical homogenization concepts commonly presented in micromechanics textbooks such as those by Gross and Seelig~\cite{gross_fracture_2011} and Nemat-Nasser and Hori~\cite{nemat-nasser_micromechanics_2013}. 
+\added{It should therefore be understood as an operational definition of an effective crack resistance for a prescribed numerical experiment, not as a classical homogenization result.}
+The objective of this approach is the determination of an \deleted{effective energetic fracture toughness}\added{effective energetic crack resistance}\deleted{ $J_c^{\text{eff}}$, which can subsequently be employed as a material parameter for predicting macroscopic crack growth according to the fracture criterion~(\ref{eq:fracture_criterion_J}).}\added{, denoted by $J_{x,c}^{\text{eff}}$. This quantity can subsequently be used as an input quantity in a macroscopic fracture criterion such as~(\ref{eq:fracture_criterion_J}).}
+\added{Such a use is justified only to the extent that the fracture process analyzed by~(\ref{eq:fracture_criterion_J}) is representative of the specific material and loading situation considered in the numerical experiment.}
 
 The numerical experiment is structured as follows.
 Instead of performing a physical experiment, a representative region\deleted{The term representative volume element is 
 deliberately avoided, since the region no longer fulfills classical representativity requirements once fracture occurs, e.g. the 
-separation of length scales.}\added{, rather than a representative volume element,}
- is selected that explicitly resolves the relevant microstructural features and whose fracture behavior is to be captured by \deleted{$J_c^{\text{eff}}$}\added{the effective energetic fracture toughness}.
+separation of length scales.}
+ is selected that explicitly resolves the relevant microstructural features and whose fracture behavior is to be captured by \deleted{$J_c^{\text{eff}}$}\added{the effective energetic crack resistance}.
 \added{The term representative volume element is deliberately avoided because the region no longer fulfills classical representativity requirements once fracture occurs, e.g., the separation of length scales.}
 This region is highlighted in dark gray in Fig.~\ref{fig:numerical_experiment}.
 The corresponding length scale is referred to as the \textsl{microscale}, together with its associated \textsl{microstructure}.
-The scale at which \deleted{$J_c^{\text{eff}}$}\added{this effective energetic fracture toughness} is applied is denoted as the \textsl{macroscale}.
+The scale at which \deleted{$J_c^{\text{eff}}$}\added{this effective energetic crack resistance} is applied is denoted as the \textsl{macroscale}.
 
 The representative  region  is embedded within a surrounding matrix characterized by effective elastic properties, 
 such as the effective Young's modulus $E^{\text{eff}}$ and Poisson's ratio $\nu^{\text{eff}}$ in the isotropic case.
 This surrounding material facilitates the evaluation of surface integrals at the boundary and is shown in light gray in Fig.~\ref{fig:numerical_experiment}.
-The union of the representative region and the surrounding matrix is considered as a continuum~$\Omega$. 
+The union of the representative region and the surrounding matrix is considered as a continuum~$\Omega$ \added{with boundary $\partial\Omega$}. 
 Macroscopic crack growth, corresponding to complete separation of the representative region along a prescribed direction, is enforced through appropriate boundary conditions.
 
 In this work, only mode~I loading is considered.
 Following the methodology of Hossain et al.~\cite{hossain_effective_2014}, so-called surfing boundary conditions are employed.
 A fictitious macroscopic crack tip, illustrated by the black dot in Fig.~\ref{fig:numerical_experiment}, is propagated along a prescribed direction with velocity $\dot{x}_{\text{bc}}$, 
 corresponding to the $x$-direction in the figure.
-Displacements associated with mode~I crack opening are prescribed at the boundary using a fictitious 
+Displacements associated with mode~I crack opening are prescribed at the boundary \added{$\partial\Omega$} using a fictitious 
 stress intensity factor $K_I^{\text{bc}}$, namely
 \begin{align}
     \begin{split}
@@ -398,6 +396,7 @@ stress intensity factor $K_I^{\text{bc}}$, namely
 
 Here, $r$ and $\varphi$ denote the polar coordinates of a system centered at the fictitious 
 crack tip located at $x = \dot{x}_{\text{bc}} t$ and $y = 0$.
+\added{Here, $t$ denotes the pseudo-time, or loading parameter, used to advance the fictitious crack tip.}
 The boundary conditions are fully defined by the 
 parameters $\dot{x}_{\text{bc}}$, $K_I^{\text{bc}}$ and the auxiliary fictitious material parameters  
 $E_{\text{bc}}$, and $\nu_{\text{bc}}$.
@@ -413,29 +412,39 @@ This quantity is computed in terms of the J-Integral
     J_x = \int_{\partial\Omega}\left(\psi_{\text{el}}(\boldsymbol{\varepsilon})\boldsymbol{1} - \left(\nabla\boldsymbol{u}\right)^T\boldsymbol{\sigma}\right)\boldsymbol{n} \, \mathrm{d}A \cdot \boldsymbol{e}_x,
     \label{eq:J-integral}
 \end{equation}
-where $\boldsymbol{e}_x$ denotes the unit vector in the macroscopic crack propagation direction.
-The strain energy density is given by $\psi_{\text{el}}$, the linearized strain tensor\deleted{In this work, only small strain assumptions are considered. However, the framework could be extended to finite strains
+where $\boldsymbol{e}_x$ denotes the unit vector in the macroscopic crack propagation direction\added{; hence, the index $x$ indicates both the crack-growth direction and the direction onto which the J-Integral is projected.}
+\deleted{The strain energy density is given by $\psi_{\text{el}}$}\added{The strain energy density entering the J-Integral is denoted by $\psi_{\text{el}}$ and is specified in Section~\ref{sec:phase_fiel_model_ductile}}, the linearized strain tensor\deleted{In this work, only small strain assumptions are considered. However, the framework could be extended to finite strains
 in a straight forward manner.} by $\boldsymbol{\varepsilon} = \text{sym}(\nabla{\boldsymbol{u}})$, the displacement field by $\boldsymbol{u}$, the Cauchy stress by $\boldsymbol{\sigma}$, and the outward unit normal by $\boldsymbol{n}$.
 \added{Only small strain assumptions are considered in this work.}
+\added{The recorded value is, of course, affected by the crack pattern inside the explicitly resolved microstructure; however, following the observation reported by Hossain et al.~\cite{hossain_effective_2014}, the additional homogeneous surrounding material is assumed not to change the value of the boundary J-Integral, so that evaluating it at the boundary of the resolved microstructure or at the boundary of an embedding region with representative effective properties gives the same macroscopic driving force.}
 
-The effective fracture toughness is defined by Hossain et al.~\cite{hossain_effective_2014} as the maximum value attained by the J-Integral during the complete separation process,
+The \deleted{effective fracture toughness}\added{effective crack resistance}, denoted by \deleted{$J_c^{\text{eff}}$}\added{$J_{x,c}^{\text{eff}}$}, is defined by Hossain et al.~\cite{hossain_effective_2014} as the maximum value attained by the J-Integral during the complete separation process\added{, i.e., during characteristic crack growth through the representative region},
 \begin{equation}
-    J_c^{\text{eff}} = \max(J_x) = J_x^{\text{max}}.
+    J_{x,c}^{\text{eff}} = \max_t J_x(t).
 \end{equation}
+\added{The index $c$ denotes the critical crack-resistance value obtained from this maximum, whereas the index $x$ is retained to avoid implying isotropic crack resistance.}
 
-The motivation for this definition is that loading levels below $J_x^{\text{max}}$ lead to crack arrest within the simulation and 
+The motivation for this definition is that loading levels below $J_{x,c}^{\text{eff}}$ lead to crack arrest within the simulation and 
 therefore do not result in macroscopic crack propagation, 
 understood as full separation of the representative region.
+\added{This definition should not be confused with a proof that $J_{x,c}^{\text{eff}}$ converges to a material property under enlargement of the representative region. Establishing such convergence, if it exists for a given class of microstructures and loading paths, would require a separate study.}
 
-The insensitivity of $J_x^{\text{max}}$ with respect to the precise implementation of boundary conditions has been demonstrated in previous studies such as~\cite{hossain_effective_2014, bohnen_simulation_2024}.
+\added{For the numerical experiment introduced by Hossain et al.}~\cite{hossain_effective_2014}\added{, two formulations of the surfing boundary conditions were compared in}~\cite{hossain_effective_2014, bohnen_simulation_2024}\added{. For the specific cases investigated there, including the formulation used in the present work, no relevant difference in the predicted value of $J_{x,c}^{\text{eff}}$ was found. This should not be understood as a general proof of independence from the boundary conditions.}
 Independence from the initial microscopic crack configuration and adequate representation of fracture mechanisms can be ensured by selecting a sufficiently large representative region that contains an appropriate number of microstructural features\deleted{This presumes a sufficiently homogeneous spatial distribution of microstructural features, analogous to assumptions made for representative volume elements in micromechanics.}.
 \added{This presumes a sufficiently homogeneous spatial distribution of microstructural features, analogous to assumptions made for representative volume elements in micromechanics.}
+\added{In the present work, this requirement is not fully verified: only one prescribed macroscopic crack-growth direction and one initial crack location are considered, and no convergence study with respect to the size of the resolved porous region is performed. The results should therefore be read as a controlled numerical experiment on the influence of J2-plasticity for the selected simplified microstructure, rather than as the determination of a generally valid homogenized fracture toughness.}
 
 
-\section{A phase field model of ductile fracture}\label{sec:phase_fiel_model_ductile}
+\section{\deleted{A phase field model of ductile fracture}\added{Simulation of fracture with phase field models}}\label{sec:simulation_phase_field_models}
+
+\added{This section introduces the phase-field models and numerical ingredients used in the subsequent numerical experiments.}
+
+\subsection{\added{A phase field model of ductile fracture}}\label{sec:phase_fiel_model_ductile}
 
 In order to model fracture in ductile materials under quasi-static loading conditions, we employ the model proposed in~\cite{noll_3d_2020}. 
+\added{Related variational finite-strain phase-field formulations for ductile fracture and porous plasticity were developed by Miehe, Aldakheel and co-workers}~\cite{miehe_phasefield_ductile_2016,miehe_phasefield_porous_2016,miehe_phasefield_implementation_2017}\added{.}
 The constitutive behavior of the considered continuum $\Omega$ with boundary $\partial\Omega$ in the unfractured state is described by von Mises plasticity with isotropic linear hardening. 
+\added{The notation and numerical treatment of the underlying small-strain $J_2$ plasticity model follow standard computational plasticity concepts; see, for example, Simo and Hughes}~\cite{simo_computational_1998}\added{.}
 Small deformation theory is assumed to be sufficient.
 
 In this case, the total linearized strain
@@ -447,7 +456,7 @@ with $\boldsymbol{u}$ denoting the displacement field can be decomposed into a r
   \boldsymbol{\varepsilon} =  \boldsymbol{\varepsilon}^e + \boldsymbol{\varepsilon}^p.
 \end{equation}
 
-To model linear isotropic strain hardening, a scalar internal state variable $\alpha$ is introduced that is related to the density of dislocations in the crystallographic microstructure. 
+To model linear isotropic strain hardening, a scalar internal state variable $\alpha$ is introduced\deleted{ that is related to the density of dislocations in the crystallographic microstructure}. 
 The yield stress is postulated as
 \begin{equation}
     \sigma_Y(\alpha) = \sigma_y + H\alpha
@@ -491,6 +500,7 @@ must be satisfied to ensure a physically consistent description of plasticity.
 To model fracture, an additional field variable $s(\boldsymbol{x},t) \in [0,1]$ is introduced. 
 The value $s=0$ corresponds to fully fractured material, while $s=1$ represents intact material sufficiently far from cracks. 
 In the transition region, the field varies smoothly between these two values, providing a diffuse representation of cracks in a continuum setting.
+\added{Irreversibility of crack growth is enforced in both the ductile and the linear elastic phase-field formulations by fixing the phase field at fully fractured points: if $s(\boldsymbol{x},t_{\boldsymbol{x}})=0$ for the first time $t_{\boldsymbol{x}}$ at a point $\boldsymbol{x}$, then a Dirichlet condition $s(\boldsymbol{x},t)=0$ is imposed for all later pseudo-times $t>t_{\boldsymbol{x}}$.}
 
 Using this phase field variable, the total energy of the continuum $\Omega$ is given by
 \begin{equation}
@@ -515,14 +525,17 @@ Here, $\boldsymbol{\mathbb{C}}$ denotes the elastic stiffness tensor, which is d
     g(s) = \beta\left(s^3 - s^2\right) + 3s^2 - 2s^3 + \eta,
     \label{eq:deg_grad}
 \end{equation}
-with $\beta = 0.2$ controlling the slope of $g(s)$ at $s=1$, and $\eta = 10^{-5}$ serving as a residual stiffness parameter to avoid ill-conditioned tangents when solving the problem using a Newton scheme.
+with $\beta = 0.2$ controlling the slope of $g(s)$ at $s=1$, and $\eta = 10^{-5}$ serving as a residual stiffness parameter to avoid ill-conditioned tangents \deleted{when}\added{if} the problem is solved using a Newton scheme.
+\added{The cubic degradation function is used because it allows the prescribed yield stress and hardening parameter to be implemented in the phase-field formulation in a direct manner.}
+Kuhn et al.~\cite{kuhn_phase_2016} \added{discuss that, for the standard quadratic degradation function, these parameters require a reinterpretation in order to obtain effective material properties that can be related to measured data.}
 
 To account for crack driving forces arising from the accumulation of plastic deformation, as expected for ductile fracture, the plastic contribution to the energy is also degraded according to
 \begin{equation}
     \psi_{\rm{pl}}(\alpha,s) = g(s)\left(\dfrac{1}{2}H\alpha^2 + \sigma_y\alpha\right).
 \end{equation}
 
-Finally, the fracture energy contribution is given by
+\deleted{Finally, the fracture energy contribution is given by}
+\added{Finally, the fracture energy density per unit volume is given by}
 \begin{equation}
     \psi_{\rm{fr}} = J_c
     \underbrace{\left(
@@ -530,9 +543,11 @@ Finally, the fracture energy contribution is given by
     \right)}_{\bar{A}},
 \end{equation}
 which represents the energy dissipated due to fracture. 
-Here, $\bar{A}$ approximates the crack surface, $J_c$ denotes the material-specific fracture energy per unit crack surface area, and $\epsilon$ controls the width of the diffuse crack zone.
+\deleted{Here, $\bar{A}$ approximates the crack surface, $J_c$ denotes the material-specific fracture energy per unit crack surface area, and $\epsilon$ controls the width of the diffuse crack zone.}
+\added{Here, $\bar{A}$ approximates the crack surface upon integration over a volume, $J_c$ denotes the material-specific fracture energy per unit crack surface area, and $\epsilon$ controls the width of the diffuse crack zone.}
 
-For the linear elastic case, it can be shown that the zero set of $s$ minimizing the total energy converges to minimizers obtained with a sharp crack representation as $\epsilon \to 0$, see~\cite{chambolle_approximation_2004}.
+\deleted{For the linear elastic case, it can be shown that the zero set of $s$ minimizing the total energy converges to minimizers obtained with a sharp crack representation as $\epsilon \to 0$, see~\cite{chambolle_approximation_2004}.}
+\added{For the linear elastic case, Ambrosio--Tortorelli-type regularizations approximate the sharp-crack variational formulation in the sense of $\Gamma$-convergence as $\epsilon \to 0$. In this sense, the regularized fields $(\boldsymbol{u},s)$ approximate the displacement field and crack set of the corresponding sharp-crack formulation, while the diffuse crack region represented by low values of $s$ approaches the crack set; no pointwise convergence statement for $s$ is intended here, see Kuhn~\cite{kuhn_numerical_2013} and Chambolle~\cite{chambolle_approximation_2004}.}
 
 A thermodynamically consistent evolution equation for the phase field variable $s$, governing crack growth, is derived using a variant of the Coleman--Noll procedure as described in~\cite{noll_3d_2020},
 \begin{align}
@@ -571,7 +586,7 @@ The evolution equations for the primary fields $\boldsymbol{u}$ and $s$, togethe
 \subsection{A phase field model for brittle fracture}
 \label{sec:phasefield_elastic}
 
-In order to judge the influence of ductile material behavior on the effective fracture toughness, 
+In order to judge the influence of ductile material behavior on the \deleted{effective fracture toughness}\added{effective crack resistance}, 
 we also consider a phase field model of brittle fracture that assumes linear elastic material behavior. 
 Details of this model are\deleted{ e.g. described in ~\cite{kuhn_continuum_2010}}\added{ described, e.g., by~\cite{kuhn_continuum_2010}}. The governing equations 
 are very similar to (\ref{eq:evolution_s}) and (\ref{eq:equilibrium}) but don't have
@@ -596,35 +611,46 @@ with
 
 % The origins of phase field models like the one presented in the previous section can be found in the original Griffith-criterion, which states that cracks can grow if the energy released by crack growth is equal to the energy required to create the new crack surface which is a material parameter. 
 
+\subsection{Numerical implementation}
+\label{sec:numerical_implementation}
+
+\added{The weak forms of the coupled boundary-value problems are implemented in FEniCSx using \texttt{dolfinx} version 0.7.4}~\cite{fenicsx_documentation}\added{. The displacement field, the phase field, and, where applicable, the plastic internal variables are solved in a monolithic nonlinear system. The nonlinear residual and its Gateaux derivative are assembled and solved with the PETSc-based Newton solver provided by FEniCSx. The linear subproblems arising within Newton's method are solved with the default PETSc Krylov solver GMRES and the default PETSc ILU preconditioner used by this setup.}
+
+\added{The evolution equation for the phase field, Eq.~(\ref{eq:evolution_s}), is discretized in pseudo-time by an implicit backward Euler scheme. The time step is adapted automatically during the simulation. The maximum number of Newton iterations per time step is set to eight. If a step does not converge within this limit, the time step is reduced by a factor of two and the step is repeated. If convergence is reached in fewer than four Newton iterations, the next time step is increased by a factor of two, subject to the prescribed upper bound for the respective simulation.}
+
+\added{The spatial discretization uses first-order Lagrange finite elements on triangular meshes in two dimensions and tetrahedral meshes in three dimensions. Along the expected crack path, the mesh is locally refined such that the element edge length satisfies $\Delta h \leq \epsilon/2$ and is usually chosen much smaller; see the respective sections for the specific values. The specific values of $\Delta h$ and $\epsilon$ used in the individual simulations are stated together with the corresponding numerical setups below.}
+
 \subsection{Parameter sets}
 \label{sec:parameter_sets}
 In the following chapters, the influence of the material law and various parameters on the fracture behavior of the phase field model,
-as well as on the effective fracture resistance of a porous material, is investigated.
+as well as on the \deleted{effective fracture resistance}\added{effective crack resistance} of a porous material, is investigated.
 To isolate the impact of individual parameters, three specific parameter sets are studied.
 These are defined for a given reference fracture resistance $J_c^0$, Lam\'{e} parameter $\mu_0$, and length scale $L$ as: 
 \begin{itemize}
 \setlength{\itemindent}{4em}
 
 
-\item[\textbf{vM}:]
+\item[\vMLabel:]
 \parbox[t]{\dimexpr\linewidth-4em\relax}{
 the von Mises-type plasticity model of section~\ref{sec:phase_fiel_model_ductile},
 with $\sigma_y=1.0\sqrt{\nicefrac{J_c^0\mu_0}{L}}$, $H=0.22\mu_0$,
 $\lambda=\mu_0$ and $J_c=1.0J_c^0$,
 }
 
-\item[\textbf{Eq$\boldsymbol{J_c}$}:]
+\item[\EqJcLabel:]
 \parbox[t]{\dimexpr\linewidth-4em\relax}{
 the linear elastic model of section~\ref{sec:phasefield_elastic}
 with $J_c=1.0J_c^0$ and $\lambda=\mu_0$,
 }
 
-\item[\textbf{Eq$\boldsymbol{\sigma^*}$}:]
+\item[\EqSigmaStarLabel:]
 \parbox[t]{\dimexpr\linewidth-4em\relax}{
 the linear elastic model of section~\ref{sec:phasefield_elastic}
 with fracture resistance $J_c=0.5679J_c^0$ and $\lambda=\mu_0$.
 }
 \end{itemize}
+
+\added{The parameter set \EqJcLabel is chosen to have the same prescribed microscopic fracture resistance $J_c$ as \vMLabel, whereas \EqSigmaStarLabel is chosen such that the one-dimensional tensile strength is close to that of \vMLabel.}
 
 
 \subsection{Relation to an Energetic Fracture Criterion}
@@ -635,7 +661,7 @@ with fracture resistance $J_c=0.5679J_c^0$ and $\lambda=\mu_0$.
     \resizebox{0.8\textwidth}{!}{\includegraphics[]{pics/griffith_deformed.png}}
     \vspace{0.2cm}
     \caption{%
-        Deformed contour plot of the phase field $s$ in a strip of size $16L \times 2L$ for the simulation \textbf{Eq$\boldsymbol{J_c}$}. The deformation is scaled by a factor of 0.3. 
+        Deformed contour plot of the phase field $s$ in a strip of size $16L \times 2L$ for the simulation \EqJcLabel. The deformation is scaled by a factor of 0.3. 
     }
     \label{fig:griffith_deformed}
 \begin{picture}(0,0)
@@ -672,13 +698,13 @@ with fracture resistance $J_c=0.5679J_c^0$ and $\lambda=\mu_0$.
     \end{picture}
 \end{figure}
 
-In order to highlight the connection of the presented phase field model to the fracture criterion~(\ref{eq:fracture_criterion_J}), a simulation was performed in which crack growth was enforced using the surfing boundary conditions described in section~\ref{sec:numericalExperiment}. The computational domain consisted of a $16L \times 2L$ strip of homogeneous material with the following parameters: $\lambda_0 = \mu_0$, $M = 1000.0 \nicefrac{\dot{x}_{\text{bc}}}{J_c^0}$, $\epsilon = 0.1L$, and element edge length $\Delta{h} = 0.02L$. The boundary condition parameters were $\nu_{\text{bc}} = 0.25$, $E_{\text{bc}} = 2.5\mu_{0}$, and $K_I^{\text{bc}} = \sqrt{J_c^0 \cdot 2.5\mu_{0}}$, which enforce crack propagation in the $x$-direction, as shown in Fig.~\ref{fig:griffith_deformed}.
+In order to highlight the connection of the presented phase field model to the fracture criterion~(\ref{eq:fracture_criterion_J}), a simulation was performed in which crack growth was enforced using the surfing boundary conditions described in section~\ref{sec:numericalExperiment}. The computational domain consisted of a $16L \times 2L$ strip of homogeneous material \added{under plane strain assumptions} with the following parameters: $\lambda_0 = \mu_0$, $M = 1000.0 \nicefrac{\dot{x}_{\text{bc}}}{J_c^0}$, $\epsilon = 0.1L$, and element edge length $\Delta{h} = 0.02L$. The boundary condition parameters were $\nu_{\text{bc}} = 0.25$, $E_{\text{bc}} = 2.5\mu_{0}$, and $K_I^{\text{bc}} = \sqrt{J_c^0 \cdot 2.5\mu_{0}}$, which enforce crack propagation in the $x$-direction, as shown in Fig.~\ref{fig:griffith_deformed}.
 
 These simulations were conducted using the three parameter sets introduced in section~\ref{sec:parameter_sets}. 
 As discussed in section~\ref{sec:numericalExperiment}, the J-Integral~(\ref{eq:J-integral}) evaluated at the boundary of the domain quantifies the energetic driving force for crack propagation. 
 The results show that the J-Integral remains nearly constant throughout the crack propagation process, as illustrated in Fig.~\ref{fig:PAPER_01_all_Jx_vs_xct_pf_2}.
 
-As established in the literature~\cite{tanne_crack_2018}, the actual numerical fracture resistance $J_c^{\text{num}}$ obtained from finite element simulations is typically higher than the specified parameter $J_c$. For a given material law, this deviation primarily depends on the ratio $\nicefrac{\Delta{h}}{\epsilon}$, see also~\cite{tanne_crack_2018}. In the current setup, the following approximate values were observed:
+As established by Tanné et al.~\cite{tanne_crack_2018}, the actual numerical fracture resistance $J_c^{\text{num}}$ obtained from finite element simulations is typically higher than the specified parameter $J_c$. For a given material law, this deviation primarily depends on the ratio $\nicefrac{\Delta{h}}{\epsilon}$, see also Tanné et al.~\cite{tanne_crack_2018}. In the current setup, the following approximate values were observed:
 \begin{itemize}
     \item $J_c^{\text{num}} \approx 1.50J_c^0$ for the von Mises material model \vMLabel,
     \item $J_c^{\text{num}} \approx 1.12J_c^0$ for \EqJcLabel,
@@ -686,7 +712,7 @@ As established in the literature~\cite{tanne_crack_2018}, the actual numerical f
 \end{itemize}
 It is worth noting that the von Mises material model yields a significantly higher numerical fracture resistance than the linear elastic model at the same specified $J_c$. The evolution of plastic variables remains largely limited to the crack path, as can be observed in Fig.~\ref{fig:plasticity_vm_jeff}, so that the linear elastic formulation of the J-Integral (\ref{eq:J-integral}) remains a good approximation even in the presence of plasticity. However, the ductile material law still has a significant effect on the crack driving force. In general, the larger the fracture resistance $J_c$, the higher the required crack driving force $J_x$ must be to sustain steady crack growth.
 
-These simulations confirm that pre-existing cracks propagate according to an energetic criterion equivalent to \added{the criterion in Eq.~}\deleted{~}(\ref{eq:fracture_criterion_J}): a crack advances when the energetic driving force equals the fracture resistance. Throughout this work, such behavior is referred to as energetically driven crack growth. A reference numerical energetic fracture resistance is defined as the value obtained from parameter set \EqJcLabel:
+These simulations confirm that pre-existing cracks propagate according to an energetic criterion equivalent to \added{the criterion in Eq.~}\deleted{~}(\ref{eq:fracture_criterion_J}): a crack advances \deleted{when}\added{if} the energetic driving force equals the fracture resistance. Throughout this work, such behavior is referred to as energetically driven crack growth. A reference numerical energetic fracture resistance is defined as the value obtained from parameter set \EqJcLabel:
 \begin{equation}
     J_c^{\text{num}} \approx 1.12J_c.
 \end{equation}
@@ -741,9 +767,9 @@ see~\cite{schlueter_phase_2018}. For the ductile phase-field fracture model, als
 \end{equation}
 for $E = 2\mu_0$, and the corresponding critical stress then follows from~(\ref{eq:sigma_plast}), cf.~\cite{noll_3d_2020}. Strictly speaking, these relations hold only in one dimension, but they provide good estimates for two- and three-dimensional scenarios, where cracks tend to form spontaneously once a stress level close to $\sigma_c$ is exceeded in a sufficiently large region—typically on the order of several multiples of $\epsilon$, cf.~\cite{kuhn_numerical_2013}. Due to the relevance of this stress threshold, this mechanism is referred to as \textsl{stress-driven crack nucleation}, in contrast to the \textsl{energetically driven crack growth} mechanism discussed previously.
 
-Stress-driven crack nucleation is demonstrated using the one-dimensional setup shown in Fig.~\ref{fig:setup_crack_nucleation}. The domain consists of an initially undamaged bar (i.e., $s = 1$ everywhere) of length $2L$, subjected to a linearly increasing displacement load $u_0$ applied at both ends. The field equations are reduced to one dimension by setting $\lambda = 0$, $u_y = 0$, and $u_z = 0$. The material parameters are $\mu_0$, $M = 1000.0\,\nicefrac{\dot{x}_{\text{bc}}}{J_c^0}$, $\epsilon = 0.1L$, and an element edge length of $\Delta h = 0.01L$.
+Stress-driven crack nucleation is demonstrated using the one-dimensional setup shown in Fig.~\ref{fig:setup_crack_nucleation}. The domain consists of an initially undamaged bar (i.e., $s = 1$ everywhere) of length $2L$, subjected to a linearly increasing displacement load $u_0$ applied at both ends. The field equations are reduced to one dimension by setting $\lambda = 0$, $u_y = 0$, and $u_z = 0$. The material parameters are $\mu_0$, $M = 1000.0\,\nicefrac{\dot{x}_{\text{bc}}}{J_c^0}$, $\epsilon = 0.1L$, and an element edge length of $\Delta h = \deleted{0.01L}\added{0.02L}$.
 
-Simulations were conducted for the three parameter sets introduced in Section~\ref{sec:parameter_sets}. To intentionally trigger crack nucleation at $x = 0$, the fracture toughness $J_c$ was locally reduced by 1\% \deleted{in the region $-3\Delta h \le x \le 3\Delta h$}\added{within a region extending from $x=-3\Delta h$ to $x=3\Delta h$}.
+Simulations were conducted for the three parameter sets introduced in Section~\ref{sec:parameter_sets}. To intentionally trigger crack nucleation at $x = 0$, the \deleted{fracture toughness}\added{fracture resistance} $J_c$ was locally reduced by 1\% \deleted{in the region $-3\Delta h \le x \le 3\Delta h$}\added{within a region extending from $x=-3\Delta h$ to $x=3\Delta h$}.
 
 In all cases, fracture was observed to occur at $x = 0$ once a critical load level was 
 reached. For the same energetic fracture resistance $J_c$, the linear elastic model with parameters \EqJcLabel yielded a significantly higher fracture stress of $\sigma^* = 1.72\sigma_y$ than the von~Mises-type model \vMLabel, which resulted in $\sigma^* = 1.31\sigma_y$. However, the fracture strain was smaller in the linear elastic case, with $\varepsilon^* \approx 1.08\sqrt{\nicefrac{J_c^0}{\mu_0 L}}$ for \EqJcLabel compared to $\varepsilon^* \approx 1.18\sqrt{\nicefrac{J_c^0}{\mu_0 L}}$ for \vMLabel, as shown in Fig.~\ref{fig:reaction_forces}.
@@ -763,8 +789,11 @@ and is evaluated at the fracture strain $\varepsilon = \varepsilon^*$. The evolu
 
 
 
-\section{Effective Toughness of a Simplified 2D Porous Material}
+\section{\deleted{Effective Toughness}\added{Effective Crack Resistance} of a Simplified \deleted{2D}\added{Two-Dimensional} Porous Material}
 \label{sec:2Dresults}
+
+\subsection{\added{Equivalent Elastic Medium and Simulation Domain}}
+\label{sec:2D_effective_medium}
 
 
 
@@ -792,6 +821,7 @@ and is evaluated at the fracture strain $\varepsilon = \varepsilon^*$. The evolu
     \resizebox{0.4\textwidth}{!}{\input{pics/PAPER_00_xct_pf_vs_xct_KI_vonMises.pgf}}
     \caption{%
         Position of the surfing boundary conditions $x_{\text{bc}}$ and the crack tip position $x_{\text{ct}}$.
+        \added{The horizontal axis denotes the pseudo-time $t$ normalized by the time scale $L/\dot{x}_{\mathrm{bc}}$.}
     }
     \label{fig:PAPER_00_xct_pf_vs_xct_KI_diamond}
 \end{figure}
@@ -821,7 +851,7 @@ and is evaluated at the fracture strain $\varepsilon = \varepsilon^*$. The evolu
     \begin{minipage}{0.49\textwidth}
         \centering
         \includegraphics[width=\textwidth]{pics/PAPER_03A_Jx_vs_xct_all_linear_elastic_gc10.png}
-        \caption{Section of the J-Integral $J_x$ vs.\ crack tip position $x_{ct}$ between pores two and four for the parameter set \textbf{Eq}$\boldsymbol{J_c}$ and varying $w_s$.}
+        \caption{Section of the J-Integral $J_x$ vs.\ crack tip position $x_{ct}$ between pores two and four for the parameter set \EqJcLabel and varying $w_s$.}
         \label{fig:PAPER_03A_Jx_vs_xct_all_linear_elastic_gc10}
     \end{minipage}
 
@@ -830,7 +860,7 @@ and is evaluated at the fracture strain $\varepsilon = \varepsilon^*$. The evolu
     \begin{minipage}{0.49\textwidth}
         \centering
         \includegraphics[width=\textwidth]{pics/PAPER_04_Jx_vs_xct_all_SIG.png}
-        \caption{Section of the J-Integral $J_x$ vs.\ crack tip position $x_{ct}$ between pores two and four for the parameter set \textbf{Eq}$\boldsymbol{\sigma^*}$ and varying $w_s$.}
+        \caption{Section of the J-Integral $J_x$ vs.\ crack tip position $x_{ct}$ between pores two and four for the parameter set \EqSigmaStarLabel and varying $w_s$.}
         \label{fig:PAPER_03_Jx_vs_xct_all_linear_elastic_gc05679.png}
     \end{minipage}
     \label{fig:side_by_side_plots}
@@ -839,16 +869,18 @@ and is evaluated at the fracture strain $\varepsilon = \varepsilon^*$. The evolu
 \begin{figure}[htb]
     \centering
     \resizebox{0.6\textwidth}{!}{\includegraphics[]{pics/PAPER_06b_Jx_vs_wsteg_three_datasets.png}}
-    \caption{Maximum of the J-Integral $J_x^{\text{max}}$ vs.\ wall width $w_s$.}
+    \caption{Effective crack resistance $J_{x,c}^{\text{eff}}$ vs.\ wall width $w_s$.}
     \label{fig:PAPER_06b_Jx_vs_wsteg_three_datasets}
 \end{figure}
 
-In order to investigate the effect of the material law on the effective fracture toughness of a porous material, a numerical experiment is performed, as illustrated in Fig.~\ref{fig:setup_crack_growth}a). The domain consists of circular pores with diameter $L$, centered in square cells of edge length $w_c = w_s + L$. A $3 \times 6$ array of these cells is assembled, as depicted by the red regions in Fig.~\ref{fig:setup_crack_growth} (top), where $w_s$ denotes the distance between pores. Plane strain conditions are assumed, i.e.,
+In order to investigate the effect of the material law on the \deleted{effective fracture toughness}\added{effective crack resistance} of a porous material, a numerical experiment is performed, as illustrated in Fig.~\ref{fig:setup_crack_growth}a). The domain consists of circular pores with diameter $L$, centered in square cells of edge length $w_c = w_s + L$. A $3 \times 6$ array of these cells is assembled, as depicted by the red regions in Fig.~\ref{fig:setup_crack_growth} (top), where $w_s$ denotes the distance between pores. Plane strain conditions are assumed, i.e.,
 \begin{equation}
     \boldsymbol{u} = u(x,y)\boldsymbol{e}_x + v(x,y)\boldsymbol{e}_y.
 \end{equation}
 
-The effective initial Young’s modulus $E_0^{\text{eff}}$ and Poisson’s ratio $\nu_0^{\text{eff}}$ of the unit cells are computed in separate preliminary simulations by prescribing linear displacement boundary conditions $\boldsymbol{u}^* = \boldsymbol{\varepsilon}_0^k \boldsymbol{x}$ at the boundary of a single unit cell. The resulting stress field $\boldsymbol{\sigma}_{\text{micro}}$ and the corresponding volume-averaged stresses
+The effective initial Young’s modulus $E_0^{\text{eff}}$ and Poisson’s ratio $\nu_0^{\text{eff}}$ of the unit cells are computed in separate preliminary simulations by prescribing linear displacement boundary conditions $\boldsymbol{u}^* = \boldsymbol{\varepsilon}_0^k \boldsymbol{x}$ at the boundary of a single unit cell.
+\added{Here, $k$ denotes the load case, i.e., the prescribed macroscopic strain for which the linear displacement boundary condition is applied; several load cases are required to determine the full stiffness tensor.}
+The resulting stress field $\boldsymbol{\sigma}_{\text{micro}}$ and the corresponding volume-averaged stresses
 \begin{equation}
     \left< \boldsymbol{\sigma} \right> = \dfrac{1}{V} \int_V \boldsymbol{\sigma}_{\text{micro}} \, \mathrm{d}V
 \end{equation}
@@ -856,17 +888,17 @@ are evaluated via finite element simulations. The effective stiffness tensor $\l
 \begin{equation}
     \left< \boldsymbol{\sigma} \right>^k = \left< \boldsymbol{\mathbb{C}} \right>  \left< \boldsymbol{\varepsilon} \right> = \left< \boldsymbol{\mathbb{C}} \right>  \boldsymbol{\varepsilon}_0^k.
 \end{equation}
-Employing Voigt notation indicated by underscores $\underline{(*)}$, the 2D \deleted{train}\added{strain} tensor
+Employing Voigt notation indicated by underscores $\underline{(*)}$, the \deleted{2D train}\added{two-dimensional strain} tensor
 \[
 \boldsymbol{\varepsilon} = 
 \begin{bmatrix} \varepsilon_{xx} & \varepsilon_{xy} \\ \varepsilon_{xy} & \varepsilon_{yy} \end{bmatrix}
 \]
-is represented as the 3-component vector
+is represented as the \deleted{3-component}\added{three-component} vector
 \begin{equation}
 \underline{\boldsymbol{\varepsilon}} = 
 \begin{bmatrix} \varepsilon_{xx} \\ \varepsilon_{yy} \\ 2 \varepsilon_{xy} \end{bmatrix},
 \end{equation}
-where the factor of 2 accounts for engineering shear strain. Similarly, the stress tensor
+where the factor of \deleted{2}\added{two} accounts for engineering shear strain. Similarly, the stress tensor
 \[
 \boldsymbol{\sigma} = 
 \begin{bmatrix} \sigma_{xx} & \sigma_{xy} \\ \sigma_{xy} & \sigma_{yy} \end{bmatrix}
@@ -904,35 +936,42 @@ From this tensor, the effective Lamé parameters, Young’s modulus, and Poisson
     \nu_0^{\text{eff}} = \dfrac{\lambda^{\text{eff}}}{2 (\lambda^{\text{eff}} + \mu^{\text{eff}})}.
 \end{equation}
 
-The $6 \times 3$ porous domain is embedded into a rectangular domain of effective stiffness (blue) with dimensions $(8 w_c) \times 20 L$. The parameters $\sigma_y$ and $H$ entering the nonlinear part of the material law~(\ref{eq:sigma_plast}) are not homogenized. 
+The $6 \times 3$ porous domain is embedded into a rectangular domain of effective stiffness (blue) with dimensions $(8 w_c) \times 20 L$. \added{The two-dimensional simulations in this section are carried out under plane strain assumptions.} The parameters $\sigma_y$ and $H$ entering the nonlinear part of the material law~(\ref{eq:sigma_plast}) are not homogenized. 
 Instead, it is assumed that nonlinear effects are locally relevant, while the effective behavior of each unit cell can be approximated as linear elastic with parameters $E_0^{\text{eff}}$ and $\nu_0^{\text{eff}}$. 
+
+\subsection{\added{Fracture Behavior and Effective Crack Resistance}}
+\label{sec:2D_fracture_behavior}
 
 An initial crack of length $w_c$ and horizontal orientation is prescribed along the center row of pores. The finite element edge length of the bilinear triangular elements along the expected crack path is $\Delta h = 0.02L$. The applied boundary conditions correspond to the surfing boundary conditions described in Section~\ref{sec:numericalExperiment}, with $K_I^{\text{bc}} = \sqrt{2.5 J_c^0 \mu_0}$, $E_{\text{bc}} = 2.5 \mu_0$, and $\nu_{\text{bc}} = 0.25$. The phase-field parameters are $\epsilon = 0.1L$, $\eta = 10^{-5}$, $M = 1000\,\nicefrac{v_{\text{bc}}}{J_c^0}$, and $\lambda_0 = \mu_0$. Simulations are conducted \deleted{for wall widths $w_s \in \left[0.375L, 4.0L\right]$}\added{with wall widths ranging from $0.375L$ to $4.0L$} using the parameter sets introduced in Section~\ref{sec:parameter_sets}.
 
-Figure~\ref{fig:setup_crack_growth}b) shows the final crack pattern \deleted{for $w_s = L$}\added{for a wall width of $L$} using the von~Mises material law parameter set \vMLabel. Crack propagation occurs horizontally from pore to pore, with frequent crack trapping inside pores followed by re-nucleation. This behavior is confirmed by Fig.~\ref{fig:PAPER_00_xct_pf_vs_xct_KI_diamond}, which displays the microscopic crack tip position $x_{ct}$\deleted{The microscopic crack tip postion $x_{ct}$ is indentified as the node with the largest $x$-coordinate that fulfills $s=0$.}\added{, identified as the node with the largest $x$-coordinate that fulfills $s=0$,} and the position of the macroscopic crack tip $x_{\text{bc}}$ \deleted{for $w_s = 1.0L$}\added{for a wall width of $1.0L$} and \vMLabel. The microscopic crack tip follows the macroscopic boundary condition in an unsteady manner, exhibiting six jumps of length $2L$. These jumps indicate that once a crack becomes trapped inside a pore and re-nucleates, it traverses the material ligament between pores during the instantaneous crack growth phase of nucleation.
+Figure~\ref{fig:setup_crack_growth}b) shows the final crack pattern \deleted{for $w_s = L$}\added{for a wall width of $L$} using the von~Mises material law parameter set \vMLabel. Crack propagation occurs horizontally from pore to pore, with frequent crack trapping inside pores followed by re-nucleation. This behavior is confirmed by Fig.~\ref{fig:PAPER_00_xct_pf_vs_xct_KI_diamond}, which displays the microscopic crack tip position $x_{ct}$\deleted{The microscopic crack tip postion $x_{ct}$ is indentified as the node with the largest $x$-coordinate that fulfills $s=0$.}\added{, identified as the node with the largest $x$-coordinate that fulfills $s=0$,} and the position of the macroscopic crack tip $x_{\text{bc}}$ \deleted{for $w_s = 1.0L$}\added{for a wall width of $1.0L$} and \vMLabel. \added{During phases in which the crack is trapped inside a pore, this definition places $x_{ct}$ at the last fully damaged material point before the void. A different convention could assign the crack tip to the opposite side of the open pore, but the present definition is used consistently as a tracking quantity for the advance through intact material ligaments.} The microscopic crack tip follows the macroscopic boundary condition in an unsteady manner, exhibiting six jumps of length $2L$. These jumps indicate that once a crack becomes trapped inside a pore and re-nucleates, it traverses the material ligament between pores during the instantaneous crack growth phase of nucleation.
 
 Figure~\ref{fig:PAPER_02_all_Jx_vs_xct_pf_diamond_holes} presents the J-Integral as a function of the microscopic crack tip position $x_{ct}$ \deleted{for $w_s = 1.0L$}\added{for a wall width of $1.0L$} and all three parameter sets. Vertical lines indicate pore positions. Aside from boundary effects at the beginning and end of the simulation, a characteristic periodic pattern is observed. While the crack tip remains trapped within a pore, $J_x$ increases to a peak value immediately prior to re-nucleation. Following re-nucleation, $J_x$ drops and decreases as the crack separates the ligament between pores and $x_{ct}$ catches up with $x_{\text{bc}}$. The peak value of $J_x$ therefore occurs directly before re-nucleation and determines the effective strength according to the definition in Section~\ref{sec:numericalExperiment}.
 
-It is observed that the linear elastic simulation with equivalent $J_c$ (\EqJcLabel) exhibits significantly higher values of $J_x$ than the von~Mises model \vMLabel with the same microscopic $J_c$, while the latter still yields higher $J_x$ values than the linear elastic simulation with equivalent fracture stress \EqSigmaStarLabel.
+It is observed that the linear elastic simulation with equivalent $J_c$ (\EqJcLabel) exhibits significantly higher values of $J_x$ than the von~Mises model \vMLabel with the same microscopic $J_c$, while the latter still yields higher $J_x$ values than the linear elastic simulation with equivalent fracture stress \EqSigmaStarLabel. \added{For this fixed wall width, the ordering can be interpreted through the different resistance against crack re-nucleation and the additional energy dissipated during ligament failure; in particular, once the one-dimensional tensile strength is largely eliminated as the dominant difference between models, the enhanced dissipation appears to play an important role. The following parameter study shows that this ordering is representative of the main trend, while the detailed pore interaction length additionally depends on $w_s$.}
 
-\deleted{For $w_s = 1.0L$}\added{For a wall width of $1.0L$}, neither the equivalent one-dimensional fracture stress of the bulk material nor the microscopic energetic fracture resistance $J_c$ provides a reliable indicator of the effective fracture toughness. Instead, the total dissipated energy $\Pi^*$ observed in 
-the one-dimensional crack nucleation experiment correlates more closely with the $J_x$ response, correctly predicting that the effective fracture toughness of \vMLabel lies between those of \EqJcLabel and \EqSigmaStarLabel\deleted{, c.f. also}\added{; see also} Fig.~\ref{fig:energy_vs_displacement}.
+\deleted{For $w_s = 1.0L$}\added{For a wall width of $1.0L$}, neither the equivalent one-dimensional fracture stress of the bulk material nor the microscopic energetic fracture resistance $J_c$ provides a reliable indicator of the \deleted{effective fracture toughness}\added{effective crack resistance}. Instead, the total dissipated energy $\Pi^*$ observed in 
+the one-dimensional crack nucleation experiment correlates more closely with the $J_x$ response, correctly predicting that the \deleted{effective fracture toughness}\added{effective crack resistance} of \vMLabel lies between those of \EqJcLabel and \EqSigmaStarLabel\deleted{, c.f. also}\added{; see also} Fig.~\ref{fig:energy_vs_displacement}.
 
-The periodically repeating pattern of $J_x$, for example between pores two and four, is characteristic of the microstructure. This pattern is shown for varying $w_s$ in Fig.~\ref{fig:PAPER_04_Jx_vs_xct_all_von_Mises} for \vMLabel, Fig.~\ref{fig:PAPER_03A_Jx_vs_xct_all_linear_elastic_gc10} for \EqJcLabel, and Fig.~\ref{fig:PAPER_03_Jx_vs_xct_all_linear_elastic_gc05679.png} for \EqSigmaStarLabel. Independent of the parameter set, $J_x^{\text{max}}$ increases with increasing wall width up to a saturation value. This trend is summarized in Fig.~\ref{fig:PAPER_06b_Jx_vs_wsteg_three_datasets}, which shows the maximum value $J_x^{\text{max}}$—defined as the effective macroscopic fracture resistance—versus $w_s$ for all parameter sets. Beyond a critical wall width, $J_x^{\text{max}}$ no longer increases, indicating saturation. The saturation values are approximately $1.80 J_c^{\text{num}}$ for \vMLabel, $1.9 J_c^{\text{num}}$ for \EqJcLabel, and $1.12 J_c^{\text{num}}$ for \EqSigmaStarLabel. Thus, a pronounced toughening effect is observed \deleted{for $w_s \ge 2L$ in all cases}\added{in all cases for wall widths of at least $2L$}.
+The periodically repeating pattern of $J_x$, for example between pores two and four, is characteristic of the microstructure. This pattern is shown for varying $w_s$ in Fig.~\ref{fig:PAPER_04_Jx_vs_xct_all_von_Mises} for \vMLabel, Fig.~\ref{fig:PAPER_03A_Jx_vs_xct_all_linear_elastic_gc10} for \EqJcLabel, and Fig.~\ref{fig:PAPER_03_Jx_vs_xct_all_linear_elastic_gc05679.png} for \EqSigmaStarLabel. Independent of the parameter set, $J_{x,c}^{\text{eff}}$ increases with increasing wall width up to a saturation value. This trend is summarized in Fig.~\ref{fig:PAPER_06b_Jx_vs_wsteg_three_datasets}, which shows the effective macroscopic crack resistance $J_{x,c}^{\text{eff}}$ versus $w_s$ for all parameter sets. Beyond a critical wall width, $J_{x,c}^{\text{eff}}$ no longer increases, indicating saturation. The saturation values are approximately $1.80 J_c^{\text{num}}$ for \vMLabel, $1.9 J_c^{\text{num}}$ for \EqJcLabel, and $1.12 J_c^{\text{num}}$ for \EqSigmaStarLabel. Thus, a pronounced toughening effect is observed \deleted{for $w_s \ge 2L$ in all cases}\added{in all cases for wall widths of at least $2L$}.
 
-The accumulated work of internal forces until fracture, $\Pi^*$, is again found to be the most reliable indicator of high effective fracture toughness, particularly in the saturation regime at larger wall widths. In contrast, equivalent one-dimensional tensile strength or equivalent microscopic fracture energy $J_c$ does not consistently predict effective fracture toughness. \deleted{For small wall widths $w_s \le 0.6L$}\added{For wall widths up to $0.6L$}, the ductile material law leads to a reduction in effective fracture resistance below the values obtained for \EqSigmaStarLabel.
+The accumulated work of internal forces until fracture, $\Pi^*$, is again found to be the most reliable indicator of high \deleted{effective fracture toughness}\added{effective crack resistance}, particularly in the saturation regime at larger wall widths. In contrast, equivalent one-dimensional tensile strength or equivalent microscopic fracture energy $J_c$ does not consistently predict \deleted{effective fracture toughness}\added{effective crack resistance}. \deleted{For small wall widths $w_s \le 0.6L$}\added{For wall widths up to $0.6L$}, the ductile material law leads to a reduction in \deleted{effective fracture resistance}\added{effective crack resistance} below the values obtained for \EqSigmaStarLabel.
 
-Finally, Fig.~\ref{fig:PAPER_06b_Jx_vs_wsteg_three_datasets} shows that saturation occurs at significantly larger wall widths for \vMLabel than for the linear elastic parameter sets. Since $J_x^{\text{max}}$ is determined by the peak value reached immediately prior to re-nucleation, saturation implies that re-nucleation is no longer influenced by neighboring pores. The delayed saturation observed for the ductile material law indicates that plasticity enlarges the interaction zone over which neighboring pores affect re-nucleation, due to the formation of extended plastic deformation zones prior to crack nucleation.
+Finally, Fig.~\ref{fig:PAPER_06b_Jx_vs_wsteg_three_datasets} shows that saturation occurs at significantly larger wall widths for \vMLabel than for the linear elastic parameter sets. Since $J_{x,c}^{\text{eff}}$ is determined by the peak value reached immediately prior to re-nucleation, saturation implies that re-nucleation is no longer influenced by neighboring pores. The delayed saturation observed for the ductile material law indicates that plasticity enlarges the interaction zone over which neighboring pores affect re-nucleation, due to the formation of extended plastic deformation zones prior to crack nucleation.
+\added{The comparison of \vMLabel and \EqSigmaStarLabel in Fig.~\ref{fig:PAPER_06b_Jx_vs_wsteg_three_datasets} shows that the ductile material law leads to a substantially higher effective crack resistance even though the one-dimensional tensile strengths are almost identical.}
 
  
 
 
 % Consequently, dissipative materials enhance fracture toughness better than materials with high fracture stress do.
 
-% Fig.~\ref{fig:PAPER_06a_KIc_vs_wsteg_hole&diamond}  shows the Irwin effective fracture toughness $K_{Ic}^{\text{eff}}$ obtained from (\ref{eq:kic_eff}), which is often more relevant for practical applications. The graph of $K_{Ic}^{\text{eff}}$ shows the same general trends as that of $J_x^{\text{max}}$.
+% Fig.~\ref{fig:PAPER_06a_KIc_vs_wsteg_hole&diamond}  shows the Irwin effective fracture toughness $K_{Ic}^{\text{eff}}$ obtained from (\ref{eq:kic_eff}), which is often more relevant for practical applications. The graph of $K_{Ic}^{\text{eff}}$ shows the same general trends as that of $J_{x,c}^{\text{eff}}$.
 
-\section{Effective Toughness of a Simplified 3D Porous Material}
+\section{\deleted{Effective Toughness}\added{Effective Crack Resistance} of a Simplified \deleted{3D}\added{Three-Dimensional} Porous Material}
 \label{sec:3D_results}
+
+\subsection{\added{Three-Dimensional Model and Equivalent Elastic Medium}}
+\label{sec:3D_effective_medium}
 
 \begin{figure}[htb]
         \centering
@@ -942,7 +981,7 @@ Finally, Fig.~\ref{fig:PAPER_06b_Jx_vs_wsteg_three_datasets} shows that saturati
                     \put(-160,133){$x$}
                     \put(-170,87){$z$}
         \end{picture}
-        \caption{3D mesh for $w_s=0.25L$.}
+        \caption{\deleted{3D}\added{Three-dimensional} mesh for $w_s=0.25L$.}
         \label{fig:mesh3D}
 \end{figure}
 
@@ -989,12 +1028,12 @@ Finally, Fig.~\ref{fig:PAPER_06b_Jx_vs_wsteg_three_datasets} shows that saturati
 
 \begin{figure}[htb]
     \centering
-    \resizebox{0.6\textwidth}{!}{\includegraphics[]{pics/PAPER_VM_Jxmax_vs_wsteg_2D_vs_3D.png}}
-    \caption{Maximum of the J-Integral $J_x^{\text{max}}$ vs.\ wall width $w_s$.}
+    \resizebox{0.6\textwidth}{!}{\includegraphics[]{pics/PAPER_VM_Jeff_vs_wsteg_2D_vs_3D.png}}
+    \caption{Effective crack resistance $J_{x,c}^{\text{eff}}$ vs.\ wall width $w_s$.}
     \label{fig:PAPER_06b_Jx_vs_wsteg_2D_3D}
 \end{figure}
 
-The two-dimensional plane strain model discussed in Section~\ref{sec:2Dresults} provides a useful indication of the general influence of voids on the effective fracture toughness of a material. However, in real porous metals, pore geometries are more accurately represented by spherical voids rather than by cylindrical pores extending in the out-of-plane direction, as assumed in the two-dimensional model.
+The two-dimensional plane strain model discussed in Section~\ref{sec:2Dresults} provides a useful indication of the general influence of voids on the \deleted{effective fracture toughness}\added{effective crack resistance} of a material. However, in real porous metals, pore geometries are more accurately represented by spherical voids rather than by cylindrical pores extending in the out-of-plane direction, as assumed in the two-dimensional model.
 
 To investigate the three-dimensional character that more closely resembles real porous metals, spherical pores of diameter $L$ are considered. These pores are centered in cubic unit cells with edge length $w_c = w_s + L$. The effective stiffness of these unit cells is computed following the procedure described in the previous section, with the exception that six independent load cases $\underline{\boldsymbol{\varepsilon}}_0^k$ are applied and the resulting effective stiffness tensor in Voigt notation 
 $\left< \underline{\boldsymbol{C}} \right>$ is of size $6\times6$. The effective Lam\'e parameters are determined as
@@ -1003,14 +1042,17 @@ $\left< \underline{\boldsymbol{C}} \right>$ is of size $6\times6$. The effective
     \mu^{\text{eff}} = \dfrac{\left< \underline{C} \right>_{44} + \left< \underline{C} \right>_{55} + \left< \underline{C} \right>_{66}}{3}.
 \end{equation}
 
-A $6\times3\times2$ array of these unit cells is assembled to represent a simplified porous material. This array is centered about the plane $y=0$ and embedded into a surrounding cuboidal domain of effective stiffness with dimensions $(8 w_c)\times 20L \times (4 w_c)$. The mesh, consisting of bilinear tetrahedral finite elements, is locally refined around the expected fracture plane $y=0$, as shown in Fig.~\ref{fig:mesh3D}.
+A $6\times3\times2$ array of these unit cells is assembled to represent a simplified porous material. This array is centered about the plane $y=0$ and embedded into a surrounding cuboidal domain of effective stiffness with dimensions $(8 w_c)\times 20L \times (4 w_c)$. \added{Thus, the unit cell used to determine the effective stiffness is cubic, whereas the surrounding homogeneous domain is a larger cuboidal embedding region assigned this effective stiffness.} The mesh, consisting of bilinear tetrahedral finite elements, is locally refined around the expected fracture plane $y=0$, as shown in Fig.~\ref{fig:mesh3D}.
 
 An initial crack is prescribed in the plane $y=0$ \deleted{for $x-x_{\rm min}\le w_c$}\added{from $x=x_{\rm min}$ to $x=x_{\rm min}+w_c$}, where $x_{\rm min}$ denotes the minimum $x$-coordinate of the mesh. Along the expected crack path, the finite element edge length is set to $\Delta h = 0.02L$.
 
 The phase-field parameters are chosen as $\epsilon = 0.1L$, $\eta = 10^{-5}$, $M = 1000 \nicefrac{v_{\text{bc}}}{J_c^0}$, and $\lambda_0=\mu_0$. The applied boundary conditions are given by the surfing boundary conditions described in Section~\ref{sec:numericalExperiment}, with $K_I^{\text{bc}}=\sqrt{2.5J_c^0\mu_0}$, $E_{\text{bc}}=2.5\mu_0$, and $\nu_{\text{bc}}=0.25$. Additionally, the displacement $u_z$ is constrained to zero on the planes $z=z_{\rm min}$ and 
-$z=z_{\rm max}$ to mimic plane strain while still accounting for the 3D character of the geometry of the microstructure.
+$z=z_{\rm max}$ to mimic plane strain while still accounting for the \deleted{3D}\added{three-dimensional} character of the geometry of the microstructure.
 
 Simulations are conducted \deleted{for wall widths $w_s\in\left[0.25L,4.0L\right]$}\added{with wall widths ranging from $0.25L$ to $4.0L$} using the parameter set \vMLabel.
+
+\subsection{\added{Fracture Behavior and Comparison with the Two-Dimensional Model}}
+\label{sec:3D_fracture_behavior}
 
 Figures~\ref{fig:one_row_two_cols}a) and b) illustrate the phase-field variable $s$ and the plastic variable $\alpha$, respectively, for $w_s=0.25L$. The crack propagates through the central row of pores and is able to grow continuously between pores, in contrast to the two-dimensional case. Consequently, the crack tip position $x_{ct}$\deleted{The microscopic crack tip postion $x_{ct}$ is indentified as the node with the largest $x$-coordinate that fulfills $s=0$.}\added{, identified as the node with the largest $x$-coordinate that fulfills $s=0$,} evolves more smoothly, as confirmed by Fig.~\ref{fig:position_3D}.
 
@@ -1023,13 +1065,13 @@ to highlight the effect of the geometric representation of microstructure and
 not of the material law, the records of $J_x$ are normalized by the 
 numerical fracture resistance of the von Mises-type material law $J_x^{\text{num,pl}}\approx1.50J_c^0$\deleted{, c.f. section}\added{; see Section}~\ref{sec:steady_growth_griffith}.
 
-Figure~\ref{fig:PAPER_VM_Jx_all_3D} compares the evolution of $J_x$ with respect to $x_{ct}$ for the two- and three-dimensional models at $w_s=1.0L$. While the three-dimensional response is significantly smoother, a characteristic periodic pattern with pronounced peaks remains observable. These peaks correspond to phases of unsteady crack propagation induced by the pores and define the effective fracture toughness.
+Figure~\ref{fig:PAPER_VM_Jx_all_3D} compares the evolution of $J_x$ with respect to $x_{ct}$ for the two- and three-dimensional models at $w_s=1.0L$. While the three-dimensional response is significantly smoother, a characteristic periodic pattern with pronounced peaks remains observable. \added{The smoother behavior is consistent with the crack-front evolution shown in Fig.~\ref{fig:position_3D}: in contrast to the two-dimensional case in Fig.~\ref{fig:PAPER_00_xct_pf_vs_xct_KI_diamond}, the crack front can propagate between pores and is not trapped completely by a pore.} These peaks correspond to phases of unsteady crack propagation induced by the pores and define the \deleted{effective fracture toughness}\added{effective crack resistance}. \added{Nevertheless, Figs.~\ref{fig:position_3D} and~\ref{fig:PAPER_VM_Jx_all_3D} still show phases of nearly instantaneous crack advance and elevated values of the J-Integral when the crack front is forced to pass between pores. The comparison in Fig.~\ref{fig:PAPER_06b_Jx_vs_wsteg_2D_3D} therefore indicates that this mechanism still produces a toughening effect of comparable magnitude to the two-dimensional case.}
 
 The periodic pattern between pores one and three
 % two and four
- is considered representative of the microstructure and is shown for varying $w_s$ in Fig.~\ref{fig:test12q2_3D}. As in the two-dimensional case, $J_x^{\text{max}}$ increases with increasing wall width until saturation is reached.
+ is considered representative of the microstructure and is shown for varying $w_s$ in Fig.~\ref{fig:test12q2_3D}. As in the two-dimensional case, $J_{x,c}^{\text{eff}}$ increases with increasing wall width until saturation is reached.
 
-This trend is summarized in Fig.~\ref{fig:PAPER_06b_Jx_vs_wsteg_2D_3D}, where the effective fracture toughness $J_x^{\text{max}}$ is plotted as a function of $w_s$ for both the two- and three-dimensional models. The three-dimensional model exhibits a similar qualitative behavior, with a slightly reduced saturation value of $\approx1.15J_c^{\text{num,pl}}$ compared to $\approx1.25J_c^{\text{num,pl}}$ for the 2D case and a weaker dependence on $w_s$, 
+This trend is summarized in Fig.~\ref{fig:PAPER_06b_Jx_vs_wsteg_2D_3D}, where the \deleted{effective fracture toughness}\added{effective crack resistance} $J_{x,c}^{\text{eff}}$ is plotted as a function of $w_s$ for both the two- and three-dimensional models. The three-dimensional model exhibits a similar qualitative behavior, with a slightly reduced saturation value. This value is about $1.15J_c^{\text{num,pl}}$ in the three-dimensional model, whereas it is about $1.25J_c^{\text{num,pl}}$ in the \deleted{2D}\added{two-dimensional} model. The three-dimensional response also shows a weaker dependence on $w_s$, 
 reflecting the reduced crack trapping due to the additional degree of freedom for crack front propagation.
 
 
@@ -1124,15 +1166,15 @@ reflecting the reduced crack trapping due to the additional degree of freedom fo
 % $J_x$ and thus the effective fracture toughness. As expected the 3D record is steady in contrast 
 % to the 2D record, since the crack front can propagate in between pores uninterrupted. 
 % Noteworthy, the 3D simulation also quantitatively aligns well with the 2D simulation as in both 
-% case the effective fracture tougnness $J_x^{\rm{max}}$ reaches similar values. 
+% case the effective fracture tougnness $J_{x,c}^{\rm{eff}}$ reaches similar values. 
 
 % Again, we choose the pattern of $J_x$ as recorded between pores two and four as 
 % representative of the fracture behavior of the given microstructure. This pattern
 % is plotted for the 3D model for varying $w_s$ in Fig.~\ref{fig:test12q2_3D}. As in 
-% the 2D case $J_x^{\rm{max}}$ increases as the wall width $w_s$ gets larger.
+% the 2D case $J_{x,c}^{\rm{eff}}$ increases as the wall width $w_s$ gets larger.
 
 % This can also be verified in Fig.~\ref{fig:PAPER_06b_Jx_vs_wsteg_2D_3D} which shows 
-% only the maximum value $J_x^{\rm{max}}$, i.e. the effective fracture toughness, versus
+% only the effective crack resistance $J_{x,c}^{\rm{eff}}$ versus
 % the wall width for the 2D and 3D models and \vMLabel. 
 
 % For the 3D model, very similar observations can be made. The effective fracture
@@ -1140,7 +1182,7 @@ reflecting the reduced crack trapping due to the additional degree of freedom fo
 % with enhanced fracture toughness compared to a homogeneous material. For the 3D case and 
 % \vMLabel this value is about $\approx XXX J_c^{\text{num}}$. This value is close to 
 % but slightly smaller than the value of the 2D model for the same material law. 
-% In general, the dependence of $J_x^{\rm{max}}$ on $w_s$ is less pronounced than 
+% In general, the dependence of $J_{x,c}^{\rm{eff}}$ on $w_s$ is less pronounced than 
 % in the 2D case, as it is expected since the 3D model mitigates the effect of the pores as 
 % it does not force a complete renucleation of trapped cracks. 
 
@@ -1217,9 +1259,9 @@ reflecting the reduced crack trapping due to the additional degree of freedom fo
 
 % \begin{figure}[htb]
 %         \centering
-%         \resizebox{0.6\textwidth}{!}{\includegraphics[]{pics/PAPER_VM_Jxmax_vs_wsteg_2D_vs_3D.png}}
+%         \resizebox{0.6\textwidth}{!}{\includegraphics[]{pics/PAPER_VM_Jeff_vs_wsteg_2D_vs_3D.png}}
 %         % \resizebox{\textwidth}{!}{\input{pics/PAPER_04_Jx_vs_xct_all_ramberg_osgoods.pgf}}
-%         \caption{Maximum of the J-Integral $J_x^{\text{max}}$ vs. wall width $w_s$.}
+%         \caption{Effective crack resistance $J_{x,c}^{\text{eff}}$ vs. wall width $w_s$.}
 %         \label{fig:PAPER_06b_Jx_vs_wsteg_2D_3D}
 %     \label{fig:side_by_side_plots}
 % \end{figure}
@@ -1227,7 +1269,7 @@ reflecting the reduced crack trapping due to the additional degree of freedom fo
 
 \section{Conclusion and Outlook}
 
-In this work, we investigated the effective fracture toughness of porous materials under the
+In this work, we investigated the \deleted{effective fracture toughness}\added{effective crack resistance} of porous materials under the
 influence of ductile material behavior using a phase-field modeling framework. By employing a
 von~Mises-type constitutive law, we captured key aspects of ductile material behavior and
 compared the results against multiple linear elastic reference models. The methodology followed
@@ -1236,12 +1278,13 @@ surfing boundary conditions to simulate steady macroscopic crack propagation in 
 microstructure.
 
 As in previous work, the renucleation of crack tips that are trapped in pores is the determining
-process governing the effective fracture resistance of the material. Our results indicate that the
+process governing the \deleted{effective fracture resistance}\added{effective crack resistance} \deleted{of the material}\added{of the simplified porous material considered in these numerical experiments}. Our results indicate that the
 energy dissipation capacity of the material law during this renucleation process plays a more
-critical role for the effective fracture resistance than the tensile strength or the microscopic
+critical role for the \deleted{effective fracture resistance}\added{effective crack resistance} than the tensile strength or the microscopic
 energetic fracture resistance. Material models that allow for greater energy dissipation during
-renucleation result in higher effective toughness, underscoring the importance of considering
+renucleation result in higher \deleted{effective toughness}\added{effective crack resistance}, underscoring the importance of considering
 nonlinear constitutive effects when designing porous or additively manufactured materials.
+\added{The comparison shows that matching this stress level alone does not reproduce the crack resistance obtained with the ductile material law, because the additional energy dissipated during plastic deformation and crack re-nucleation is decisive.}
 
 The observed saturation behavior of the maximum J-integral with increasing wall width further
 highlights a scale-dependent toughening effect inherent to the microstructure. The saturation is
@@ -1250,12 +1293,12 @@ highlighting the fact that ductile material laws enlarge the length scale at whi
 can influence the renucleation process.
 
 A more realistic but still idealized three-dimensional model of porous metals showed very similar
-results. Although crack fronts are not fully trapped in pores in the 3D case, the pores still induce
+results. Although crack fronts are not fully trapped in pores in the \deleted{3D}\added{three-dimensional} case, the pores still induce
 phases of stress-driven instantaneous crack growth and a corresponding peak in the J-integral that
-defines the effective fracture toughness. Qualitatively, the same saturation behavior of the
-effective fracture toughness with respect to the wall width is observable in the 3D case. However,
+defines the \deleted{effective fracture toughness}\added{effective crack resistance}. Qualitatively, the same saturation behavior of the
+\deleted{effective fracture toughness}\added{effective crack resistance} with respect to the wall width is observable in the \deleted{3D}\added{three-dimensional} case. However,
 the dependence on the wall width is less pronounced. In addition, a good quantitative agreement
-between the 2D and 3D predictions for the effective fracture toughness is observed.
+between the \deleted{2D and 3D}\added{two- and three-dimensional} predictions for the \deleted{effective fracture toughness}\added{effective crack resistance} is observed.
 
 Looking forward, several promising research directions arise from this study. 
 First, more complex
@@ -1263,10 +1306,12 @@ and statistically representative microstructures—such
 as those derived from real micro-CT scans of
 porous or additively manufactured components—should 
 be considered in future work. Second, such studies would lend themselves to experimental
-verification in which the numerically determined effective fracture toughness is compared to 
+verification in which the numerically determined \deleted{effective fracture toughness}\added{effective crack resistance} is compared to 
 experimentally determined material parameters. Lastly, the influence of the 
 different parameters of the employed material model such as the initial yield stress and the hardening
 parameter should be investigated.
+\added{A further essential step is to investigate representativity more systematically, including variations of the initial crack position, crack-growth direction, microstructure realization, and domain size. Such studies are required before the operational effective crack resistance used here can be assessed as a material property in a stronger homogenization sense.}
+\added{A more detailed separation of the individual mechanisms, in particular stress-driven crack nucleation under plasticity, plastic dissipation during ligament failure, and subsequent crack growth between pores, should also be addressed in future work.}
 
 Overall, this work provides a robust and extensible framework for assessing the fracture resistance
 of complex materials and opens the path for integrated computational design of toughened porous and
@@ -1768,7 +1813,7 @@ This research was enabled by the FEniCSx library\added{~\cite{fenicsx_documentat
 %%\input sn-article.bbl
 % \input{./schueter_medda_mueller_klaim_2025.bbl}
 
-\begin{thebibliography}{24}
+\begin{thebibliography}{28}
 % BibTex style file: bmc-mathphys.bst (version 2.1), 2014-07-24
 \ifx \bisbn   \undefined \def \bisbn  #1{ISBN #1}\fi
 \ifx \binits  \undefined \def \binits#1{#1}\fi
@@ -1838,6 +1883,21 @@ This research was enabled by the FEniCSx library\added{~\cite{fenicsx_documentat
 \blocation{Berlin, Heidelberg}
 (\byear{2011}).
 \doiurl{10.1007/978-3-642-19240-1}
+\end{bbook}
+\endbibitem
+
+%%% 3
+\bibitem[\protect\citeauthoryear{Simo and Hughes}{1998}]{simo_computational_1998}
+\begin{bbook}
+\bauthor{\bsnm{Simo}, \binits{J.C.}},
+\bauthor{\bsnm{Hughes}, \binits{T.J.R.}}:
+\bbtitle{Computational Inelasticity}.
+\bsertitle{Interdisciplinary Applied Mathematics}.
+\bvolume{7}.
+\bpublisher{Springer},
+\blocation{New York}
+(\byear{1998}).
+\doiurl{10.1007/b98904}
 \end{bbook}
 \endbibitem
 
@@ -1980,6 +2040,77 @@ This research was enabled by the FEniCSx library\added{~\cite{fenicsx_documentat
 \endbibitem
 
 %%% 12
+\bibitem[\protect\citeauthoryear{Liu and Shen}{2025}]{liu_effective_2025}
+\begin{barticle}
+\bauthor{\bsnm{Liu}, \binits{S.}},
+\bauthor{\bsnm{Shen}, \binits{Y.}}:
+\batitle{Effective fracture toughness for heterogeneous materials accounting for the worst-case scenario}.
+\bjtitle{Journal of the Mechanics and Physics of Solids}
+\bvolume{205},
+\bfpage{106333}
+(\byear{2025})
+\doiurl{10.1016/j.jmps.2025.106333}
+\end{barticle}
+\endbibitem
+
+%%% 13
+\bibitem[\protect\citeauthoryear{Aranda and Segurado}{2025}]{aranda_cracklength_2025}
+\begin{barticle}
+\bauthor{\bsnm{Aranda}, \binits{P.}},
+\bauthor{\bsnm{Segurado}, \binits{J.}}:
+\batitle{A crack-length control technique for phase-field fracture in FFT homogenization}.
+\bjtitle{International Journal for Numerical Methods in Engineering}
+\bvolume{126},
+\bfpage{e7664}
+(\byear{2025})
+\doiurl{10.1002/nme.7664}
+\end{barticle}
+\endbibitem
+
+%%% 14
+\bibitem[\protect\citeauthoryear{Man et~al.}{2025}]{man_collaborative_2025}
+\begin{barticle}
+\bauthor{\bsnm{Man}, \binits{S.}},
+\bauthor{\bsnm{Yu}, \binits{H.}},
+\bauthor{\bsnm{Wang}, \binits{J.}}:
+\batitle{Collaborative control of crack guiding and trapping in bioinspired interfaces on effective toughness}.
+\bjtitle{Composite Structures}
+\bvolume{362},
+\bfpage{119094}
+(\byear{2025})
+\doiurl{10.1016/j.compstruct.2025.119094}
+\end{barticle}
+\endbibitem
+
+%%% 15
+\bibitem[\protect\citeauthoryear{Henry}{2025}]{henry_phasefield_2025}
+\begin{barticle}
+\bauthor{\bsnm{Henry}, \binits{H.}}:
+\batitle{Phase-field study of the effective fracture energy increase during dynamic crack propagation in disordered heterogeneous materials}.
+\bjtitle{Physical Review E}
+\bvolume{111},
+\bfpage{055502}
+(\byear{2025})
+\doiurl{10.1103/PhysRevE.111.055502}
+\end{barticle}
+\endbibitem
+
+%%% 16
+\bibitem[\protect\citeauthoryear{Hao et~al.}{2026}]{hao_variable_2026}
+\begin{barticle}
+\bauthor{\bsnm{Hao}, \binits{T.}},
+\bauthor{\bsnm{Piel}, \binits{A.}},
+\bauthor{\bsnm{Hossain}, \binits{Z.M.}}:
+\batitle{Variable stiffness boundary condition to determine effective toughness of heterogeneous materials}.
+\bjtitle{Computer Methods in Applied Mechanics and Engineering}
+\bvolume{448},
+\bfpage{118414}
+(\byear{2026})
+\doiurl{10.1016/j.cma.2025.118414}
+\end{barticle}
+\endbibitem
+
+%%% 17
 \bibitem[\protect\citeauthoryear{Ambati et~al.}{2015}]{ambati_review_2015}
 \begin{barticle}
 \bauthor{\bsnm{Ambati}, \binits{M.}},
@@ -1994,15 +2125,63 @@ This research was enabled by the FEniCSx library\added{~\cite{fenicsx_documentat
 \end{barticle}
 \endbibitem
 
+%%% 17
+\bibitem[\protect\citeauthoryear{Miehe et~al.}{2016a}]{miehe_phasefield_ductile_2016}
+\begin{barticle}
+\bauthor{\bsnm{Miehe}, \binits{C.}},
+\bauthor{\bsnm{Aldakheel}, \binits{F.}},
+\bauthor{\bsnm{Raina}, \binits{A.}}:
+\batitle{Phase field modeling of ductile fracture at finite strains: A variational gradient-extended plasticity-damage theory}.
+\bjtitle{International Journal of Plasticity}
+\bvolume{84},
+\bfpage{1}--\blpage{32}
+(\byear{2016})
+\doiurl{10.1016/j.ijplas.2016.04.011}
+\end{barticle}
+\endbibitem
+
+%%% 18
+\bibitem[\protect\citeauthoryear{Miehe et~al.}{2016b}]{miehe_phasefield_porous_2016}
+\begin{barticle}
+\bauthor{\bsnm{Miehe}, \binits{C.}},
+\bauthor{\bsnm{Kienle}, \binits{D.}},
+\bauthor{\bsnm{Aldakheel}, \binits{F.}},
+\bauthor{\bsnm{Teichtmeister}, \binits{S.}}:
+\batitle{Phase field modeling of fracture in porous plasticity: A variational gradient-extended Eulerian framework for the macroscopic analysis of ductile failure}.
+\bjtitle{Computer Methods in Applied Mechanics and Engineering}
+\bvolume{312},
+\bfpage{3}--\blpage{50}
+(\byear{2016})
+\doiurl{10.1016/j.cma.2016.09.028}
+\end{barticle}
+\endbibitem
+
+%%% 19
+\bibitem[\protect\citeauthoryear{Miehe et~al.}{2017}]{miehe_phasefield_implementation_2017}
+\begin{barticle}
+\bauthor{\bsnm{Miehe}, \binits{C.}},
+\bauthor{\bsnm{Aldakheel}, \binits{F.}},
+\bauthor{\bsnm{Teichtmeister}, \binits{S.}}:
+\batitle{Phase-field modeling of ductile fracture at finite strains: A robust variational-based numerical implementation of a gradient-extended theory by micromorphic regularization}.
+\bjtitle{International Journal for Numerical Methods in Engineering}
+\bvolume{111}(\bissue{9}),
+\bfpage{816}--\blpage{863}
+(\byear{2017})
+\doiurl{10.1002/nme.5484}
+\end{barticle}
+\endbibitem
+
 %%% 13
 \bibitem[\protect\citeauthoryear{Schl{\"u}ter and M{\"u}ller}{2025a}]{schlueter_ermittlung_2025}
-\begin{botherref}
-\oauthor{\bsnm{Schl{\"u}ter}, \binits{A.}},
-\oauthor{\bsnm{M{\"u}ller}, \binits{R.}}:
-{Ermittlung des effektiven Risswiderstands in por\"osen Materialien\dots}.
-https://dvm-wissen.de/de/57-tagung-des-dvm-arbeitskreises-bruchmechanik-und-bauteilsicherheit-/478-BR-2025-472.html?sp=undefined\&q=Kategorien-Bruchmechanik+und+Bauteilsicherheit
-(2025)
-\end{botherref}
+\begin{bchapter}
+\bauthor{\bsnm{Schl{\"u}ter}, \binits{A.}},
+\bauthor{\bsnm{M{\"u}ller}, \binits{R.}}:
+\bctitle{Ermittlung des effektiven Risswiderstands in por{\"o}sen Materialien mit einem Bruch-Phasenfeldmodell}.
+In: \bbtitle{57. Tagung des DVM-Arbeitskreises Bruchmechanik und Bauteilsicherheit}.
+\bpublisher{Deutscher Verband f{\"u}r Materialforschung und -pr{\"u}fung e.V.},
+\blocation{Berlin}
+(\byear{2025})
+\end{bchapter}
 \endbibitem
 
 %%% 14
@@ -2040,7 +2219,8 @@ https://dvm-wissen.de/de/57-tagung-des-dvm-arbeitskreises-bruchmechanik-und-baut
 \bauthor{\bsnm{{Nemat-Nasser}}, \binits{S.}},
 \bauthor{\bsnm{Hori}, \binits{M.}}:
 \bbtitle{Micromechanics: Overall Properties of Heterogeneous Materials}.
-\bpublisher{Elsevier}, \blocation{???}
+\bpublisher{Elsevier},
+\blocation{Amsterdam}
 (\byear{2013})
 \end{bbook}
 \endbibitem
@@ -2065,6 +2245,21 @@ pp. \bfpage{191}--\blpage{215}.
 \endbibitem
 
 %%% 18
+\bibitem[\protect\citeauthoryear{Kuhn et~al.}{2016}]{kuhn_phase_2016}
+\begin{barticle}
+\bauthor{\bsnm{Kuhn}, \binits{C.}},
+\bauthor{\bsnm{Noll}, \binits{T.}},
+\bauthor{\bsnm{M{\"u}ller}, \binits{R.}}:
+\batitle{On phase field modeling of ductile fracture}.
+\bjtitle{GAMM-Mitteilungen}
+\bvolume{39}(\bissue{1}),
+\bfpage{35}--\blpage{54}
+(\byear{2016})
+\doiurl{10.1002/gamm.201610003}
+\end{barticle}
+\endbibitem
+
+%%% 19
 \bibitem[\protect\citeauthoryear{Noll et~al.}{2020}]{noll_3d_2020}
 \begin{barticle}
 \bauthor{\bsnm{Noll}, \binits{T.}},
@@ -2080,7 +2275,7 @@ pp. \bfpage{191}--\blpage{215}.
 \end{barticle}
 \endbibitem
 
-%%% 19
+%%% 20
 \bibitem[\protect\citeauthoryear{Chambolle}{2004}]{chambolle_approximation_2004}
 \begin{barticle}
 \bauthor{\bsnm{Chambolle}, \binits{A.}}:
@@ -2093,7 +2288,7 @@ pp. \bfpage{191}--\blpage{215}.
 \end{barticle}
 \endbibitem
 
-%%% 20
+%%% 21
 \bibitem[\protect\citeauthoryear{Kuhn and M{\"u}ller}{2010}]{kuhn_continuum_2010}
 \begin{barticle}
 \bauthor{\bsnm{Kuhn}, \binits{C.}},

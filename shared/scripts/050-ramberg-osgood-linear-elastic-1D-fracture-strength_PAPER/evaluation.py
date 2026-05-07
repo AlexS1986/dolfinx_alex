@@ -39,8 +39,12 @@ E_total_vm = data_plasticity[2].values
 
 idx_peak = E_total_vm.argmax()
 E_peak = E_total_vm[idx_peak]
-E_min_after_peak = E_total_vm[idx_peak + 1:].min()
-max_energy_drop_vm = E_peak - E_min_after_peak
+if idx_peak + 1 < len(E_total_vm):
+    E_min_after_peak = E_total_vm[idx_peak + 1:].min()
+    max_energy_drop_vm = E_peak - E_min_after_peak
+else:
+    E_min_after_peak = E_peak
+    max_energy_drop_vm = 0.0
 
 print(f"Peak E_total (von Mises): {E_peak:.6e}")
 print(f"Min E_total after peak (von Mises): {E_min_after_peak:.6e}")
@@ -69,28 +73,28 @@ max_pi_plasticity = data_plasticity[2].max()
 # --------------------------------------------------
 # Labels (stress)
 # --------------------------------------------------
-label_ro = r"\textbf{RO} (max $\sigma^*$ $\approx$ " + f"{max_ro:.2f}" + r"$\sigma_y$)"
-label_gc1 = r"\textbf{Eq$\mathbf{J_c}$} (max $\sigma^*$ $\approx$ " + f"{max_gc1:.2f}" + r"$\sigma_y$)"
-label_gc_scaled = r"\textbf{Eq$\mathbf{\sigma^*}$} (max $\sigma^*$ $\approx$ " + f"{max_gc_scaled:.2f}" + r"$\sigma_y$)"
-label_gc_scaled_2 = r"\textbf{Eq$\mathbf{\Pi^*}$} (max $\sigma^*$ $\approx$ " + f"{max_gc_scaled_2:.2f}" + r"$\sigma_y$)"
+label_ro = r"\textbf{[RO]} (max $\sigma^*$ $\approx$ " + f"{max_ro:.2f}" + r"$\sigma_y$)"
+label_gc1 = r"\textbf{[Eq$\mathbf{J_c}$]} (max $\sigma^*$ $\approx$ " + f"{max_gc1:.2f}" + r"$\sigma_y$)"
+label_gc_scaled = r"\textbf{[Eq$\mathbf{\sigma^*}$]} (max $\sigma^*$ $\approx$ " + f"{max_gc_scaled:.2f}" + r"$\sigma_y$)"
+label_gc_scaled_2 = r"\textbf{[Eq$\mathbf{\Pi^*}$]} (max $\sigma^*$ $\approx$ " + f"{max_gc_scaled_2:.2f}" + r"$\sigma_y$)"
 label_gc_mu025 = (
-    r"\textbf{Reduced stiffness} ($\mu = 0.25\mu_0$, "
+    r"\textbf{[Reduced stiffness]} ($\mu = 0.25\mu_0$, "
     r"max $\sigma^*$ $\approx$ " + f"{max_gc_mu025:.2f}" + r"$\sigma_y$)"
 )
-label_plasticity = r"\textbf{Plasticity} (max $\sigma^*$ $\approx$ " + f"{max_plasticity:.2f}" + r"$\sigma_y$)"
+label_plasticity = r"\textbf{[Plasticity]} (max $\sigma^*$ $\approx$ " + f"{max_plasticity:.2f}" + r"$\sigma_y$)"
 
 # --------------------------------------------------
 # Labels (energy)
 # --------------------------------------------------
-label_pi_ro = r"\textbf{RO} (max $\Pi^*$ $\approx$ " + f"{max_pi_ro:.2f}" + r"$J_c^0L$)"
-label_pi_gc1 = r"\textbf{Eq$\mathbf{J_c}$} (max $\Pi^*$ $\approx$ " + f"{max_pi_gc1:.2f}" + r"$J_c^0L$)"
-label_pi_gc_scaled = r"\textbf{Eq$\mathbf{\sigma^*}$} (max $\Pi^*$ $\approx$ " + f"{max_pi_gc_scaled:.2f}" + r"$J_c^0L$)"
-label_pi_gc_scaled_2 = r"\textbf{Eq$\mathbf{\Pi^*}$} (max $\Pi^*$ $\approx$ " + f"{max_pi_gc_scaled_2:.2f}" + r"$J_c^0L$)"
+label_pi_ro = r"\textbf{[RO]} (max $\Pi^*$ $\approx$ " + f"{max_pi_ro:.2f}" + r"$J_c^0L$)"
+label_pi_gc1 = r"\textbf{[Eq$\mathbf{J_c}$]} (max $\Pi^*$ $\approx$ " + f"{max_pi_gc1:.2f}" + r"$J_c^0L$)"
+label_pi_gc_scaled = r"\textbf{[Eq$\mathbf{\sigma^*}$]} (max $\Pi^*$ $\approx$ " + f"{max_pi_gc_scaled:.2f}" + r"$J_c^0L$)"
+label_pi_gc_scaled_2 = r"\textbf{[Eq$\mathbf{\Pi^*}$]} (max $\Pi^*$ $\approx$ " + f"{max_pi_gc_scaled_2:.2f}" + r"$J_c^0L$)"
 label_pi_gc_mu025 = (
-    r"\textbf{Reduced stiffness} ($\mu = 0.25\mu_0$, "
+    r"\textbf{[Reduced stiffness]} ($\mu = 0.25\mu_0$, "
     r"max $\Pi^*$ $\approx$ " + f"{max_pi_gc_mu025:.2f}" + r"$J_c^0L$)"
 )
-label_pi_plasticity = r"\textbf{Plasticity} (max $\Pi^*$ $\approx$ " + f"{max_pi_plasticity:.2f}" + r"$J_c^0L$)"
+label_pi_plasticity = r"\textbf{[Plasticity]} (max $\Pi^*$ $\approx$ " + f"{max_pi_plasticity:.2f}" + r"$J_c^0L$)"
 
 # --------------------------------------------------
 # Output files
@@ -167,6 +171,4 @@ ev.plot_multiple_columns(
     legend_fontsize=20,
     figsize=(10, 8)
 )
-
-
 

@@ -16,7 +16,31 @@ from collections import defaultdict
 from typing import Callable, List, Dict, Tuple
 
 import pandas as pd
-import alex.postprocessing as pp
+try:
+    import alex.postprocessing as pp
+except ModuleNotFoundError:
+    class _PostprocessingFallback:
+        @staticmethod
+        def read_parameters_file(file_path):
+            data_dict = {}
+            with open(file_path, "r") as file:
+                for line in file:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    key, value = line.split("=")
+                    key = key.strip()
+                    value = value.strip()
+                    try:
+                        data_dict[key] = int(value)
+                    except ValueError:
+                        try:
+                            data_dict[key] = float(value)
+                        except ValueError:
+                            data_dict[key] = value
+            return data_dict
+
+    pp = _PostprocessingFallback()
 
 
 

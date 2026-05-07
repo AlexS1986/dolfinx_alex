@@ -11,12 +11,29 @@ import matplotlib.colors as mcolors
 import os
 import numpy as np
 import math
-import alex.postprocessing as pp
-import alex.homogenization as hom
-import alex.linearelastic as le
 import alex.evaluation as ev
 from scipy.signal import savgol_filter
 import evaluation_utils as ev_ut
+
+
+def read_parameters_file(file_path):
+    parameters = {}
+    with open(file_path, "r") as file:
+        for line in file:
+            line = line.strip()
+            if not line:
+                continue
+            key, value = line.split("=")
+            key = key.strip()
+            value = value.strip()
+            try:
+                parameters[key] = int(value)
+            except ValueError:
+                try:
+                    parameters[key] = float(value)
+                except ValueError:
+                    parameters[key] = value
+    return parameters
 
 # -------------------------------
 # BASIC PARAMETERS
@@ -28,7 +45,7 @@ starting_hole_to_evaluate = 2
 
 steg_width_label = "$w_s$"
 J_x_label = "$J_{x} / J_c^{\\mathrm{num}}$"
-J_x_max_label = "$J_{x}^{\\mathrm{max}} / J_c^{\\mathrm{num}}$"
+J_xc_eff_label = "$J_{x,c}^{\\mathrm{eff}} / J_c^{\\mathrm{num}}$"
 crack_tip_position_label = "$x_{\\mathrm{ct}}$"
 t_label = "$t / [ L / {\\dot{x}}_{\\mathrm{bc}} ]$"
 
@@ -95,7 +112,7 @@ ev.plot_columns_multiple_y(
 # READ HOLE POSITIONS
 # -------------------------------
 parameter_path = os.path.join(simulation_data_folder_Jc, "parameters.txt")
-parameters = pp.read_parameters_file(parameter_path)
+parameters = read_parameters_file(parameter_path)
 
 start_positions, end_positions = ev_ut.ramberg_osgood_positions(
     int(parameters["nholes"]),
@@ -107,9 +124,9 @@ hole_positions = sorted(start_positions + end_positions)
 # -------------------------------
 # LABELS
 # -------------------------------
-sig_label = r"\textbf{Eq}$\mathbf{\sigma^*}$"
-elastic_label_Jc = r"\textbf{Eq}$\mathbf{J_c}$"
-vonmises_label = r"\textbf{vM}"
+sig_label = r"\textbf{[Eq$\mathbf{\sigma^*}$]}"
+elastic_label_Jc = r"\textbf{[Eq$\mathbf{J_c}$]}"
+vonmises_label = r"\textbf{[vM]}"
 
 xlabel = "$x_{ct} / L$"
 ylabel = "$J_{x} / J_c^{\\mathrm{num}}$"
@@ -160,7 +177,7 @@ ev.plot_columns(
 )
 
 # =====================================================
-# PAPER_06b-TYPE PLOT (Jx_max vs w_steg)
+# PAPER_06b-TYPE PLOT (J_x,c^eff vs w_steg)
 # ORDER: vM → Jc → Sigma*
 # =====================================================
 
@@ -228,7 +245,7 @@ ev.plot_multiple_lines(
     x_values=w_steg_master,
     y_values=Jx_max_master,
     x_label="$w_s / L$",
-    y_label=J_x_max_label,
+    y_label=J_xc_eff_label,
     legend_labels=[vonmises_label, elastic_label_Jc, sig_label],
     output_file=output_file,
     usetex=True,
