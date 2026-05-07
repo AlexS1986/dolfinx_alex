@@ -4,7 +4,7 @@ set -euo pipefail
 SPLIT_VALUES=(spectral volumetric)
 EPSILON_VALUES=(0.015 0.03 0.045 0.060)
 TEMPLATE_FOLDER="000_template"
-INPUT_ROOT_NAME="${INPUT_ROOT_NAME:-260504_input}"
+INPUT_ROOT_NAME="${INPUT_ROOT_NAME:-260504_dcb_beta_phi_a_rho_var_min_max}"
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 working_dir=$(basename "$SCRIPT_DIR")
@@ -44,7 +44,9 @@ copy_input_data() {
             -o -name 'cell_data.csv' \
             -o -name 'connectivity.csv' \
             -o -name 'node_coords.csv' \
-            -o -name 'points_data.csv' \)
+            -o -name 'points_data.csv' \
+            -o -name 'mesh.xdmf' \
+            -o -name 'mesh.h5' \)
     )
 }
 

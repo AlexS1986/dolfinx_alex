@@ -64,7 +64,7 @@ for folder_path in "${BASE_DIR}"/simulation_*; do
     else
         split=$(extract_token "$folder_name" "SPLIT")
         epsilon=$(epsilon_from_label "$(extract_token "$folder_name" "EPS")")
-        input_root_name="260504_input"
+        input_root_name="260504_dcb_beta_phi_a_rho_var_min_max"
     fi
 
     if [ -z "$split" ] || [ -z "$epsilon" ]; then
