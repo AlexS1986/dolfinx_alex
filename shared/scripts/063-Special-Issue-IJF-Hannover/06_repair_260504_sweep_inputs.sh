@@ -29,13 +29,8 @@ copy_required_inputs() {
         cp -p "$source_file" "$target_file"
     done < <(
         find "$source_root" -type f \
-            \( -name 'README.txt' \
-            -o -name 'params.txt' \
-            -o -name 'active_cells_mapping' \
-            -o -name 'cell_data.csv' \
-            -o -name 'connectivity.csv' \
-            -o -name 'node_coords.csv' \
-            -o -name 'points_data.csv' \
+            \( -name 'active_cells_mapping' \
+            -o -name '*.csv' \
             -o -name 'mesh.xdmf' \
             -o -name 'mesh.h5' \)
     )
