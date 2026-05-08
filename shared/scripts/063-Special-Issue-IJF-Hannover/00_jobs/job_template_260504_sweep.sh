@@ -71,6 +71,16 @@ while IFS= read -r host_folder; do
         echo "Mesh conversion did not create: $host_folder/dlfx_mesh_1.xdmf"
         exit 1
     fi
+
+    echo "========================================="
+    echo "Running phase-field simulation for: $container_folder"
+    echo "Started at $(date)"
+    echo "========================================="
+
+    srun -n "$processor_number" apptainer exec \
+        --bind "$bindpath" \
+        "$container" \
+        python3 /work/01_phasefield_dcb_260504_folder.py "$container_folder" "$mesh_folder_count" auto "$split" --epsilon "$epsilon"
 done < <(
     find "$input_root_host" -type f -name mesh.xdmf \
         -exec dirname {} \; | sort
@@ -81,16 +91,4 @@ if [ "$mesh_folder_count" -eq 0 ]; then
     exit 1
 fi
 
-echo "========================================="
-echo "Running phase-field simulation"
-echo "Started at $(date)"
-echo "========================================="
-
-srun -n "$processor_number" apptainer exec \
-    --bind "$bindpath" \
-    "$container" \
-    python3 /work/01_phasefield_dcb_260504_folder.py "$input_root_container" auto "$split" --epsilon "$epsilon"
-
-exitcode=$?
-echo "Job finished at $(date) with exit code $exitcode"
-exit $exitcode
+echo "Job finished at $(date)"
