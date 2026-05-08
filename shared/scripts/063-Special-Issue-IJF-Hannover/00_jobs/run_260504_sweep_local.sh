@@ -39,8 +39,20 @@ if [ "$run_mesh_conversion" != "0" ] && [ ! -f "$mesh_script" ]; then
     exit 1
 fi
 
+mapfile -t mesh_folders < <(
+    find "$input_root" -type f -name mesh.xdmf \
+        -exec dirname {} \; | sort
+)
+
+if [ "${#mesh_folders[@]}" -eq 0 ]; then
+    echo "No mesh.xdmf leaf folders found below $input_root"
+    exit 1
+fi
+
+echo "Found ${#mesh_folders[@]} mesh leaf folders below $input_root"
+
 mesh_folder_count=0
-while IFS= read -r host_folder; do
+for host_folder in "${mesh_folders[@]}"; do
     mesh_folder_count=$((mesh_folder_count + 1))
     mapping="$host_folder/active_cells_mapping"
 
@@ -72,19 +84,11 @@ while IFS= read -r host_folder; do
     echo "========================================="
 
     if [ "$processor_number" -eq 1 ]; then
-        "$python_bin" "$phasefield_script" "$host_folder" "$mesh_folder_count" auto "$split" --epsilon "$epsilon"
+        "$python_bin" "$phasefield_script" "$host_folder" "$mesh_folder_count" auto "$split" --epsilon "$epsilon" </dev/null
     else
         "$mpiexec_bin" -n "$processor_number" \
-            "$python_bin" "$phasefield_script" "$host_folder" "$mesh_folder_count" auto "$split" --epsilon "$epsilon"
+            "$python_bin" "$phasefield_script" "$host_folder" "$mesh_folder_count" auto "$split" --epsilon "$epsilon" </dev/null
     fi
-done < <(
-    find "$input_root" -type f -name mesh.xdmf \
-        -exec dirname {} \; | sort
-)
-
-if [ "$mesh_folder_count" -eq 0 ]; then
-    echo "No mesh.xdmf leaf folders found below $input_root"
-    exit 1
-fi
+done
 
 echo "Local sweep finished at $(date)"

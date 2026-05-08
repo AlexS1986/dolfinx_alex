@@ -43,8 +43,20 @@ fi
 
 cd "$working_directory"
 
+mapfile -t mesh_folders < <(
+    find "$input_root_host" -type f -name mesh.xdmf \
+        -exec dirname {} \; | sort
+)
+
+if [ "${#mesh_folders[@]}" -eq 0 ]; then
+    echo "No mesh.xdmf leaf folders found below $input_root_host"
+    exit 1
+fi
+
+echo "Found ${#mesh_folders[@]} mesh leaf folders below $input_root_host"
+
 mesh_folder_count=0
-while IFS= read -r host_folder; do
+for host_folder in "${mesh_folders[@]}"; do
     mesh_folder_count=$((mesh_folder_count + 1))
     relative_folder="${host_folder#$working_directory/}"
     container_folder="/work/$relative_folder"
@@ -65,7 +77,8 @@ while IFS= read -r host_folder; do
     srun -n 1 apptainer exec \
         --bind "$bindpath" \
         "$container" \
-        python3 /work/04_mesh2dlfxmesh.py "$container_folder" 1
+        python3 /work/04_mesh2dlfxmesh.py "$container_folder" 1 \
+        </dev/null
 
     if [ ! -f "$host_folder/dlfx_mesh_1.xdmf" ]; then
         echo "Mesh conversion did not create: $host_folder/dlfx_mesh_1.xdmf"
@@ -80,15 +93,8 @@ while IFS= read -r host_folder; do
     srun -n "$processor_number" apptainer exec \
         --bind "$bindpath" \
         "$container" \
-        python3 /work/01_phasefield_dcb_260504_folder.py "$container_folder" "$mesh_folder_count" auto "$split" --epsilon "$epsilon"
-done < <(
-    find "$input_root_host" -type f -name mesh.xdmf \
-        -exec dirname {} \; | sort
-)
-
-if [ "$mesh_folder_count" -eq 0 ]; then
-    echo "No mesh.xdmf leaf folders found below $input_root_host"
-    exit 1
-fi
+        python3 /work/01_phasefield_dcb_260504_folder.py "$container_folder" "$mesh_folder_count" auto "$split" --epsilon "$epsilon" \
+        </dev/null
+done
 
 echo "Job finished at $(date)"
