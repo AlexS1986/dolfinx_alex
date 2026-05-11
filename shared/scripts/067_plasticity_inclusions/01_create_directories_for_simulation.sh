@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define specific values for WSTEG (array of values to vary)
-WSTEG_VALUES=(0.25 0.375 0.4 0.6 0.75 1.0 2.0 3.0 4.0)  # Example WSTEG values
+WSTEG_VALUES=(0.4  0.5 0.6 0.75 1.0 2.0 3.0 4.0)  # Example WSTEG values
 INCLUSION_STIFFNESS_SCALES=(0.5 1.0 1.5)
 INCLUSION_GC_SCALES=(0.5 1.0 1.5)
 

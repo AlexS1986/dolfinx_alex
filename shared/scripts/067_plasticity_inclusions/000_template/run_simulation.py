@@ -30,7 +30,7 @@ from datetime import datetime
 class StopSimulation(Exception):
     pass
 
-dlfx.log.set_log_level(dlfx.log.LogLevel.INFO)
+#dlfx.log.set_log_level(dlfx.log.LogLevel.INFO)
 
 script_path = os.path.dirname(__file__)
 script_name_without_extension = os.path.splitext(os.path.basename(__file__))[0]
@@ -66,6 +66,8 @@ try:
     parser.add_argument("--gc_micro_param", type=float, help="Deprecated alias for --gc_matrix_param")
     parser.add_argument("--eps_param", type=float, required=True, help="Epsilon factor parameter")
     parser.add_argument("--element_order", type=int, required=True, help="Element order")
+    parser.add_argument("--postprocessing_interval", type=int, default=400, help="Write full XDMF output every N successful time steps")
+    parser.add_argument("--write_material_fields_first_step", action="store_true", help="Write lam, mue, sig_y, and gc fields once at the first successful time step")
     args = parser.parse_args()
     mesh_file = args.mesh_file
     in_crack_length = args.in_crack_length
@@ -82,6 +84,8 @@ try:
     sig_y_inclusion = args.sig_y_inclusion_param if args.sig_y_inclusion_param is not None else sig_y_matrix
     hard_inclusion = args.hard_inclusion_param if args.hard_inclusion_param is not None else hard_matrix
     eps_param = args.eps_param
+    postprocessing_interval_param = args.postprocessing_interval
+    write_material_fields_first_step = args.write_material_fields_first_step
 except (argparse.ArgumentError, SystemExit, Exception) as e:
     if rank == 0:
         print("Could not parse arguments")
@@ -101,6 +105,8 @@ except (argparse.ArgumentError, SystemExit, Exception) as e:
     hard_inclusion = hard_matrix
     mesh_file = "mesh_fracture_adaptive.xdmf"
     eps_param = 0.1
+    postprocessing_interval_param = 400
+    write_material_fields_first_step = False
     
 parameters = pp.read_parameters_file(parameter_path)
 la_effective = parameters["lam_effective"]
@@ -108,6 +114,7 @@ mu_effective = parameters["mue_effective"]
 wsteg = parameters["wsteg"]
 dhole = parameters["dhole"]
 w_cell = wsteg + dhole
+in_crack_length = w_cell
 
 if rank == 0:
         print(f"Initial crack length: {in_crack_length}")
@@ -164,6 +171,10 @@ la = set_cell_function_three_materials(domain, la_effective, la_matrix, la_inclu
 mu = set_cell_function_three_materials(domain, mu_effective, mu_matrix, mu_inclusion)
 gc = set_cell_function_three_materials(domain, gc_matrix, gc_matrix, gc_inclusion)
 sig_y = set_cell_function_three_materials(domain, sig_y_matrix, sig_y_matrix, sig_y_inclusion)
+la.name = "la"
+mu.name = "mue"
+gc.name = "gc"
+sig_y.name = "sig_y"
 hard = set_cell_function_three_materials(domain, hard_matrix, hard_matrix, hard_inclusion)
 
 eta = dlfx.fem.Constant(domain, 0.00001)
@@ -204,7 +215,7 @@ quadrature_points, cells = alex.plasticity.get_quadraturepoints_and_cells_for_in
 K1 = dlfx.fem.Constant(domain, 1.0 * math.sqrt(1.0 * 2.5))
 
 # define crack by boundary
-crack_tip_start_location_x = in_crack_length
+crack_tip_start_location_x = x_min_all +  in_crack_length
 crack_tip_start_location_y = 0.0 #(y_max_all + y_min_all) / 2.0
 def crack(x):
     x_log = x[0] < (crack_tip_start_location_x)
@@ -255,11 +266,6 @@ def before_first_time_step():
     # prepare xdmf output 
     pp.write_meshoutputfile(domain, outputfile_xdmf_path, comm)
 
-def before_each_time_step(t,dt):
-    # report solution status
-    if rank == 0:
-        sol.print_time_and_dt(t,dt)
-        
 def get_residuum_and_gateaux(delta_t: dlfx.fem.Constant):
     [Res, dResdw] = phaseFieldProblem.prep_newton(
         w=w,wm1=wm1,dw=dw,ddw=ddw,lam=la, mu = mu,
@@ -347,15 +353,38 @@ ds_top_tagged = ufl.Measure('ds', domain=domain, subdomain_data=top_surface_tags
 Work = dlfx.fem.Constant(domain,0.0)
 
 success_timestep_counter = dlfx.fem.Constant(domain,0.0)
-postprocessing_interval = dlfx.fem.Constant(domain,400.0)
+postprocessing_interval = dlfx.fem.Constant(domain,float(postprocessing_interval_param))
+dt_min_stop = 1.0e-14
 TEN = dlfx.fem.functionspace(domain, ("DP", deg_quad-1, (dim, dim)))
 
 
 S0e = basix.ufl.element("DP", domain.basix_cell(), 0, shape=())
 S0 = dlfx.fem.functionspace(domain, S0e)
 
+def write_material_fields(t):
+    pp.write_field(domain, outputfile_xdmf_path, la, t, comm, S=S0)
+    pp.write_field(domain, outputfile_xdmf_path, mu, t, comm, S=S0)
+    pp.write_field(domain, outputfile_xdmf_path, sig_y, t, comm, S=S0)
+    pp.write_field(domain, outputfile_xdmf_path, gc, t, comm, S=S0)
+
+def dt_as_float(dt):
+    value = getattr(dt, "value", dt)
+    return float(np.asarray(value).reshape(-1)[0])
+
+def stop_if_dt_too_small(dt):
+    dt_value = dt_as_float(dt)
+    if dt_value < dt_min_stop:
+        raise StopSimulation(f"time step dt={dt_value:.3e} below {dt_min_stop:.1e}")
+
+def before_each_time_step(t,dt):
+    stop_if_dt_too_small(dt)
+    # report solution status
+    if rank == 0:
+        sol.print_time_and_dt(t,dt)
+
 def after_timestep_success(t,dt,iters):
     um1, _ = ufl.split(wm1)
+    stop_if_dt_too_small(dt)
     
     
     # H_expr = phaseFieldProblem.update_H(u,delta_u=delta_u,lam=la,mu=mu)
@@ -440,6 +469,8 @@ def after_timestep_success(t,dt,iters):
     wrestart.x.array[:] = w.x.array[:]
     # break out of loop if no postprocessing required
     success_timestep_counter.value = success_timestep_counter.value + 1.0
+    if write_material_fields_first_step and int(success_timestep_counter.value) == 1:
+        write_material_fields(t)
     # break out of loop if no postprocessing required
     if not int(success_timestep_counter.value) % int(postprocessing_interval.value) == 0: 
         return 
@@ -451,6 +482,7 @@ def after_timestep_success(t,dt,iters):
     pp.write_phasefield_mixed_solution(domain,outputfile_xdmf_path, w, t, comm)
 
 def after_timestep_restart(t,dt,iters):
+    stop_if_dt_too_small(dt)
     w.x.array[:] = wrestart.x.array[:]
 
 def after_last_timestep():
@@ -482,6 +514,8 @@ parameters_to_write = {
         'sig_y_inclusion_simulation': sig_y_inclusion,
         'hard_inclusion_simulation': hard_inclusion,
         'eps_simulation': eps_param,
+        'postprocessing_interval': postprocessing_interval.value,
+        'write_material_fields_first_step': write_material_fields_first_step,
         'eps': epsilon.value,
         'eta': eta.value,
         'mob': Mob.value,
@@ -578,6 +612,8 @@ finally:
         "sig_y_inclusion_simulation": sig_y_inclusion,
         "hard_inclusion_simulation": hard_inclusion,
         "eps_simulation": eps_param,
+        "postprocessing_interval": postprocessing_interval.value,
+        "write_material_fields_first_step": write_material_fields_first_step,
         "eps": epsilon.value,
         "eta": eta.value,
         "mob": Mob.value,
@@ -603,4 +639,3 @@ finally:
         print(f"Created directory: {target_directory}")
         copy_files_to_directory(files_to_copy, target_directory)
         print("Files copied successfully.")    
-

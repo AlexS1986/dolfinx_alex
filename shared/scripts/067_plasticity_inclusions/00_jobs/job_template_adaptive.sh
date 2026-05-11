@@ -38,6 +38,7 @@ HARD_INCLUSION_PARAM={HARD_INCLUSION_PARAM}
 # Calculate EPS_PARAM as 6 times E0 using awk if not provided by user
 EPS_PARAM={EPS_PARAM}
 ELEMENT_ORDER={ELEMENT_ORDER}
+POSTPROCESSING_INTERVAL=200
 
 LCRACK=$(awk "BEGIN {print $WSTEG + $DHOLE}")
 
@@ -54,13 +55,12 @@ srun -n 1 apptainer exec --bind $HOME/dolfinx_alex/shared:/home,$working_directo
 srun -n 1 apptainer exec --bind $HOME/dolfinx_alex/shared:/home,$working_directory:/work $HOME/dolfinx_alex/alex-dolfinx.sif python3 $working_directory/get_mesh_info.py --mesh_file "$MESH_FILE"
 
 # Parameters for simulation_script.py (passed as command-line arguments)
-srun -n {PROCESSOR_NUMBER} apptainer exec --bind $HOME/dolfinx_alex/shared:/home,$working_directory:/work $HOME/dolfinx_alex/alex-dolfinx.sif python3 $working_directory/run_simulation.py --mesh_file "$MESH_FILE" --in_crack_length "$LCRACK" --lam_matrix_param "$LAM_MATRIX_PARAM" --mue_matrix_param "$MUE_MATRIX_PARAM" --gc_matrix_param "$GC_MATRIX_PARAM" --sig_y_matrix_param "$SIG_Y_MATRIX_PARAM" --hard_matrix_param "$HARD_MATRIX_PARAM" --lam_inclusion_param "$LAM_INCLUSION_PARAM" --mue_inclusion_param "$MUE_INCLUSION_PARAM" --gc_inclusion_param "$GC_INCLUSION_PARAM" --sig_y_inclusion_param "$SIG_Y_INCLUSION_PARAM" --hard_inclusion_param "$HARD_INCLUSION_PARAM" --eps_param "$EPS_PARAM" --element_order "$ELEMENT_ORDER"
+srun -n {PROCESSOR_NUMBER} apptainer exec --bind $HOME/dolfinx_alex/shared:/home,$working_directory:/work $HOME/dolfinx_alex/alex-dolfinx.sif python3 $working_directory/run_simulation.py --mesh_file "$MESH_FILE" --in_crack_length "$LCRACK" --lam_matrix_param "$LAM_MATRIX_PARAM" --mue_matrix_param "$MUE_MATRIX_PARAM" --gc_matrix_param "$GC_MATRIX_PARAM" --sig_y_matrix_param "$SIG_Y_MATRIX_PARAM" --hard_matrix_param "$HARD_MATRIX_PARAM" --lam_inclusion_param "$LAM_INCLUSION_PARAM" --mue_inclusion_param "$MUE_INCLUSION_PARAM" --gc_inclusion_param "$GC_INCLUSION_PARAM" --sig_y_inclusion_param "$SIG_Y_INCLUSION_PARAM" --hard_inclusion_param "$HARD_INCLUSION_PARAM" --eps_param "$EPS_PARAM" --element_order "$ELEMENT_ORDER" --postprocessing_interval "$POSTPROCESSING_INTERVAL"
 
 EXITCODE=$?
 
 # JobScript mit dem Status des wiss. Programms beenden
 exit $EXITCODE
-
 
 
 

@@ -16,53 +16,92 @@ from matplotlib.tri import Triangulation
 
 
 RESULT_RE = re.compile(
-    r"^results_(?P<case>.+)_(?P<split>spectral|volumetric)(?:_eps(?P<epsilon>[0-9_m]+))?\.xdmf$"
+    r"^results_(?P<case>.+)_(?P<split>spectral|volumetric)(?:_eps(?P<epsilon>[0-9_]+))?\.xdmf$"
+)
+
+SIMULATION_FOLDER_RE = re.compile(
+    r"^simulation_.*_SPLIT(?P<split>spectral|volumetric)_EPS(?P<epsilon>[0-9_]+)$"
 )
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Plot the final phase-field s from all results_*.xdmf files below a resource folder."
+        description="Plot the final phase-field s from all results_*.xdmf files below the results tree."
     )
     parser.add_argument(
-        "resource_roots",
+        "result_roots",
         nargs="*",
         type=Path,
-        default=[Path("resources")],
-        help="Resource folders to scan recursively. Defaults to ./resources.",
+        default=None,
+        help="Result folders to scan recursively. Defaults to ./results next to this script.",
     )
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("phasefield_s_overview.pdf"),
-        help="Output PDF file.",
+        default=None,
+        help="Output PDF file. Defaults to ./plots/phasefield_s_overview.pdf next to this script.",
     )
     parser.add_argument(
         "--columns",
         type=int,
         default=8,
-        help="Number of plot columns per page.",
+        help="Minimum number of width units per page. a=3 uses one unit, a=6 uses two.",
     )
     parser.add_argument(
         "--field",
         default="s",
         help="HDF5 function field to plot. Defaults to phase-field s.",
     )
+    parser.add_argument(
+        "--fixed-beta",
+        type=float,
+        default=0.01,
+        help="Beta value to plot when beta variants are omitted. Defaults to 0.01.",
+    )
+    parser.add_argument(
+        "--include-beta-variants",
+        action="store_true",
+        help="Plot all beta variants instead of selecting one beta slice.",
+    )
+    parser.add_argument(
+        "--cmap",
+        default="coolwarm",
+        help="Matplotlib colormap for the contour plot. Defaults to coolwarm, blue to red.",
+    )
     return parser.parse_args()
 
 
-def case_sort_key(path: Path) -> tuple[str, int, float, float, float, str]:
+def case_sort_key(path: Path) -> tuple[str, float, int, float, float, float, str]:
     match = RESULT_RE.match(path.name)
     if not match:
         return (path.name, math.inf, math.inf, math.inf, math.inf, "")
     case = match.group("case")
     split = match.group("split")
+    epsilon = parse_epsilon(path, match)
     mode = case.rsplit("_", 1)[-1]
     mode_order = {"min": 0, "max": 1, "vary": 2}.get(mode, 99)
     beta = extract_number(case, r"beta_(0(?:_\d+)?)")
     a = extract_number(case, r"_a_(\d+)")
     rho = extract_number(case, r"_rho_(0_\d+)")
-    return (split, mode_order, beta, a, rho, case)
+    return (split, epsilon, mode_order, beta, a, rho, case)
+
+
+def parse_token_number(token: str | None) -> float:
+    if token is None:
+        return math.inf
+    return float(token.replace("_", "."))
+
+
+def parse_epsilon(path: Path, result_match: re.Match[str] | None = None) -> float:
+    if result_match is None:
+        result_match = RESULT_RE.match(path.name)
+    if result_match and result_match.group("epsilon"):
+        return parse_token_number(result_match.group("epsilon"))
+    for parent in path.parents:
+        folder_match = SIMULATION_FOLDER_RE.match(parent.name)
+        if folder_match:
+            return parse_token_number(folder_match.group("epsilon"))
+    return math.inf
 
 
 def extract_number(text: str, pattern: str) -> float:
@@ -79,20 +118,121 @@ def split_and_case(path: Path) -> tuple[str, str]:
     return (match.group("split"), match.group("case"))
 
 
-def readable_label(case: str) -> str:
+def split_case_epsilon(path: Path) -> tuple[str, str, float]:
+    match = RESULT_RE.match(path.name)
+    if not match:
+        return ("unknown", path.stem, math.inf)
+    return (match.group("split"), match.group("case"), parse_epsilon(path, match))
+
+
+def beta_from_path(path: Path) -> float:
+    match = RESULT_RE.match(path.name)
+    if not match:
+        return math.inf
+    return extract_number(match.group("case"), r"beta_(0(?:_\d+)?)")
+
+
+def a_from_path(path: Path) -> float:
+    match = RESULT_RE.match(path.name)
+    if not match:
+        return math.inf
+    return extract_number(match.group("case"), r"_a_(\d+)")
+
+
+def rho_from_path(path: Path) -> float:
+    match = RESULT_RE.match(path.name)
+    if not match:
+        return math.inf
+    return extract_number(match.group("case"), r"_rho_(0_\d+)")
+
+
+def width_units_for_path(path: Path) -> int:
+    a_value = a_from_path(path)
+    if not math.isfinite(a_value):
+        return 1
+    return max(1, round(a_value / 3.0))
+
+
+def layout_key_for_path(path: Path, include_beta: bool) -> tuple[float, float] | tuple[float, float, float]:
+    if include_beta:
+        return (beta_from_path(path), a_from_path(path), rho_from_path(path))
+    return (a_from_path(path), rho_from_path(path))
+
+
+def build_column_layout(paths_by_mode: dict[str, list[Path]]) -> tuple[dict[tuple, int], int]:
+    all_paths = [path for mode_paths in paths_by_mode.values() for path in mode_paths]
+    beta_values = {beta_from_path(path) for path in all_paths if math.isfinite(beta_from_path(path))}
+    include_beta = len(beta_values) > 1
+    keys = sorted({layout_key_for_path(path, include_beta) for path in all_paths})
+
+    col_by_key = {}
+    current_col = 0
+    for key in keys:
+        representative = next(path for path in all_paths if layout_key_for_path(path, include_beta) == key)
+        col_by_key[key] = current_col
+        current_col += width_units_for_path(representative)
+    return col_by_key, current_col
+
+
+def select_fixed_beta(xdmf_files: list[Path], requested_beta: float | None) -> float:
+    beta_values = sorted({beta_from_path(path) for path in xdmf_files if math.isfinite(beta_from_path(path))})
+    if not beta_values:
+        raise SystemExit("No beta values found in results_*.xdmf files.")
+    if requested_beta is None:
+        return beta_values[0]
+    for beta in beta_values:
+        if math.isclose(beta, requested_beta):
+            return beta
+    available = ", ".join(f"{beta:g}" for beta in beta_values)
+    raise SystemExit(f"Requested --fixed-beta {requested_beta:g} was not found. Available beta values: {available}")
+
+
+def filter_by_beta(xdmf_files: list[Path], beta: float) -> list[Path]:
+    return [path for path in xdmf_files if math.isclose(beta_from_path(path), beta)]
+
+
+def readable_label(case: str, epsilon: float = math.inf) -> str:
     beta = extract_number(case, r"beta_(0(?:_\d+)?)")
     a = extract_number(case, r"_a_(\d+)")
     rho = extract_number(case, r"_rho_(0_\d+)")
-    mode = case.rsplit("_", 1)[-1]
     parts = []
     if math.isfinite(beta):
-        parts.append(f"beta={beta:g}")
+        parts.append(rf"$\beta={beta:g}$")
     if math.isfinite(a):
-        parts.append(f"a={a:g}")
+        parts.append(rf"$a={a:g}$")
     if math.isfinite(rho):
-        parts.append(f"rho={rho:g}")
-    parts.append(mode)
+        parts.append(rf"$\rho={rho:g}$")
+    if math.isfinite(epsilon):
+        parts.append(rf"$\epsilon={epsilon:g}$")
     return ", ".join(parts)
+
+
+def readable_title(case: str, epsilon: float, time: float) -> str:
+    a = extract_number(case, r"_a_(\d+)")
+    rho = extract_number(case, r"_rho_(0_\d+)")
+
+    first_line = []
+    second_line = []
+    if math.isfinite(a):
+        first_line.append(rf"$a={a:g}$")
+    if math.isfinite(rho):
+        second_line.append(rf"$\rho={rho:g}$")
+    second_line.append(rf"$t={time:.3f}$")
+
+    return ", ".join(first_line) + "\n" + ", ".join(second_line)
+
+
+def page_corner_label(paths: list[Path], epsilon: float) -> str:
+    beta_values = sorted({beta_from_path(path) for path in paths if math.isfinite(beta_from_path(path))})
+    parts = []
+    if beta_values:
+        if len(beta_values) == 1:
+            parts.append(rf"$\beta={beta_values[0]:g}$")
+        else:
+            parts.append(rf"$\beta\in[{beta_values[0]:g},{beta_values[-1]:g}]$")
+    if math.isfinite(epsilon):
+        parts.append(rf"$\epsilon={epsilon:g}$")
+    return "\n".join(parts)
 
 
 def h5_path_from_xdmf(xdmf_path: Path) -> Path:
@@ -114,8 +254,8 @@ def load_final_field(xdmf_path: Path, field: str) -> tuple[np.ndarray, np.ndarra
     return points, cells, values, time
 
 
-def add_case_plot(ax: plt.Axes, xdmf_path: Path, field: str) -> None:
-    split, case = split_and_case(xdmf_path)
+def add_case_plot(ax: plt.Axes, xdmf_path: Path, field: str, cmap: str) -> None:
+    _, case, epsilon = split_case_epsilon(xdmf_path)
     points, cells, values, time = load_final_field(xdmf_path, field)
     triangulation = Triangulation(points[:, 0], points[:, 1], cells)
 
@@ -123,7 +263,7 @@ def add_case_plot(ax: plt.Axes, xdmf_path: Path, field: str) -> None:
         triangulation,
         values,
         shading="gouraud",
-        cmap="viridis",
+        cmap=cmap,
         vmin=0.0,
         vmax=1.0,
         rasterized=True,
@@ -131,35 +271,40 @@ def add_case_plot(ax: plt.Axes, xdmf_path: Path, field: str) -> None:
     ax.set_aspect("equal")
     ax.set_xticks([])
     ax.set_yticks([])
-    ax.set_title(f"{readable_label(case)}\nt={time:.4g}", fontsize=8)
-    ax.text(
-        0.02,
-        0.02,
-        split,
-        transform=ax.transAxes,
-        fontsize=7,
-        color="white",
-        bbox={"facecolor": "black", "alpha": 0.45, "pad": 1.5, "edgecolor": "none"},
-    )
+    ax.set_frame_on(False)
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+    ax.set_title(readable_title(case, epsilon, time), fontsize=22)
     ax.figure._phasefield_mappable = mesh
 
 
-def write_overview(xdmf_files: list[Path], output: Path, columns: int, field: str) -> None:
-    by_split: dict[str, list[Path]] = {}
+def write_overview(xdmf_files: list[Path], output: Path, columns: int, field: str, cmap: str) -> None:
+    by_run: dict[tuple[str, float], list[Path]] = {}
     for path in sorted(xdmf_files, key=case_sort_key):
-        split, _ = split_and_case(path)
-        by_split.setdefault(split, []).append(path)
+        split, _, epsilon = split_case_epsilon(path)
+        by_run.setdefault((split, epsilon), []).append(path)
 
     output.parent.mkdir(parents=True, exist_ok=True)
     with PdfPages(output) as pdf:
-        for split, paths in sorted(by_split.items()):
+        for (split, epsilon), paths in sorted(by_run.items()):
             paths_by_mode = group_paths_by_mode(paths)
-            ordered_paths = [path for mode in ("min", "max", "vary") for path in paths_by_mode.get(mode, [])]
             rows = sum(1 for mode in ("min", "max", "vary") if paths_by_mode.get(mode))
-            fig_width = 3.0 * columns
-            fig_height = 2.6 * rows + 0.6
-            fig, axes = plt.subplots(rows, columns, figsize=(fig_width, fig_height), squeeze=False)
+            col_by_key, layout_width_units = build_column_layout(paths_by_mode)
+            max_width_units = max(columns, layout_width_units)
+            fig_width = 9.36 * max_width_units
+            fig_height = 3.72 * rows + 0.5
+            fig = plt.figure(figsize=(fig_width, fig_height))
+            grid = fig.add_gridspec(
+                rows,
+                max_width_units,
+                top=0.9,
+                hspace=0.14,
+                wspace=0.20,
+            )
             fig.suptitle(f"Final phase-field {field} overview: {split}", fontsize=14)
+            label = page_corner_label(paths, epsilon)
+            if label:
+                fig.text(0.98, 0.98, label, ha="right", va="top", fontsize=22)
 
             filled_axes = []
             row = 0
@@ -167,21 +312,23 @@ def write_overview(xdmf_files: list[Path], output: Path, columns: int, field: st
                 mode_paths = paths_by_mode.get(mode, [])
                 if not mode_paths:
                     continue
-                for col, path in enumerate(mode_paths):
-                    ax = axes[row, col]
-                    add_case_plot(ax, path, field)
+                beta_values = {beta_from_path(path) for path in paths if math.isfinite(beta_from_path(path))}
+                include_beta = len(beta_values) > 1
+                for path in mode_paths:
+                    span = width_units_for_path(path)
+                    col = col_by_key[layout_key_for_path(path, include_beta)]
+                    ax = fig.add_subplot(grid[row, col:col + span])
+                    add_case_plot(ax, path, field, cmap)
                     filled_axes.append(ax)
-                axes[row, 0].set_ylabel(mode, fontsize=11)
+                filled_axes[-len(mode_paths)].set_ylabel(mode, fontsize=33)
                 row += 1
-
-            for ax in axes.ravel():
-                if ax not in filled_axes:
-                    ax.axis("off")
 
             mappable = getattr(fig, "_phasefield_mappable", None)
             if mappable is not None:
-                fig.colorbar(mappable, ax=axes.ravel().tolist(), shrink=0.82, label=field)
-            pdf.savefig(fig, dpi=300)
+                colorbar = fig.colorbar(mappable, ax=filled_axes, shrink=0.82, label=field)
+                colorbar.ax.yaxis.label.set_size(33)
+                colorbar.ax.tick_params(labelsize=33)
+            pdf.savefig(fig, dpi=150)
             plt.close(fig)
 
 
@@ -198,15 +345,26 @@ def group_paths_by_mode(paths: list[Path]) -> dict[str, list[Path]]:
 
 def main() -> None:
     args = parse_args()
+    script_path = Path(__file__).resolve().parent
+    result_roots = args.result_roots or [script_path / "results"]
+    output = args.output or script_path / "plots" / "phasefield_s_overview.pdf"
+
     xdmf_files = []
-    for root in args.resource_roots:
+    for root in result_roots:
         xdmf_files.extend(root.rglob("results_*.xdmf"))
     xdmf_files = sorted(set(xdmf_files), key=case_sort_key)
     if not xdmf_files:
         raise SystemExit("No results_*.xdmf files found.")
 
-    write_overview(xdmf_files, args.output, args.columns, args.field)
-    print(f"Wrote {args.output} with {len(xdmf_files)} cases.")
+    fixed_beta = None
+    if not args.include_beta_variants:
+        fixed_beta = select_fixed_beta(xdmf_files, args.fixed_beta)
+        xdmf_files = filter_by_beta(xdmf_files, fixed_beta)
+
+    write_overview(xdmf_files, output, args.columns, args.field, args.cmap)
+    print(f"Wrote {output} with {len(xdmf_files)} cases.")
+    if fixed_beta is not None:
+        print(f"Used beta={fixed_beta:g}. Pass --include-beta-variants to plot all beta values.")
 
 
 if __name__ == "__main__":
