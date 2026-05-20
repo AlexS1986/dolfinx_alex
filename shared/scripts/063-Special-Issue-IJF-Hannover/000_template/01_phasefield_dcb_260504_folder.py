@@ -655,6 +655,8 @@ for split_name, case in [
     t_global = dlfx.fem.Constant(domain, 0.0000001)
     trestart_global = dlfx.fem.Constant(domain, t_global.value)
     Tend = 50.0 * dt_global.value * a_value
+    target_xdmf_time = 0.0025
+    target_xdmf_written = {"value": False}
     
     # if case == "vary":
     #     # hard coded from fit 
@@ -925,6 +927,18 @@ for split_name, case in [
             
 
         success_timestep_counter.value = success_timestep_counter.value + 1.0
+        if (
+            not target_xdmf_written["value"]
+            and t >= target_xdmf_time
+        ):
+            pp.write_phasefield_mixed_solution(domain, results_xdmf_path, w, t, comm)
+            E.name = "E"
+            pp.write_scalar_fields(domain, comm, [E,gc], ["E","gc"], outputfile_xdmf_path=results_xdmf_path, t=t)
+            pp.write_tensor_fields(domain, comm, [sigma], ["sig"], outputfile_xdmf_path=results_xdmf_path, t=t)
+            target_xdmf_written["value"] = True
+            if rank == 0:
+                print(f"[INFO] Wrote target XDMF output at t={t:g}.")
+
         if int(success_timestep_counter.value) % int(postprocessing_interval.value) == 0:
             pp.write_phasefield_mixed_solution(domain, results_xdmf_path, w, t, comm)
             E.name = "E"

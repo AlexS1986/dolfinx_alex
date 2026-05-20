@@ -417,6 +417,97 @@ def write_vector_field(domain: dlfx.mesh.Mesh, outputfile_path: str, field: dlfx
             vtkout.write_function(field_interp, t)
 
 
+def write_field(domain: dlfx.mesh.Mesh, outputfile_path: str, field,
+                t: dlfx.fem.Constant, comm: MPI.Intercomm,
+                S: dlfx.fem.FunctionSpace = None,
+                field_interp: dlfx.fem.Function = None):
+    """Write a scalar expression/function to the output file."""
+    if S is None and field_interp is None:
+        Se = basix.ufl.element("P", domain.basix_cell(), 1, shape=())
+        S = dlfx.fem.functionspace(domain, Se)
+
+    if field_interp is None:
+        field_interp = dlfx.fem.Function(S)
+
+    expr = dlfx.fem.Expression(field, S.element.interpolation_points())
+    field_interp.interpolate(expr)
+
+    if hasattr(field, "name"):
+        field_interp.name = field.name
+
+    if outputfile_path.endswith(".xdmf"):
+        with dlfx.io.XDMFFile(comm, outputfile_path, 'a') as xdmfout:
+            xdmfout.write_function(field_interp, t)
+    elif outputfile_path.endswith(".vtk"):
+        with dlfx.io.VTKFile(comm, outputfile_path, 'a') as vtkout:
+            vtkout.write_function(field_interp, t)
+
+
+def write_tensor_fields(domain: dlfx.mesh.Mesh, comm: MPI.Intercomm,
+                        tensor_fields_as_functions, tensor_field_names,
+                        outputfile_xdmf_path: str, t: float):
+    """Write tensor expressions/functions to XDMF."""
+    dim = domain.topology.dim
+    TEN = dlfx.fem.functionspace(domain, ("DP", 0, (dim, dim)))
+    with dlfx.io.XDMFFile(comm, outputfile_xdmf_path, 'a') as xdmf_out:
+        for tensor_field_function, tensor_field_name in zip(tensor_fields_as_functions, tensor_field_names):
+            tensor_field_expression = dlfx.fem.Expression(
+                tensor_field_function, TEN.element.interpolation_points())
+            out_tensor_field = dlfx.fem.Function(TEN)
+            out_tensor_field.interpolate(tensor_field_expression)
+            out_tensor_field.name = tensor_field_name
+            xdmf_out.write_function(out_tensor_field, t)
+
+
+def compute_and_write_tensor_eigenvalue(domain: dlfx.mesh.Mesh,
+                                        tensor,
+                                        tensor_name: str,
+                                        time: dlfx.fem.Constant,
+                                        outputfile_path: str,
+                                        comm: MPI.Intercomm):
+    """Compute and write principal values of a symmetric 2D/3D tensor field."""
+    dim = domain.topology.dim
+    element = basix.ufl.element("P", domain.basix_cell(), 1, shape=())
+    function_space = dlfx.fem.functionspace(domain, element)
+
+    if dim == 2:
+        a = tensor[0, 0]
+        b = tensor[0, 1]
+        c = tensor[1, 1]
+        radius = 0.5 * ufl.sqrt(ufl.max_value((a - c)**2 + 4.0 * b**2, 0.0))
+        center = 0.5 * (a + c)
+        eigenvalues = [center + radius, center - radius]
+    elif dim == 3:
+        a = -1.0
+        b = ufl.tr(tensor)
+        c = -0.5 * (ufl.tr(tensor)**2 - ufl.tr(tensor * tensor))
+        d = ufl.det(tensor)
+
+        q = (3.0 * a * c - b**2) / (9.0 * a**2)
+        r = (9.0 * a * b * c - 27.0 * a**2 * d - 2.0 * b**3) / (54.0 * a**3)
+
+        eps = 1.0e-14
+        sqrt_q = ufl.sqrt(ufl.max_value(-q, 0.0))
+        cos_arg = r / ufl.sqrt(ufl.max_value(-q**3, eps))
+        cos_arg = ufl.max_value(ufl.min_value(cos_arg, 1.0), -1.0)
+        theta = ufl.acos(cos_arg)
+
+        eigenvalues = [
+            2.0 * sqrt_q * ufl.cos(theta / 3.0) - b / (3.0 * a),
+            2.0 * sqrt_q * ufl.cos((theta + 2.0 * np.pi) / 3.0) - b / (3.0 * a),
+            2.0 * sqrt_q * ufl.cos((theta + 4.0 * np.pi) / 3.0) - b / (3.0 * a),
+        ]
+    else:
+        raise ValueError(f"Principal tensor output is only implemented for 2D/3D, got dim={dim}.")
+
+    for i, eigenvalue in enumerate(eigenvalues, start=1):
+        fn = dlfx.fem.Function(function_space)
+        expr = dlfx.fem.Expression(eigenvalue, function_space.element.interpolation_points())
+        fn.interpolate(expr)
+        fn.name = f"{tensor_name}_principal_{i}"
+        write_field(domain, outputfile_path, fn, time, comm, function_space)
+
+
 def append_to_file(filename, parameters, comm=MPI.COMM_WORLD):
     """Append parameters to file."""
     if comm.Get_rank() == 0:
@@ -696,13 +787,19 @@ parser = argparse.ArgumentParser(description="Run a simulation with specified pa
 try:
     parser.add_argument("--lam_micro_param", type=float, required=True, help="Lambda micro_parameter")
     parser.add_argument("--mue_micro_param", type=float, required=True, help="Mu micro_parameter")
+    parser.add_argument("--mesh_size", type=float, default=0.01,
+                        help="Target gmsh mesh size. Smaller values create a finer mesh.")
     args = parser.parse_args()
     lam_micro_param = args.lam_micro_param
     mue_micro_param = args.mue_micro_param
+    mesh_size = args.mesh_size
+    if mesh_size <= 0.0:
+        raise ValueError("--mesh_size must be positive")
 except:
     print("Could not parse arguments")
     lam_micro_param = 1.0
     mue_micro_param = 1.0
+    mesh_size = 0.01
 
 # Generate mesh using gmsh (same as fu_star.py)
 msh_file = os.path.join(script_path, "fu_star.msh")
@@ -824,6 +921,9 @@ gmsh.model.occ.synchronize()
 
 final_surface_tag = final_shape[0][1]
 gmsh.model.addPhysicalGroup(2, [final_surface_tag], 1)
+gmsh.option.setNumber("Mesh.CharacteristicLengthMin", mesh_size)
+gmsh.option.setNumber("Mesh.CharacteristicLengthMax", mesh_size)
+gmsh.model.mesh.setSize(gmsh.model.getEntities(0), mesh_size)
 gmsh.model.mesh.generate(2)
 gmsh.write(msh_file)
 
@@ -900,6 +1000,10 @@ def after_timestep_success(t, dt, iters):
     u.name = "u"
     write_vector_field(domain, outputfile_xdmf_path, u, t, comm)
 
+    sigma = sigma_as_tensor(u, lam, mu)
+    write_tensor_fields(domain, comm, [sigma], ["sigma"], outputfile_xdmf_path, t)
+    compute_and_write_tensor_eigenvalue(domain, sigma, "sigma", t, outputfile_xdmf_path, comm)
+
     sigma_for_unit_strain = compute_averaged_sigma(u, lam, mu, vol)
 
     if rank == 0:
@@ -944,6 +1048,7 @@ def after_last_timestep():
         print('=====================================')
 
         parameters_to_write = {
+            "mesh_size": mesh_size,
             "lam_effective": lam_eff,
             "mue_effective": mu_eff,
             "youngs_modulus_effective": E_eff,
