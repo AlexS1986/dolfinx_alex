@@ -884,6 +884,16 @@ for split_name, case in [
         return comm.allreduce(dissipation_local, op=MPI.SUM)
 
 
+    def get_fracture_energy():
+        _, s_now = ufl.split(w)
+        fracture_energy_local = dlfx.fem.assemble_scalar(
+            dlfx.fem.form(
+                phaseFieldProblem.psisurf(s_now, gc, epsilon) * dx
+            )
+        )
+        return comm.allreduce(fracture_energy_local, op=MPI.SUM)
+
+
     
     def after_timestep_success(t, dt, iters):
         sigma = phaseFieldProblem.sigma_degraded(u, s, lam, mue, eta)
@@ -919,7 +929,7 @@ for split_name, case in [
         dW = dW_left + dW_right
         Work.value = Work.value +dW
 
-        A = pf.get_surf_area(s,epsilon=epsilon,dx=ufl.dx, comm=comm)
+        Pi_frac = get_fracture_energy()
 
         E_el = phaseFieldProblem.get_E_el_global(s,eta,u,lam,mue,dx=ufl.dx,comm=comm)
         s_rate_dissipation = get_phasefield_rate_dissipation(dt)
@@ -932,7 +942,7 @@ for split_name, case in [
                 Ry_top_left,
                 dW,
                 Work.value,
-                A,
+                Pi_frac,
                 E_el,
                 Ry_top_right,
                 s_rate_dissipation,
@@ -999,7 +1009,7 @@ for split_name, case in [
                     "R_y_top",
                     "dW",
                     "W",
-                    "A",
+                    "Pi_frac",
                     "E_el",
                     "R_y_top_right",
                     "int_s_dot_squared_over_M",
