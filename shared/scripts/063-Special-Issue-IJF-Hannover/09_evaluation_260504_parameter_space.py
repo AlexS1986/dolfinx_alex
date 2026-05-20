@@ -14,6 +14,7 @@ from pathlib import Path
 import h5py
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.lines import Line2D
 
 plt.rcParams.update({
     "text.usetex": True,
@@ -80,6 +81,22 @@ FALLBACK_RHO_COLORS = [
     "#5e6670",
     "#c15a9e",
 ]
+ENERGY_DATASET_COLORS = {
+    (0.3, "min"): "#b2182b",
+    (0.3, "max"): "#ef8a00",
+    (0.3, "vary"): "#d6604d",
+    (0.6, "min"): "#2166ac",
+    (0.6, "max"): "#67a9cf",
+    (0.6, "vary"): "#053061",
+}
+ENERGY_LINESTYLES = {
+    "elastic": "-",
+    "fracture": (0, (7.0, 3.0)),
+}
+WORK_LINESTYLES = {
+    "work": "-",
+    "total": (0, (2.0, 2.0)),
+}
 AXIS_LABEL_SIZE = 22
 TICK_LABEL_SIZE = 17
 LEGEND_FONT_SIZE = 17
@@ -462,6 +479,13 @@ def color_for_rho(rho: float) -> str:
     return FALLBACK_RHO_COLORS[index]
 
 
+def energy_color_for_record(record: ResultRecord) -> str:
+    for (rho, case), color in ENERGY_DATASET_COLORS.items():
+        if math.isclose(record.rho, rho) and record.case == case:
+            return color
+    return color_for_rho(record.rho)
+
+
 def marker_for_epsilon(epsilon: float, epsilon_values: list[float]) -> str:
     for index, known_epsilon in enumerate(epsilon_values):
         if math.isclose(epsilon, known_epsilon):
@@ -618,6 +642,17 @@ def plot_curves(records: list[ResultRecord], output_folder: Path, x_limit: float
                 key=lambda record: (record.rho, case_order(record.case)),
             )
             for quantity, spec in QUANTITIES.items():
+                if quantity == "Work":
+                    plot_work_balance_curve(
+                        parameter_records,
+                        output_folder,
+                        split,
+                        a_value,
+                        epsilon,
+                        x_limit,
+                        fixed_beta,
+                    )
+                    continue
                 fig, ax = plt.subplots(figsize=(10.0, 6.2))
                 max_displacement = 0.0
                 for record in parameter_records:
@@ -655,6 +690,230 @@ def plot_curves(records: list[ResultRecord], output_folder: Path, x_limit: float
                     dpi=300,
                 )
                 plt.close(fig)
+            plot_energy_components_curve(
+                parameter_records,
+                output_folder,
+                split,
+                a_value,
+                epsilon,
+                x_limit,
+                fixed_beta,
+            )
+
+
+def plot_work_balance_curve(
+    parameter_records: list[ResultRecord],
+    output_folder: Path,
+    split: str,
+    a_value: int,
+    epsilon: float,
+    x_limit: float | None,
+    fixed_beta: float,
+) -> None:
+    fig, ax = plt.subplots(figsize=(10.8, 6.4))
+    max_displacement = 0.0
+    max_value = 0.0
+
+    for record in parameter_records:
+        data = load_graph_data(record.path)
+        displacement = np.abs(data[:, 1])
+        work = np.abs(data[:, QUANTITIES["Work"]["column"]])
+        elastic = np.abs(data[:, QUANTITIES["Elastic"]["column"]])
+        fracture = np.abs(data[:, QUANTITIES["Fracture"]["column"]])
+        total_energy = elastic + fracture
+        color = energy_color_for_record(record)
+        max_displacement = max(max_displacement, float(np.max(displacement)))
+        max_value = max(max_value, float(np.max(work)), float(np.max(total_energy)))
+
+        ax.plot(
+            displacement,
+            work,
+            color=color,
+            linestyle=WORK_LINESTYLES["work"],
+            linewidth=1.8,
+        )
+        ax.plot(
+            displacement,
+            total_energy,
+            color=color,
+            linestyle=WORK_LINESTYLES["total"],
+            linewidth=1.8,
+        )
+
+    ax.set_title(
+        length_label("a", a_value) + ", "
+        + length_label(r"\epsilon", epsilon)
+        + fixed_beta_label(fixed_beta)
+    )
+    ax.set_xlabel(r"$u_y$ in mm")
+    ax.set_ylabel(r"$W,\ \Pi_\mathrm{el}+\Pi_\mathrm{frac}$ in Nmm/mm")
+    ax.set_xlim(0.0, x_limit or nice_axis_upper_limit(max_displacement))
+    ax.set_ylim(0.0, nice_axis_upper_limit(max_value))
+    ax.grid(True, alpha=0.3)
+
+    dataset_handles = [
+        Line2D(
+            [0],
+            [0],
+            color=energy_color_for_record(record),
+            linewidth=2.4,
+            label=rf"$\rho={record.rho:g}$, {record.case}",
+        )
+        for record in parameter_records
+    ]
+    quantity_handles = [
+        Line2D(
+            [0],
+            [0],
+            color="#2f2f2f",
+            linestyle=WORK_LINESTYLES[name],
+            linewidth=2.2,
+            label=label,
+        )
+        for name, label in (
+            ("work", r"$W$"),
+            ("total", r"$\Pi_\mathrm{el}+\Pi_\mathrm{frac}$"),
+        )
+    ]
+    first_legend = ax.legend(
+        handles=dataset_handles,
+        frameon=False,
+        fontsize=LEGEND_FONT_SIZE,
+        ncol=2,
+        loc="upper left",
+        handlelength=3.2,
+        handletextpad=LEGEND_HANDLE_TEXT_PAD,
+        labelspacing=LEGEND_LABEL_SPACING,
+    )
+    ax.add_artist(first_legend)
+    style_legend(first_legend)
+    second_legend = ax.legend(
+        handles=quantity_handles,
+        frameon=False,
+        fontsize=LEGEND_FONT_SIZE,
+        loc="upper right",
+        handlelength=3.4,
+        handletextpad=LEGEND_HANDLE_TEXT_PAD,
+        labelspacing=LEGEND_LABEL_SPACING,
+    )
+    style_legend(second_legend)
+
+    format_axes(ax)
+    fig.tight_layout()
+    fig.savefig(
+        split_output_folder(output_folder, split)
+        / (
+            f"Work_vs_uy_{split}_a_{a_value}"
+            f"_eps{float_filename_token(epsilon)}.png"
+        ),
+        dpi=300,
+    )
+    plt.close(fig)
+
+
+def plot_energy_components_curve(
+    parameter_records: list[ResultRecord],
+    output_folder: Path,
+    split: str,
+    a_value: int,
+    epsilon: float,
+    x_limit: float | None,
+    fixed_beta: float,
+) -> None:
+    fig, ax = plt.subplots(figsize=(10.8, 6.4))
+    max_displacement = 0.0
+    max_energy = 0.0
+
+    for record in parameter_records:
+        data = load_graph_data(record.path)
+        displacement = np.abs(data[:, 1])
+        elastic = np.abs(data[:, QUANTITIES["Elastic"]["column"]])
+        fracture = np.abs(data[:, QUANTITIES["Fracture"]["column"]])
+        color = energy_color_for_record(record)
+        max_displacement = max(max_displacement, float(np.max(displacement)))
+        max_energy = max(max_energy, float(np.max(elastic)), float(np.max(fracture)))
+
+        for name, values in (
+            ("elastic", elastic),
+            ("fracture", fracture),
+        ):
+            ax.plot(
+                displacement,
+                values,
+                color=color,
+                linestyle=ENERGY_LINESTYLES[name],
+                linewidth=1.8,
+            )
+
+    ax.set_title(
+        length_label("a", a_value) + ", "
+        + length_label(r"\epsilon", epsilon)
+        + fixed_beta_label(fixed_beta)
+    )
+    ax.set_xlabel(r"$u_y$ in mm")
+    ax.set_ylabel(r"$\Pi$ in Nmm/mm")
+    ax.set_xlim(0.0, x_limit or nice_axis_upper_limit(max_displacement))
+    ax.set_ylim(0.0, nice_axis_upper_limit(max_energy))
+    ax.grid(True, alpha=0.3)
+
+    dataset_handles = [
+        Line2D(
+            [0],
+            [0],
+            color=energy_color_for_record(record),
+            linewidth=2.4,
+            label=rf"$\rho={record.rho:g}$, {record.case}",
+        )
+        for record in parameter_records
+    ]
+    energy_handles = [
+        Line2D(
+            [0],
+            [0],
+            color="#2f2f2f",
+            linestyle=ENERGY_LINESTYLES[name],
+            linewidth=2.2,
+            label=label,
+        )
+        for name, label in (
+            ("elastic", r"$\Pi_\mathrm{el}$"),
+            ("fracture", r"$\Pi_\mathrm{frac}$"),
+        )
+    ]
+    first_legend = ax.legend(
+        handles=dataset_handles,
+        frameon=False,
+        fontsize=LEGEND_FONT_SIZE,
+        ncol=2,
+        loc="upper left",
+        handlelength=3.2,
+        handletextpad=LEGEND_HANDLE_TEXT_PAD,
+        labelspacing=LEGEND_LABEL_SPACING,
+    )
+    ax.add_artist(first_legend)
+    style_legend(first_legend)
+    second_legend = ax.legend(
+        handles=energy_handles,
+        frameon=False,
+        fontsize=LEGEND_FONT_SIZE,
+        loc="upper right",
+        handlelength=3.4,
+        handletextpad=LEGEND_HANDLE_TEXT_PAD,
+        labelspacing=LEGEND_LABEL_SPACING,
+    )
+    style_legend(second_legend)
+
+    format_axes(ax)
+    fig.tight_layout()
+    fig.savefig(
+        split_output_folder(output_folder, split)
+        / (
+            f"Energy_components_vs_uy_{split}_a_{a_value}"
+            f"_eps{float_filename_token(epsilon)}.png"
+        ),
+        dpi=300,
+    )
+    plt.close(fig)
 
 
 def plot_metric_vs_beta(records: list[ResultRecord], output_folder: Path, metric: str) -> None:

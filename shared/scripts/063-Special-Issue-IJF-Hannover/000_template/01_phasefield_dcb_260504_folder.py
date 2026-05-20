@@ -874,6 +874,15 @@ for split_name, case in [
     sigma_interpolated = dlfx.fem.Function(TEN) 
 
 
+    def get_phasefield_rate_dissipation(dt):
+        _, s_now = ufl.split(w)
+        _, s_old = ufl.split(wm1)
+        s_dot = (s_now - s_old) / dt
+        dissipation_local = dlfx.fem.assemble_scalar(
+            dlfx.fem.form((s_dot ** 2 / Mob) * dx)
+        )
+        return comm.allreduce(dissipation_local, op=MPI.SUM)
+
 
     
     def after_timestep_success(t, dt, iters):
@@ -913,9 +922,21 @@ for split_name, case in [
         A = pf.get_surf_area(s,epsilon=epsilon,dx=ufl.dx, comm=comm)
 
         E_el = phaseFieldProblem.get_E_el_global(s,eta,u,lam,mue,dx=ufl.dx,comm=comm)
+        s_rate_dissipation = get_phasefield_rate_dissipation(dt)
 
         if rank == 0:
-            pp.write_to_graphs_output_file(outputfile_graph_path, t, u_y_top, Ry_top_left, dW, Work.value, A, E_el,Ry_top_right)
+            pp.write_to_graphs_output_file(
+                outputfile_graph_path,
+                t,
+                u_y_top,
+                Ry_top_left,
+                dW,
+                Work.value,
+                A,
+                E_el,
+                Ry_top_right,
+                s_rate_dissipation,
+            )
 
         if rank == 0:
             sol.write_to_newton_logfile(logfile_path, t, dt, iters)
@@ -970,7 +991,20 @@ for split_name, case in [
             runtime = timer.elapsed()
             sol.print_runtime(runtime)
             sol.write_runtime_to_newton_logfile(logfile_path, runtime)
-            pp.print_graphs_plot(outputfile_graph_path, print_path=folder_path, legend_labels=["u_y_top", "R_y_top", "dW", "W","A", "E_el"])
+            pp.print_graphs_plot(
+                outputfile_graph_path,
+                print_path=folder_path,
+                legend_labels=[
+                    "u_y_top",
+                    "R_y_top",
+                    "dW",
+                    "W",
+                    "A",
+                    "E_el",
+                    "R_y_top_right",
+                    "int_s_dot_squared_over_M",
+                ],
+            )
 
         
             # vol_path = os.path.join(folder_path, f"vol_{x_value}_{case}.json")
