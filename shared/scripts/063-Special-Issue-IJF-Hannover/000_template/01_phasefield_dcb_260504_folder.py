@@ -40,6 +40,7 @@ STATIC_OPTIMIZATION_PARAMS = {
     "E0toE1": 0.6,
     "E": 210000.0,
 }
+WRITE_LEGACY_INTERPOLATED_WORK = True
 
 
 
@@ -222,6 +223,25 @@ def safe_dataset_label(path):
 
 def safe_float_label(value):
     return f"{value:g}".replace(".", "_").replace("-", "m")
+
+
+def assemble_global(form, comm):
+    value_local = dlfx.fem.assemble_scalar(dlfx.fem.form(form))
+    return comm.allreduce(value_local, op=MPI.SUM)
+
+
+def trapezoidal_work_increment_from_stress_expression(
+    sigma,
+    sigma_m1,
+    u,
+    um1,
+    n,
+    ds,
+    comm,
+):
+    du = u - um1
+    traction = 0.5 * ufl.dot(sigma + sigma_m1, n)
+    return assemble_global(ufl.inner(traction, du) * ds, comm)
 
 
 epsilon_output_suffix = "" if np.isclose(epsilon_param, DEFAULT_EPSILON) else f"_eps{safe_float_label(epsilon_param)}"
@@ -846,7 +866,9 @@ for split_name, case in [
             bcs.append(pf.irreversibility_bc(domain, W, wm1))
         return bcs
 
-    Work = dlfx.fem.Constant(domain,0.0)
+    Work = dlfx.fem.Constant(domain, 0.0)
+    Work_interpolated_legacy = dlfx.fem.Constant(domain, 0.0)
+    Dissipation = dlfx.fem.Constant(domain, 0.0)
     
    
     dx = ufl.Measure("dx", domain=domain)
@@ -897,6 +919,7 @@ for split_name, case in [
     
     def after_timestep_success(t, dt, iters):
         sigma = phaseFieldProblem.sigma_degraded(u, s, lam, mue, eta)
+        sigma_m1 = phaseFieldProblem.sigma_degraded(um1, sm1, lam, mue, eta)
         tensor_field_expression = dlfx.fem.Expression(sigma, 
                                                             TEN.element.interpolation_points())
         tensor_field_name = "sigma"
@@ -922,17 +945,57 @@ for split_name, case in [
 
 
         
-        # dW = pp.work_increment_external_forces(sigma,u,um1,n,ds_top_tagged(top_surface_tag),comm=comm)
-        #dW = pp.work_increment_external_forces(sigma_interpolated,u,um1,n,ds=ufl.ds,comm=comm)
-        dW_left = pp.work_increment_external_forces(sigma_interpolated,u,um1,n,ds=ds_left_bc_tagged(left_bc_tag),comm=comm)
-        dW_right = pp.work_increment_external_forces(sigma_interpolated,u,um1,n,ds=ds_right_bc_tagged(right_bc_tag),comm=comm)
+        dW_left = trapezoidal_work_increment_from_stress_expression(
+            sigma,
+            sigma_m1,
+            u,
+            um1,
+            n,
+            ds_left_bc_tagged(left_bc_tag),
+            comm,
+        )
+        dW_right = trapezoidal_work_increment_from_stress_expression(
+            sigma,
+            sigma_m1,
+            u,
+            um1,
+            n,
+            ds_right_bc_tagged(right_bc_tag),
+            comm,
+        )
         dW = dW_left + dW_right
-        Work.value = Work.value +dW
+        Work.value = Work.value + dW
+
+        dW_interpolated_legacy = 0.0
+        if WRITE_LEGACY_INTERPOLATED_WORK:
+            dW_left_interpolated = pp.work_increment_external_forces(
+                sigma_interpolated,
+                u,
+                um1,
+                n,
+                ds=ds_left_bc_tagged(left_bc_tag),
+                comm=comm,
+            )
+            dW_right_interpolated = pp.work_increment_external_forces(
+                sigma_interpolated,
+                u,
+                um1,
+                n,
+                ds=ds_right_bc_tagged(right_bc_tag),
+                comm=comm,
+            )
+            dW_interpolated_legacy = (
+                dW_left_interpolated + dW_right_interpolated
+            )
+            Work_interpolated_legacy.value = (
+                Work_interpolated_legacy.value + dW_interpolated_legacy
+            )
 
         Pi_frac = get_fracture_energy()
 
         E_el = phaseFieldProblem.get_E_el_global(s,eta,u,lam,mue,dx=ufl.dx,comm=comm)
         s_rate_dissipation = get_phasefield_rate_dissipation(dt)
+        Dissipation.value = Dissipation.value + s_rate_dissipation * dt
 
         if rank == 0:
             pp.write_to_graphs_output_file(
@@ -946,6 +1009,9 @@ for split_name, case in [
                 E_el,
                 Ry_top_right,
                 s_rate_dissipation,
+                Dissipation.value,
+                dW_interpolated_legacy,
+                Work_interpolated_legacy.value,
             )
 
         if rank == 0:
@@ -1007,12 +1073,15 @@ for split_name, case in [
                 legend_labels=[
                     "u_y_top",
                     "R_y_top",
-                    "dW",
-                    "W",
+                    "dW_sigma_trap",
+                    "W_sigma_trap",
                     "Pi_frac",
                     "E_el",
                     "R_y_top_right",
-                    "int_s_dot_squared_over_M",
+                    "D_rate",
+                    "D_s",
+                    "dW_interpolated_legacy",
+                    "W_interpolated_legacy",
                 ],
             )
 

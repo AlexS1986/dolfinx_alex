@@ -642,17 +642,6 @@ def plot_curves(records: list[ResultRecord], output_folder: Path, x_limit: float
                 key=lambda record: (record.rho, case_order(record.case)),
             )
             for quantity, spec in QUANTITIES.items():
-                if quantity == "Work":
-                    plot_work_balance_curve(
-                        parameter_records,
-                        output_folder,
-                        split,
-                        a_value,
-                        epsilon,
-                        x_limit,
-                        fixed_beta,
-                    )
-                    continue
                 fig, ax = plt.subplots(figsize=(10.0, 6.2))
                 max_displacement = 0.0
                 for record in parameter_records:
