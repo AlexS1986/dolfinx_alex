@@ -312,6 +312,7 @@ def main():
     os.makedirs(output_folder, exist_ok=True)
 
     xlabel = "$u_y$ / mm"
+    uy_display_range = [0.0, 0.019]
     stride_for_curves = 2
     stride_for_max = 1
     cases = ["vary", "min", "max"]
@@ -364,7 +365,7 @@ def main():
                 vary_linestyles=True,
                 mark_peak=True,
                 annotate_peak=True,
-                x_range=[0,0.05]
+                x_range=uy_display_range
             )
 
             # --- Work ---
@@ -381,7 +382,7 @@ def main():
                 vary_linestyles=True,
                 mark_peak=True,
                 annotate_peak=True,
-                x_range=[0,0.05]
+                x_range=uy_display_range
             )
 
             # --- Fracture ---
@@ -398,7 +399,7 @@ def main():
                 vary_linestyles=True,
                 mark_peak=True,
                 annotate_peak=True,
-                x_range=[0,0.05]
+                x_range=uy_display_range
             )
 
             # --- Elastic ---
@@ -415,7 +416,7 @@ def main():
                 vary_linestyles=True,
                 mark_peak=True,
                 annotate_peak=True,
-                x_range=[0,0.05]
+                x_range=uy_display_range
             )
 
         # ===============================

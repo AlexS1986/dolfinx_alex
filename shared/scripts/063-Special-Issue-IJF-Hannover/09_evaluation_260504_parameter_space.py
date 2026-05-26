@@ -98,6 +98,8 @@ WORK_LINESTYLES = {
     "total": (0, (2.0, 2.0)),
 }
 DISSIPATION_COLUMN = 9
+WHOLE_BOUNDARY_WORK_COLUMN = 13
+DEFAULT_UY_DISPLAY_MAX = 0.019
 FAILURE_MARKER_SIZE = 95
 FAILURE_MARKER_EDGE_COLOR = "#1f1f1f"
 # Plots are included at 0.85\textwidth; maintain at least \small-sized
@@ -168,7 +170,10 @@ def parse_args() -> argparse.Namespace:
         "--x-limit",
         type=float,
         default=None,
-        help="Optional maximum displacement in mm shown in curve plots. Defaults to an automatic per-plot limit.",
+        help=(
+            "Optional maximum displacement in mm shown in curve plots. "
+            f"Defaults to {DEFAULT_UY_DISPLAY_MAX:g} mm."
+        ),
     )
     parser.add_argument(
         "--fixed-beta",
@@ -702,6 +707,21 @@ def write_summary_csv(records: list[ResultRecord], output_folder: Path) -> None:
             writer.writerow(row)
 
 
+def uy_display_maximum(x_limit: float | None) -> float:
+    return DEFAULT_UY_DISPLAY_MAX if x_limit is None else x_limit
+
+
+def whole_boundary_work_values(data: np.ndarray, path: Path) -> np.ndarray:
+    if data.shape[1] <= WHOLE_BOUNDARY_WORK_COLUMN:
+        raise ValueError(
+            f"{path} does not contain W_sigma_trap_boundary. "
+            "Regenerate the simulation results with the updated "
+            "000_template/01_phasefield_dcb_260504_folder.py before "
+            "creating Fig. 17 panels (b) and (d)."
+        )
+    return np.abs(data[:, WHOLE_BOUNDARY_WORK_COLUMN])
+
+
 def plot_curves(records: list[ResultRecord], output_folder: Path, x_limit: float | None, fixed_beta: float) -> None:
     remove_existing_plots(output_folder, "*_vs_uy_*.png")
 
@@ -747,7 +767,7 @@ def plot_curves(records: list[ResultRecord], output_folder: Path, x_limit: float
                 ax.set_title(title_parameter_label(a_value, fixed_beta, epsilon))
                 ax.set_xlabel(r"$u_y$ in mm")
                 ax.set_ylabel(quantity_label(quantity, "curve_label"))
-                ax.set_xlim(0.0, x_limit or nice_axis_upper_limit(max_displacement))
+                ax.set_xlim(0.0, uy_display_maximum(x_limit))
                 ax.grid(True, alpha=0.3)
                 style_legend(ax.legend(fontsize=LEGEND_FONT_SIZE, ncol=2, frameon=False, handlelength=3.8, handletextpad=LEGEND_HANDLE_TEXT_PAD, labelspacing=LEGEND_LABEL_SPACING))
                 format_axes(ax)
@@ -822,7 +842,7 @@ def plot_work_balance_curve(
     ax.set_title(title_parameter_label(a_value, fixed_beta, epsilon))
     ax.set_xlabel(r"$u_y$ in mm")
     ax.set_ylabel(r"$W,\ \Pi_\mathrm{el}+\Pi_\mathrm{frac}$ in Nmm/mm")
-    ax.set_xlim(0.0, x_limit or nice_axis_upper_limit(max_displacement))
+    ax.set_xlim(0.0, uy_display_maximum(x_limit))
     ax.set_ylim(0.0, nice_axis_upper_limit(max_value))
     ax.grid(True, alpha=0.3)
 
@@ -923,7 +943,7 @@ def plot_energy_components_curve(
     ax.set_title(title_parameter_label(a_value, fixed_beta, epsilon))
     ax.set_xlabel(r"$u_y$ in mm")
     ax.set_ylabel(r"$\Pi$ in Nmm/mm")
-    ax.set_xlim(0.0, x_limit or nice_axis_upper_limit(max_displacement))
+    ax.set_xlim(0.0, uy_display_maximum(x_limit))
     ax.set_ylim(0.0, nice_axis_upper_limit(max_energy))
     ax.grid(True, alpha=0.3)
 
@@ -1008,7 +1028,7 @@ def plot_response_energy_grid(
         data = load_graph_data(record.path)
         displacement = np.abs(data[:, 1])
         reaction = np.abs(data[:, QUANTITIES["Ry"]["column"]])
-        work = np.abs(data[:, QUANTITIES["Work"]["column"]])
+        work = whole_boundary_work_values(data, record.path)
         fracture = np.abs(data[:, QUANTITIES["Fracture"]["column"]])
         elastic = np.abs(data[:, QUANTITIES["Elastic"]["column"]])
         dissipation = np.abs(data[:, DISSIPATION_COLUMN])
@@ -1072,7 +1092,7 @@ def plot_response_energy_grid(
                 zorder=5,
             )
 
-    x_upper = x_limit or nice_axis_upper_limit(max_displacement)
+    x_upper = uy_display_maximum(x_limit)
     for panel_label, ax in zip(("a", "b", "c", "d"), axes.ravel()):
         ax.text(
             0.02,
@@ -1088,9 +1108,9 @@ def plot_response_energy_grid(
         format_axes(ax)
 
     ax_force.set_ylabel(r"$R_y$ in N/mm")
-    ax_work.set_ylabel(r"$W$ in Nmm/mm")
+    ax_work.set_ylabel(r"$W_{\partial\Omega}$ in Nmm/mm")
     ax_components.set_ylabel(r"$\Pi$ in Nmm/mm")
-    ax_balance.set_ylabel(r"$W,\ \Pi_\mathrm{tot}$ in Nmm/mm")
+    ax_balance.set_ylabel(r"$W_{\partial\Omega},\ \Pi_\mathrm{tot}$ in Nmm/mm")
     ax_components.set_xlabel(r"$u_y$ in mm")
     ax_balance.set_xlabel(r"$u_y$ in mm")
     ax_force.set_ylim(0.0, nice_axis_upper_limit(max_force))
@@ -1109,7 +1129,7 @@ def plot_response_energy_grid(
         for record in parameter_records
     ]
     curve_handles = [
-        Line2D([0], [0], color="#2f2f2f", linewidth=2.2, label=r"$\Pi_\mathrm{el}$ / $W$"),
+        Line2D([0], [0], color="#2f2f2f", linewidth=2.2, label=r"$\Pi_\mathrm{el}$ / $W_{\partial\Omega}$"),
         Line2D(
             [0],
             [0],
