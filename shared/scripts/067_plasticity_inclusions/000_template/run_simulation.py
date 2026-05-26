@@ -59,7 +59,7 @@ try:
     parser.add_argument("--lam_inclusion_param", type=float, help="Lambda parameter of the inclusions")
     parser.add_argument("--mue_inclusion_param", type=float, help="Mu parameter of the inclusions")
     parser.add_argument("--gc_inclusion_param", type=float, help="Gc parameter of the inclusions")
-    parser.add_argument("--sig_y_inclusion_param", type=float, help="Yield stress of the inclusions")
+    parser.add_argument("--sig_y_inclusion_param", type=float, help="Deprecated compatibility argument; inclusion yield stress is fixed to the matrix value")
     parser.add_argument("--hard_inclusion_param", type=float, help="Hardening parameter of the inclusions")
     parser.add_argument("--lam_micro_param", type=float, help="Deprecated alias for --lam_matrix_param")
     parser.add_argument("--mue_micro_param", type=float, help="Deprecated alias for --mue_matrix_param")
@@ -67,7 +67,7 @@ try:
     parser.add_argument("--eps_param", type=float, required=True, help="Epsilon factor parameter")
     parser.add_argument("--element_order", type=int, required=True, help="Element order")
     parser.add_argument("--postprocessing_interval", type=int, default=400, help="Write full XDMF output every N successful time steps")
-    parser.add_argument("--write_material_fields_first_step", action="store_true", help="Write lam, mue, sig_y, and gc fields once at the first successful time step")
+    parser.add_argument("--write_material_fields_first_step", action="store_true", help="Deprecated compatibility flag; lam, mue, sig_y, and gc are always written once at t=0")
     args = parser.parse_args()
     mesh_file = args.mesh_file
     in_crack_length = args.in_crack_length
@@ -81,7 +81,7 @@ try:
     la_inclusion = args.lam_inclusion_param if args.lam_inclusion_param is not None else la_matrix
     mu_inclusion = args.mue_inclusion_param if args.mue_inclusion_param is not None else mu_matrix
     gc_inclusion = args.gc_inclusion_param if args.gc_inclusion_param is not None else gc_matrix
-    sig_y_inclusion = args.sig_y_inclusion_param if args.sig_y_inclusion_param is not None else sig_y_matrix
+    sig_y_inclusion = sig_y_matrix
     hard_inclusion = args.hard_inclusion_param if args.hard_inclusion_param is not None else hard_matrix
     eps_param = args.eps_param
     postprocessing_interval_param = args.postprocessing_interval
@@ -265,6 +265,7 @@ def before_first_time_step():
         pp.prepare_graphs_output_file(outputfile_graph_path)
     # prepare xdmf output 
     pp.write_meshoutputfile(domain, outputfile_xdmf_path, comm)
+    write_material_fields(0.0)
 
 def get_residuum_and_gateaux(delta_t: dlfx.fem.Constant):
     [Res, dResdw] = phaseFieldProblem.prep_newton(
@@ -361,11 +362,47 @@ TEN = dlfx.fem.functionspace(domain, ("DP", deg_quad-1, (dim, dim)))
 S0e = basix.ufl.element("DP", domain.basix_cell(), 0, shape=())
 S0 = dlfx.fem.functionspace(domain, S0e)
 
+alpha_surface = dlfx.fem.Function(S0)
+e_p_11_surface = dlfx.fem.Function(S0)
+e_p_22_surface = dlfx.fem.Function(S0)
+e_p_12_surface = dlfx.fem.Function(S0)
+e_p_33_surface = dlfx.fem.Function(S0)
+e_p_surface_3D = ufl.as_tensor([
+    [e_p_11_surface, e_p_12_surface, 0.0],
+    [e_p_12_surface, e_p_22_surface, 0.0],
+    [0.0, 0.0, e_p_33_surface],
+])
+phaseFieldProblem_surface = pf.StaticPhaseFieldProblem_plasticity_noll(
+    degradationFunction=pf.cubic_degradation(0.1),
+    psisurf=pf.psisurf_from_function,
+    dx=dx,
+    sig_y=sig_y,
+    hard=hard,
+    alpha_n=alpha_surface,
+    e_p_n=e_p_surface_3D,
+)
+
 def write_material_fields(t):
     pp.write_field(domain, outputfile_xdmf_path, la, t, comm, S=S0)
     pp.write_field(domain, outputfile_xdmf_path, mu, t, comm, S=S0)
     pp.write_field(domain, outputfile_xdmf_path, sig_y, t, comm, S=S0)
     pp.write_field(domain, outputfile_xdmf_path, gc, t, comm, S=S0)
+
+def update_surface_internal_state_fields():
+    """Expose one-point-per-cell history data as DG0 fields for facet forms."""
+    for surface_field, quadrature_field in (
+        (alpha_surface, alpha_n),
+        (e_p_11_surface, e_p_11_n),
+        (e_p_22_surface, e_p_22_n),
+        (e_p_12_surface, e_p_12_n),
+        (e_p_33_surface, e_p_33_n),
+    ):
+        if surface_field.x.array.size != quadrature_field.x.array.size:
+            raise RuntimeError(
+                "Direct Eshelby surface assembly requires one history value per cell."
+            )
+        surface_field.x.array[:] = quadrature_field.x.array[:]
+        surface_field.x.scatter_forward()
 
 def dt_as_float(dt):
     value = getattr(dt, "value", dt)
@@ -375,6 +412,20 @@ def stop_if_dt_too_small(dt):
     dt_value = dt_as_float(dt)
     if dt_value < dt_min_stop:
         raise StopSimulation(f"time step dt={dt_value:.3e} below {dt_min_stop:.1e}")
+
+def assemble_J_from_eshelby_expression(eshelby, boundary_measure):
+    """Assemble J directly from an Eshelby UFL expression on the contour."""
+    configurational_traction = ufl.dot(eshelby, n)
+    Jx_local = dlfx.fem.assemble_scalar(
+        dlfx.fem.form(configurational_traction[0] * boundary_measure)
+    )
+    Jy_local = dlfx.fem.assemble_scalar(
+        dlfx.fem.form(configurational_traction[1] * boundary_measure)
+    )
+    return (
+        comm.allreduce(Jx_local, op=MPI.SUM),
+        comm.allreduce(Jy_local, op=MPI.SUM),
+    )
 
 def before_each_time_step(t,dt):
     stop_if_dt_too_small(dt)
@@ -420,18 +471,15 @@ def after_timestep_success(t,dt,iters):
     if rank == 0:
         sol.write_to_newton_logfile(logfile_path,t,dt,iters)
     
-    # eshelby = phaseFieldProblem.getEshelby(w,eta,la,mu)
-    eshelby = phaseFieldProblem.getEshelbyELastic(w,eta,la,mu)
-    tensor_field_expression = dlfx.fem.Expression(eshelby, 
-                                                         TEN.element.interpolation_points())
-    tensor_field_name = "eshelby"
-    eshelby_interpolated = dlfx.fem.Function(TEN) 
-    eshelby_interpolated.interpolate(tensor_field_expression)
-    eshelby_interpolated.name = tensor_field_name
-    
-    
-    Jx, Jy = alex.linearelastic.get_J_2D(eshelby_interpolated,n,ds=ds(external_surface_tag),comm=comm)
-    # Jx_vol, Jy_vol = alex.linearelastic.get_J_2D_volume_integral(eshelby,ufl.dx,comm)
+    update_surface_internal_state_fields()
+    contour_measure = ds(external_surface_tag)
+    eshelby_elastic = phaseFieldProblem_surface.getEshelbyELastic(w,eta,la,mu)
+    eshelby_total = phaseFieldProblem_surface.getEshelby(w,eta,la,mu)
+
+    # Assemble both contour integrals from the UFL expressions themselves.
+    # The DG0 history mirrors provide facet traces without projecting Eshelby.
+    Jx, Jy = assemble_J_from_eshelby_expression(eshelby_elastic, contour_measure)
+    Jx_total, Jy_total = assemble_J_from_eshelby_expression(eshelby_total, contour_measure)
     
     #alex.os.mpi_print(pp.getJString2D(Jx,Jy),rank)
     
@@ -448,7 +496,25 @@ def after_timestep_success(t,dt,iters):
     # if (rank == 0 and in_steg_to_be_measured(x_ct=x_ct) and dt <= dt_max_in_critical_area) or ( rank == 0 and not in_steg_to_be_measured(x_ct=x_ct)):
     if rank == 0:
         print("Crack tip position x: " + str(x_ct))
-        pp.write_to_graphs_output_file(outputfile_graph_path,t, Jx, Jy,x_ct, xxK1.value[0], Rx_top, Ry_top, dW, Work.value, A, dt, E_el, E_total, E_Plasti)
+        pp.write_to_graphs_output_file(
+            outputfile_graph_path,
+            t,
+            Jx,
+            Jy,
+            x_ct,
+            xxK1.value[0],
+            Rx_top,
+            Ry_top,
+            dW,
+            Work.value,
+            A,
+            dt,
+            E_el,
+            E_total,
+            E_Plasti,
+            Jx_total,
+            Jy_total,
+        )
 
    
     if x_ct >= 0.9 * x_max_all:
@@ -469,8 +535,6 @@ def after_timestep_success(t,dt,iters):
     wrestart.x.array[:] = w.x.array[:]
     # break out of loop if no postprocessing required
     success_timestep_counter.value = success_timestep_counter.value + 1.0
-    if write_material_fields_first_step and int(success_timestep_counter.value) == 1:
-        write_material_fields(t)
     # break out of loop if no postprocessing required
     if not int(success_timestep_counter.value) % int(postprocessing_interval.value) == 0: 
         return 
@@ -495,7 +559,27 @@ def after_last_timestep():
         runtime = timer.elapsed()
         sol.print_runtime(runtime)
         sol.write_runtime_to_newton_logfile(logfile_path,runtime)
-        pp.print_graphs_plot(outputfile_graph_path,script_path,legend_labels=["Jx", "Jy","x_pf_crack","x_macr","Rx", "Ry", "dW", "W", "A", "dt", "E_el", "E_total", "E_Plasti"])
+        pp.print_graphs_plot(
+            outputfile_graph_path,
+            script_path,
+            legend_labels=[
+                "Jx_elastic",
+                "Jy_elastic",
+                "x_pf_crack",
+                "x_macr",
+                "Rx",
+                "Ry",
+                "dW",
+                "W",
+                "A",
+                "dt",
+                "E_el",
+                "E_total",
+                "E_Plasti",
+                "Jx_total",
+                "Jy_total",
+            ],
+        )
 
 
 
@@ -516,6 +600,7 @@ parameters_to_write = {
         'eps_simulation': eps_param,
         'postprocessing_interval': postprocessing_interval.value,
         'write_material_fields_first_step': write_material_fields_first_step,
+        'material_fields_written_at_t0': True,
         'eps': epsilon.value,
         'eta': eta.value,
         'mob': Mob.value,
@@ -614,6 +699,7 @@ finally:
         "eps_simulation": eps_param,
         "postprocessing_interval": postprocessing_interval.value,
         "write_material_fields_first_step": write_material_fields_first_step,
+        "material_fields_written_at_t0": True,
         "eps": epsilon.value,
         "eta": eta.value,
         "mob": Mob.value,

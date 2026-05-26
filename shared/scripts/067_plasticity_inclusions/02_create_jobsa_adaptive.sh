@@ -58,9 +58,8 @@ generate_job_script() {
     lam_inclusion_param=$(multiply "${lam_matrix_param}" "${stiffness_scale}")
     mue_inclusion_param=$(multiply "${mue_matrix_param}" "${stiffness_scale}")
     gc_inclusion_param=$(multiply "${gc_matrix_param}" "${gc_scale}")
-    # Force inclusions to remain effectively linear elastic.
-    # 10000% of the matrix yield stress is 100 times the original value.
-    sig_y_inclusion_param=$(multiply "${sig_y_matrix_param}" "100.0")
+    # Keep the yield stress fixed; only stiffness and fracture resistance vary.
+    sig_y_inclusion_param=${sig_y_matrix_param}
     local eps_param=0.1
     local element_order=1
 
@@ -109,7 +108,6 @@ for folder_path in "${BASE_DIR}"/simulation_*; do
         generate_job_script "${folder_name}" "${job_name}" "${wsteg_value}" "${stiffness_scale}" "${gc_scale}"
     fi
 done
-
 
 
 

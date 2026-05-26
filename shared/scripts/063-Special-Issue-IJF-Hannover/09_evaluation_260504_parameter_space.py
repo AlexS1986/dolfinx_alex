@@ -95,7 +95,7 @@ ENERGY_LINESTYLES = {
 }
 WORK_LINESTYLES = {
     "work": "-",
-    "total": (0, (2.0, 2.0)),
+    "total": (0, (7.0, 3.0)),
 }
 DISSIPATION_COLUMN = 9
 TOTAL_BOUNDARY_WORK_COLUMN = 13
@@ -1108,9 +1108,9 @@ def plot_response_energy_grid(
         format_axes(ax)
 
     ax_force.set_ylabel(r"$R_y$ in N/mm")
-    ax_work.set_ylabel(r"$W_{\partial\Omega}$ in Nmm/mm")
-    ax_components.set_ylabel(r"$\Pi$ in Nmm/mm")
-    ax_balance.set_ylabel(r"$W_{\partial\Omega},\ \Pi_\mathrm{tot}$ in Nmm/mm")
+    ax_work.set_ylabel(r"$W$ in Nmm/mm")
+    ax_components.set_ylabel(r"$\Pi_\mathrm{el},\ \Pi_\mathrm{frac}$ in Nmm/mm")
+    ax_balance.set_ylabel(r"$W,\ \Pi_\mathrm{tot}$ in Nmm/mm")
     ax_components.set_xlabel(r"$u_y$ in mm")
     ax_balance.set_xlabel(r"$u_y$ in mm")
     ax_force.set_ylim(0.0, nice_axis_upper_limit(max_force))
@@ -1128,16 +1128,29 @@ def plot_response_energy_grid(
         )
         for record in parameter_records
     ]
-    curve_handles = [
-        Line2D([0], [0], color="#2f2f2f", linewidth=2.2, label=r"$\Pi_\mathrm{el}$ / $W_{\partial\Omega}$"),
+    component_handles = [
+        Line2D([0], [0], color="#2f2f2f", linewidth=2.2, label=r"$\Pi_\mathrm{el}$"),
         Line2D(
             [0],
             [0],
             color="#2f2f2f",
             linestyle=ENERGY_LINESTYLES["fracture"],
             linewidth=2.2,
-            label=r"$\Pi_\mathrm{frac}$ / $\Pi_\mathrm{tot}$",
+            label=r"$\Pi_\mathrm{frac}$",
         ),
+    ]
+    balance_handles = [
+        Line2D([0], [0], color="#2f2f2f", linewidth=2.2, label=r"$W$"),
+        Line2D(
+            [0],
+            [0],
+            color="#2f2f2f",
+            linestyle=WORK_LINESTYLES["total"],
+            linewidth=2.2,
+            label=r"$\Pi_\mathrm{tot}$",
+        ),
+    ]
+    peak_handle = [
         Line2D(
             [0],
             [0],
@@ -1159,17 +1172,36 @@ def plot_response_energy_grid(
         labelspacing=LEGEND_LABEL_SPACING,
     )
     style_legend(dataset_legend)
-    curve_legend = fig.legend(
-        handles=curve_handles,
-        loc="lower center",
-        bbox_to_anchor=(0.5, 0.008),
-        ncol=3,
+    component_legend = ax_components.legend(
+        handles=component_handles,
+        loc="upper right",
+        ncol=1,
         fontsize=LEGEND_FONT_SIZE,
         handlelength=2.8,
         handletextpad=LEGEND_HANDLE_TEXT_PAD,
         labelspacing=LEGEND_LABEL_SPACING,
     )
-    style_legend(curve_legend)
+    style_legend(component_legend)
+    balance_legend = ax_balance.legend(
+        handles=balance_handles,
+        loc="upper right",
+        ncol=1,
+        fontsize=LEGEND_FONT_SIZE,
+        handlelength=2.8,
+        handletextpad=LEGEND_HANDLE_TEXT_PAD,
+        labelspacing=LEGEND_LABEL_SPACING,
+    )
+    style_legend(balance_legend)
+    peak_legend = fig.legend(
+        handles=peak_handle,
+        loc="lower center",
+        bbox_to_anchor=(0.5, 0.008),
+        fontsize=LEGEND_FONT_SIZE,
+        handlelength=2.8,
+        handletextpad=LEGEND_HANDLE_TEXT_PAD,
+        labelspacing=LEGEND_LABEL_SPACING,
+    )
+    style_legend(peak_legend)
 
     fig.subplots_adjust(top=0.88, bottom=0.13, left=0.10, right=0.98, hspace=0.20, wspace=0.20)
     fig.savefig(
@@ -1431,6 +1463,127 @@ def plot_work_at_peak_reaction_vs_epsilon(
         plt.close(fig)
 
 
+def plot_peak_metrics_vs_epsilon_grid(
+    records: list[ResultRecord],
+    output_folder: Path,
+    fixed_beta: float,
+) -> None:
+    """Plot peak-response measures versus epsilon in a manuscript four-panel figure."""
+    remove_existing_plots(output_folder, "Peak_metrics_grid_vs_epsilon_*.png")
+
+    for split in sorted({record.split for record in records}):
+        split_records = [record for record in records if record.split == split]
+        for a_value in sorted({record.a for record in split_records}):
+            subset = [record for record in split_records if record.a == a_value]
+            if not subset:
+                continue
+
+            fig, axes = plt.subplots(2, 2, figsize=(15.0, 12.5), sharex=True)
+            (ax_force, ax_work), (ax_elastic, ax_fracture) = axes
+            panels = (
+                (ax_force, "Ry", quantity_label("Ry")),
+                (ax_work, "work_at_peak", r"$W(R_y=\max R_y)$ in Nmm/mm"),
+                (ax_elastic, "Elastic", quantity_label("Elastic")),
+                (ax_fracture, "Fracture", quantity_label("Fracture")),
+            )
+            maximum_by_metric = {metric: 0.0 for _, metric, _ in panels}
+
+            for rho in sorted({record.rho for record in subset}):
+                rho_records = [record for record in subset if math.isclose(record.rho, rho)]
+                for case in sorted({record.case for record in rho_records}, key=case_order):
+                    case_records = sorted(
+                        [record for record in rho_records if record.case == case],
+                        key=lambda record: record.epsilon,
+                    )
+                    if not case_records:
+                        continue
+
+                    epsilon_values = [record.epsilon for record in case_records]
+                    values_by_metric = {
+                        "Ry": [record.max_values["Ry"] for record in case_records],
+                        "work_at_peak": [
+                            work_at_peak_reaction(load_graph_data(record.path))
+                            for record in case_records
+                        ],
+                        "Elastic": [record.max_values["Elastic"] for record in case_records],
+                        "Fracture": [record.max_values["Fracture"] for record in case_records],
+                    }
+                    for ax, metric, _ in panels:
+                        values = values_by_metric[metric]
+                        maximum_by_metric[metric] = max(
+                            maximum_by_metric[metric],
+                            max(values),
+                        )
+                        ax.plot(
+                            epsilon_values,
+                            values,
+                            color=color_for_rho(rho),
+                            linestyle=line_style_for_case(case),
+                            marker="o",
+                            linewidth=1.8,
+                        )
+
+            for panel_label, (ax, metric, ylabel) in zip(("a", "b", "c", "d"), panels):
+                ax.text(
+                    0.02,
+                    0.95,
+                    rf"\textbf{{({panel_label})}}",
+                    transform=ax.transAxes,
+                    ha="left",
+                    va="top",
+                    fontsize=TITLE_FONT_SIZE,
+                )
+                ax.set_ylabel(ylabel)
+                ax.set_ylim(0.0, nice_axis_upper_limit(maximum_by_metric[metric]))
+                ax.grid(True, alpha=0.3)
+                format_axes(ax)
+
+            ax_elastic.set_xlabel(length_axis_label(r"\epsilon"))
+            ax_fracture.set_xlabel(length_axis_label(r"\epsilon"))
+
+            handles = [
+                Line2D(
+                    [0],
+                    [0],
+                    color=color_for_rho(rho),
+                    linestyle=line_style_for_case(case),
+                    marker="o",
+                    linewidth=2.4,
+                    label=rf"$\rho={rho:g}$, {case_label(case)}",
+                )
+                for rho in sorted({record.rho for record in subset})
+                for case in sorted(
+                    {record.case for record in subset if math.isclose(record.rho, rho)},
+                    key=case_order,
+                )
+            ]
+            legend = fig.legend(
+                handles=handles,
+                loc="upper center",
+                bbox_to_anchor=(0.5, 0.995),
+                ncol=3,
+                fontsize=LEGEND_FONT_SIZE,
+                handlelength=2.8,
+                handletextpad=LEGEND_HANDLE_TEXT_PAD,
+                labelspacing=LEGEND_LABEL_SPACING,
+            )
+            style_legend(legend)
+            fig.subplots_adjust(
+                top=0.88,
+                bottom=0.10,
+                left=0.10,
+                right=0.98,
+                hspace=0.20,
+                wspace=0.34,
+            )
+            fig.savefig(
+                split_output_folder(output_folder, split)
+                / f"Peak_metrics_grid_vs_epsilon_{split}_a_{a_value}.png",
+                dpi=300,
+            )
+            plt.close(fig)
+
+
 def plot_metric_vs_sigma_c(records: list[ResultRecord], output_folder: Path, metric: str, fixed_beta: float) -> None:
     remove_existing_plots(output_folder, f"max_{metric}_vs_sig_c_*.png")
 
@@ -1441,7 +1594,8 @@ def plot_metric_vs_sigma_c(records: list[ResultRecord], output_folder: Path, met
             continue
 
         a_values = sorted({record.a for record in split_records})
-        fig, axes = plt.subplots(1, len(a_values), figsize=(6.3 * len(a_values), 5.2), squeeze=False)
+        figure_size = (15.0, 6.5) if len(a_values) == 1 else (7.5 * len(a_values), 6.5)
+        fig, axes = plt.subplots(1, len(a_values), figsize=figure_size, squeeze=False)
         for ax, a_value in zip(axes.ravel(), a_values):
             subset = [record for record in split_records if record.a == a_value]
             for rho in sorted({record.rho for record in subset}):
@@ -1468,23 +1622,28 @@ def plot_metric_vs_sigma_c(records: list[ResultRecord], output_folder: Path, met
             ax.set_xlabel(r"$\sigma_c$ in N/mm$^2$")
             ax.set_ylabel(quantity_label(metric))
             ax.grid(True, alpha=0.3)
-            style_legend(
-                ax.legend(
-                    frameon=False,
-                    handlelength=3.8,
-                    handletextpad=LEGEND_HANDLE_TEXT_PAD,
-                    labelspacing=LEGEND_LABEL_SPACING,
-                    fontsize=SIGMA_LEGEND_FONT_SIZE,
-                ),
-                font_size=SIGMA_LEGEND_FONT_SIZE,
-            )
             format_axes(
                 ax,
                 title_size=SIGMA_TITLE_FONT_SIZE,
                 axis_label_size=SIGMA_AXIS_LABEL_SIZE,
                 tick_label_size=SIGMA_TICK_LABEL_SIZE,
             )
-        fig.tight_layout()
+        first_ax = axes.ravel()[0]
+        handles, labels = first_ax.get_legend_handles_labels()
+        legend_anchor = 0.72 if len(a_values) == 1 else 0.84
+        plot_right = 0.68 if len(a_values) == 1 else 0.80
+        legend = fig.legend(
+            handles,
+            labels,
+            loc="center left",
+            bbox_to_anchor=(legend_anchor, 0.5),
+            fontsize=SIGMA_LEGEND_FONT_SIZE,
+            handlelength=3.8,
+            handletextpad=LEGEND_HANDLE_TEXT_PAD,
+            labelspacing=LEGEND_LABEL_SPACING,
+        )
+        style_legend(legend, font_size=SIGMA_LEGEND_FONT_SIZE)
+        fig.subplots_adjust(left=0.10, right=plot_right, bottom=0.18, top=0.88, wspace=0.30)
         fig.savefig(split_output_folder(output_folder, split) / f"max_{metric}_vs_sig_c_{split}.png", dpi=300)
         plt.close(fig)
 
@@ -1731,6 +1890,7 @@ def main() -> None:
         plot_metric_vs_sigma_c(fixed_beta_records, output_folder, metric, fixed_beta)
         plot_split_comparison(fixed_beta_records, output_folder, metric, fixed_beta)
     plot_work_at_peak_reaction_vs_epsilon(fixed_beta_records, output_folder, fixed_beta)
+    plot_peak_metrics_vs_epsilon_grid(fixed_beta_records, output_folder, fixed_beta)
     plot_volume(fixed_beta_records, output_folder, fixed_beta)
     plot_volume_vs_rho_a(fixed_beta_records, output_folder, fixed_beta)
     plot_porosity_volume_vs_density_a(fixed_beta_records, output_folder, fixed_beta)

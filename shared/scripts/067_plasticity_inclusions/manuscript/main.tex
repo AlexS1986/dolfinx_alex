@@ -23,7 +23,7 @@
 
 \newcommand{\vMLabel}{[\textbf{vM}]\xspace}
 \newcommand{\Kinc}{k_{\rm inc}}
-\newcommand{\Gcinc}{G_{c,\rm inc}}
+\newcommand{\Ginc}{g_{\text{inc}}}
 \newcommand{\GcZero}{G_c^0}
 \newcommand{\Jeff}{J_{x,c}^{\rm eff}}
 
@@ -53,7 +53,7 @@
 }
 
 \abstract{
-This short contribution investigates the effective crack resistance obtained from a numerical crack-growth experiment for a simplified two-dimensional ductile heterogeneous material. In contrast to previous studies on pores, the resolved microstructure contains circular inclusions. Their stiffness and fracture resistance are varied independently together with the ligament width between neighboring inclusions. Crack evolution is simulated with a phase-field model for ductile fracture based on von Mises plasticity. The maximum boundary J-integral during enforced macroscopic crack advance is used as the operational measure of effective crack resistance. The results show that inclusion toughness and inclusion stiffness are strongly coupled: weak inclusions reduce the effective crack resistance, whereas tough inclusions do not produce a universal increase. The largest responses in the retained parameter range occur for tough compliant inclusions and for stiff weak inclusions, showing that the crack path is as important as the local fracture-resistance value.
+This short contribution investigates the effective crack resistance obtained from a numerical crack-growth experiment for a simplified two-dimensional ductile heterogeneous material. In contrast to previous studies on pores, the resolved microstructure contains circular inclusions. Their stiffness and fracture resistance are varied independently together with the ligament width between neighboring inclusions. Crack evolution is simulated with a phase-field model for ductile fracture based on von Mises plasticity. The maximum boundary J-integral during enforced macroscopic crack advance is used as the operational measure of effective crack resistance. The results show that inclusion toughness and inclusion stiffness are strongly coupled: weak inclusions generally reduce the effective crack resistance, whereas tough inclusions do not produce a universal increase. The largest responses in the retained parameter range occur for tough compliant inclusions and for stiff weak inclusions, showing that the crack path is as important as the local fracture-resistance value.
 }
 
 \keywords{Ductile fracture, Phase-field fracture, Heterogeneous materials, Circular inclusions, Effective crack resistance, J-integral}
@@ -73,7 +73,9 @@ This question is particularly relevant for additively manufactured metallic mate
 
 Different routes toward effective fracture properties have been proposed. Schneider~\cite{schneider_fftbased_2020} and Michel and Suquet~\cite{michel_merits_2022}, among others, discuss variational definitions related to the surface energy of a heterogeneous medium. In the present work we follow the numerical experiment introduced by Hossain et al.~\cite{hossain_effective_2014}. A representative material region is forced to separate under surfing boundary conditions, while the macroscopic energetic driving force is measured by a boundary J-integral. The maximum value attained during the process is interpreted as an effective crack resistance for this particular experiment. This terminology is used deliberately: the value is an operational crack-resistance measure for the prescribed microstructure and loading path, not a proof of a homogenized fracture toughness.
 
-Previous work using this methodology focused on porous materials and compared different elastic and plastic constitutive descriptions. Here the aim is narrower and more direct. We consider a simplified two-dimensional material with circular inclusions instead of pores. The matrix follows a von Mises-type ductile phase-field fracture model, while the inclusions are assigned independently varied stiffness and fracture resistance. The study asks how these inclusion properties and the ligament width between inclusions affect the computed effective crack resistance. The manuscript is kept short: Section~\ref{sec:numericalExperiment} recalls the numerical experiment, Section~\ref{sec:simulation_phase_field_models} summarizes the ductile phase-field model and implementation, Section~\ref{sec:2Dresults} presents the inclusion study, and Section~\ref{sec:discussion} discusses the observed trends.
+Fracture in elastically heterogeneous materials has already been addressed with phase-field models. Hossain et al.~\cite{hossain_effective_2014} demonstrated toughening and toughness asymmetry caused by elastic heterogeneity; associated studies examined stress-fluctuation and crack-renucleation mechanisms in layered materials and their anisotropic effective toughness~\cite{hsueh_stress_2018,brach_anisotropy_2019}. Kuhn and M\"uller~\cite{kuhn_discussion_2016} investigated crack-driving configurational forces and far-field J-integrals for heterogeneous elastic structures with spatially varying stiffness and fracture resistance, while Bohnen et al.~\cite{bohnen_simulation_2024} studied crack propagation and toughness determination in heterogeneous materials with a fracture phase field. Inclusion-containing elastic microstructures have also been treated directly: Singh et al.~\cite{singh_optimization_2023} optimized stiff elliptical inclusions for enhanced resistance to brittle bulk fracture.
+
+Related applications of the present numerical experiment to porous materials considered both elastic and nonlinear material descriptions~\cite{schluter_determination_2025,schluter_influence_2025}. To the authors' knowledge, however, effective crack resistance for explicit inclusions embedded in a plastically deforming matrix has not yet been studied with this phase-field numerical experiment. Here we consider a simplified two-dimensional material with circular inclusions instead of pores. The matrix follows a von Mises-type ductile phase-field fracture model, while the inclusions are assigned independently varied stiffness and fracture resistance. The study asks how these inclusion properties and the ligament width between inclusions affect the computed effective crack resistance. The manuscript is kept short: Section~\ref{sec:numericalExperiment} recalls the numerical experiment, Section~\ref{sec:simulation_phase_field_models} summarizes the ductile phase-field model and implementation, Section~\ref{sec:2Dresults} presents the inclusion study, and Section~\ref{sec:discussion} discusses the observed trends.
 
 \section{A Numerical Experiment to Determine Effective Crack Resistance}\label{sec:numericalExperiment}
 
@@ -179,41 +181,41 @@ First-order Lagrange finite elements are used on triangular meshes. The mesh is 
 
 \begin{figure}[H]
     \centering
-    \begin{minipage}{0.60\textwidth}
+    \begin{minipage}[t]{0.48\textwidth}
         \centering
         \textbf{a)}\\[-0.3em]
         \makebox[\textwidth][c]{\includegraphics[width=\textwidth]{pics/material_layout_inclusions.png}}
     \end{minipage}
-    \par\medskip
-    \begin{minipage}{0.60\textwidth}
+    \hfill
+    \begin{minipage}[t]{0.48\textwidth}
         \centering
         \textbf{b)}\\[-0.3em]
         \makebox[\textwidth][c]{\includegraphics[width=\textwidth]{pics/failure_pattern_phasefield.png}}
     \end{minipage}
     \par\medskip
-    \begin{minipage}{0.60\textwidth}
+    \begin{minipage}[t]{0.48\textwidth}
         \centering
         \textbf{c)}\\[-0.3em]
         \makebox[\textwidth][c]{\includegraphics[width=\textwidth]{pics/mesh_representative.png}}
     \end{minipage}
-    \caption{Representative setup for the inclusion study. a) Full computational domain, including the resolved material region with circular inclusions and the surrounding effective medium. b) Final phase-field pattern for one stored simulation, plotted with a blue-to-red scale for the phase field \(s\). c) Corresponding triangular finite-element mesh. The shown simulation has \(w_s=1.0L\), \(\Kinc=0.5\), and \(\Gcinc=0.5\GcZero\).}
+    \caption{Representative setup for the inclusion study. a) Full computational domain, including the resolved material region with circular inclusions and the surrounding effective medium. b) Final phase-field pattern for one stored simulation, plotted with a blue-to-red scale for the phase field \(s\). c) Corresponding triangular finite-element mesh; the material colors are retained as a background guide for visibility. The shown simulation has \(w_s=1.0L\), \(\Kinc=0.5\), and \(\Ginc=0.5\).}
     \label{fig:setup_inclusions}
 \end{figure}
 
 The investigated two-dimensional material contains circular inclusions of diameter \(L\) placed in a regular array. The distance between neighboring inclusion boundaries is denoted by \(w_s\), so that the cell size is \(w_c=L+w_s\). The resolved region contains three rows and six columns of inclusions and is embedded in a surrounding effective medium. Plane strain conditions are assumed.
 
 The parameter study varies the ligament width
-\[
+\begin{equation}
     w_s/L \in \{\WstegValues\},
-\]
+\end{equation}
 the inclusion stiffness factor
-\[
+\begin{equation}
     \Kinc \in \{0.5,1.0,1.5\},
-\]
+\end{equation}
 and the inclusion fracture-resistance factor
-\[
-    \Gcinc/\GcZero \in \{0.5,1.0,1.5\}.
-\]
+\begin{equation}
+    \Ginc \in \{0.5,1.0,1.5\}.
+\end{equation}
 The inclusion Lam\'e parameters are obtained by scaling the matrix values as
 \begin{equation}
     \lambda_{\rm inc}=\Kinc\lambda_{\rm mat}, \qquad
@@ -221,7 +223,7 @@ The inclusion Lam\'e parameters are obtained by scaling the matrix values as
 \end{equation}
 and the inclusion fracture resistance is
 \begin{equation}
-    G_{c,\rm inc} = (\Gcinc/\GcZero)\,\GcZero .
+    G_{c,\rm inc} = \Ginc\,\GcZero .
 \end{equation}
 For each geometry and stiffness contrast, a preliminary effective-stiffness computation provides the Lam\'e parameters of the surrounding homogeneous material. A total of \(\NumCases\) complete readable simulation histories were available in the current result folder and were used for the plots below. The cases with \(w_s=0.75L\) were excluded from the evaluation because this data point showed problematic behavior in the local result snapshot; datasets with \(w_s>2.0L\) were also omitted to focus on the interaction-dominated ligament-width range.
 
@@ -230,7 +232,7 @@ For each geometry and stiffness contrast, a preliminary effective-stiffness comp
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.55\textwidth]{pics/fig09_crack_tip_tracking.png}
-    \caption{Position of the surfing boundary condition \(x_{\rm bc}\) and extracted crack-tip position \(x_{\rm ct}\) for the reference inclusion case \(w_s=1.0L\), \(\Kinc=1.0\), and \(\Gcinc=\GcZero\).}
+    \caption{Position of the surfing boundary condition \(x_{\rm bc}\) and extracted crack-tip position \(x_{\rm ct}\) for the reference inclusion case \(w_s=1.0L\), \(\Kinc=1.0\), and \(\Ginc=1.0\).}
     \label{fig:crack_tip_tracking}
 \end{figure}
 
@@ -238,65 +240,65 @@ Figure~\ref{fig:crack_tip_tracking} shows that the measured crack tip follows th
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.72\textwidth]{pics/fig10_Jx_xct_constant_Gc_vary_Kinc.png}
-    \caption{J-integral over crack-tip position for \(w_s=1.0L\) and constant inclusion fracture resistance \(\Gcinc=\GcZero\). The inclusion stiffness is varied from compliant to stiff.}
+    \includegraphics[width=0.72\textwidth]{pics/fig10_Jx_xct_selected_cases.png}
+    \caption{J-integral over crack-tip position for \(w_s=1.0L\): the reference material contrast \((\Kinc,\Ginc)=(1.0,1.0)\), stiff weak inclusions \((1.5,0.5)\), and compliant inclusions with matrix-matched fracture resistance \((0.5,1.0)\).}
     \label{fig:Jx_xct_stiffness}
 \end{figure}
 
-For fixed \(w_s=1.0L\) and \(\Gcinc=\GcZero\), Fig.~\ref{fig:Jx_xct_stiffness} isolates the effect of inclusion stiffness over the full recorded crack-growth history. The stiffness contrast changes the local peak sequence and the crack-advance plateaus, but the effect is not a simple monotonic shift. This indicates that stiffness contrast changes more than the local elastic field around the inclusion: it also modifies how the crack advances through the heterogeneous region.
+For fixed \(w_s=1.0L\), Fig.~\ref{fig:Jx_xct_stiffness} contrasts the reference case with two distinct modifications: a weak but stiff inclusion phase and a compliant inclusion phase with unchanged fracture resistance. Their different local peak sequences and crack-advance plateaus show why stiffness and fracture resistance cannot be inferred from a single uniform shift of the J-integral response.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{pics/fig11_Jx_sections_Gcinc_0p5.png}
-    \caption{Section of the J-integral \(J_x\) versus crack-tip position \(x_{\rm ct}\) for \(\Gcinc=0.5\GcZero\). Only the characteristic evaluation range determined with \(starting\_hole\_to\_evaluate=4\) is shown; for \(w_s=L\), this corresponds approximately to \(6\le x_{\rm ct}/L \le 10\). The three panels show the available simulations for \(\Kinc=0.5\), \(1.0\), and \(1.5\); within each panel the curves correspond to different ligament widths \(w_s\).}
+    \caption{Section of the J-integral \(J_x\) versus crack-tip position \(x_{\rm ct}\) for \(\Ginc=0.5\). Only the interaction pattern spanning inclusions 4 through 6 is shown; for \(w_s=L\), this corresponds approximately to \(6\le x_{\rm ct}/L \le 10\). The three panels show the available simulations for \(\Kinc=0.5\), \(1.0\), and \(1.5\); within each panel the curves correspond to different ligament widths \(w_s\).}
     \label{fig:Jx_sections_Gcinc_0p5}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{pics/fig12_Jx_sections_Gcinc_1p0.png}
-    \caption{Section of the J-integral \(J_x\) versus crack-tip position \(x_{\rm ct}\) for \(\Gcinc=\GcZero\). Only the characteristic evaluation range determined with \(starting\_hole\_to\_evaluate=4\) is shown; for \(w_s=L\), this corresponds approximately to \(6\le x_{\rm ct}/L \le 10\). For the stiff-inclusion case \(\Kinc=1.5\), the lower bound of the evaluation interval is shifted by \(w_s\) to exclude the preceding interaction. The three panels show the available simulations for \(\Kinc=0.5\), \(1.0\), and \(1.5\); within each panel the curves correspond to different ligament widths \(w_s\).}
+    \caption{Section of the J-integral \(J_x\) versus crack-tip position \(x_{\rm ct}\) for \(\Ginc=1.0\). Only the interaction pattern spanning inclusions 4 through 6 is shown; for \(w_s=L\), this corresponds approximately to \(6\le x_{\rm ct}/L \le 10\). For the stiff-inclusion case \(\Kinc=1.5\), the lower bound of this interval is shifted by \(w_s\) to exclude the preceding interaction. The three panels show the available simulations for \(\Kinc=0.5\), \(1.0\), and \(1.5\); within each panel the curves correspond to different ligament widths \(w_s\).}
     \label{fig:Jx_sections_Gcinc_1p0}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{pics/fig13_Jx_sections_Gcinc_1p5.png}
-    \caption{Section of the J-integral \(J_x\) versus crack-tip position \(x_{\rm ct}\) for \(\Gcinc=1.5\GcZero\). Only the characteristic evaluation range determined with \(starting\_hole\_to\_evaluate=4\) is shown; for \(w_s=L\), this corresponds approximately to \(6\le x_{\rm ct}/L \le 10\). The three panels show the available simulations for \(\Kinc=0.5\), \(1.0\), and \(1.5\); within each panel the curves correspond to different ligament widths \(w_s\). The vertical axis is restricted to \(1.3\le J_x/\GcZero\le2\) to emphasize the relevant peak structure.}
+    \caption{Section of the J-integral \(J_x\) versus crack-tip position \(x_{\rm ct}\) for \(\Ginc=1.5\). Only the interaction pattern spanning inclusions 4 through 6 is shown; for \(w_s=L\), this corresponds approximately to \(6\le x_{\rm ct}/L \le 10\). The three panels show the available simulations for \(\Kinc=0.5\), \(1.0\), and \(1.5\); within each panel the curves correspond to different ligament widths \(w_s\). The vertical axis is restricted to \(1.3\le J_x/\GcZero\le2\) to emphasize the relevant peak structure.}
     \label{fig:Jx_sections_Gcinc_1p5}
 \end{figure}
 
-Figures~\ref{fig:Jx_sections_Gcinc_0p5}--\ref{fig:Jx_sections_Gcinc_1p5} show only the characteristic J-integral section, rather than the full fracture process. All shown toughness families use \(starting\_hole\_to\_evaluate=4\), consistent with the current evaluation script. The figures make the local crack-inclusion interactions visible: the maxima used in Eq.~\eqref{eq:effective_resistance} are not single smooth material responses, but arise from trapping, deflection, and re-acceleration of the crack as it crosses the inclusion array. The section is taken in the central part of the inclusion row, where the initial transient has decayed. Larger \(w_s\) separates individual interaction events more clearly. The influence of \(\Kinc\) and \(\Gcinc\), however, is not monotonic in all panels, which already indicates that stiffness and local fracture resistance act through the crack path as well as through the local energy scale.
+Figures~\ref{fig:Jx_sections_Gcinc_0p5}--\ref{fig:Jx_sections_Gcinc_1p5} show only the characteristic J-integral section, rather than the full fracture process. For all toughness families, the evaluated section spans the interaction pattern from inclusion 4 to inclusion 6. The figures make the local crack-inclusion interactions visible: the maxima used in Eq.~\eqref{eq:effective_resistance} are not single smooth material responses, but arise from trapping, deflection, and re-acceleration of the crack as it crosses the inclusion array. This section lies beyond the initial transient while retaining repeated crack--inclusion interactions. Larger \(w_s\) separates individual interaction events more clearly. The influence of \(\Kinc\) and \(\Ginc\), however, is not monotonic in all panels, which already indicates that stiffness and local fracture resistance act through the crack path as well as through the local energy scale.
 
 \subsection{Effective crack resistance}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.95\textwidth]{pics/fig15_Jeff_wsteg_all_Gcinc.png}
-    \caption{Effective crack resistance \(\Jeff\) versus ligament width \(w_s\). Each panel fixes the inclusion fracture resistance and compares the three inclusion stiffness factors.}
+    \caption{Effective crack resistance \(\Jeff\) versus ligament width \(w_s\). Each panel fixes the inclusion fracture-resistance factor \(\Ginc\) and compares the three inclusion stiffness factors.}
     \label{fig:Jeff_wsteg_families}
 \end{figure}
 
-Figure~\ref{fig:Jeff_wsteg_families} summarizes the effective crack resistance for each parameter combination. The ligament width controls the spacing of inclusion-crack interactions and therefore changes the number and magnitude of local resistance peaks. The baseline case \(\Kinc=1.0\), \(\Gcinc=\GcZero\) spans approximately \(\Jeff/\GcZero=\JeffBaselineMin\) to \(\JeffBaselineMax\) over the investigated \(w_s\) range.
+Figure~\ref{fig:Jeff_wsteg_families} summarizes the effective crack resistance for each parameter combination. The ligament width controls the spacing of inclusion-crack interactions and therefore changes the number and magnitude of local resistance peaks. The baseline case \(\Kinc=1.0\), \(\Ginc=1.0\) spans approximately \(\Jeff/\GcZero=\JeffBaselineMin\) to \(\JeffBaselineMax\) over the investigated \(w_s\) range.
 
-At fixed matrix-matched stiffness \(\Kinc=1.0\), changing the inclusion fracture resistance is not symmetric around the baseline. Lowering the inclusion fracture resistance to \(0.5\GcZero\) changes \(\Jeff\) by \(\MeanGcLowEffect\), whereas increasing it to \(1.5\GcZero\) changes \(\Jeff\) by \(\MeanGcHighEffect\). Thus, in the current evaluation window, weak inclusions clearly reduce the effective resistance, but tougher inclusions do not automatically increase the macroscopic value when the stiffness is unchanged.
+At fixed matrix-matched stiffness \(\Kinc=1.0\), changing the inclusion fracture resistance is not symmetric around the baseline. Lowering the factor to \(\Ginc=0.5\) changes \(\Jeff\) by \(\MeanGcLowEffect\), whereas increasing it to \(\Ginc=1.5\) changes \(\Jeff\) by \(\MeanGcHighEffect\). Thus, over the interaction pattern from inclusion 4 to inclusion 6, weak inclusions clearly reduce the effective resistance, but tougher inclusions do not automatically increase the macroscopic value when the stiffness is unchanged.
 
-The inclusion stiffness has an equally path-dependent influence. At \(\Gcinc=\GcZero\), compliant inclusions change the mean effective resistance by \(\MeanKLowEffect\), while stiff inclusions change it by \(\MeanKHighEffect\). Both stiffness contrasts therefore reduce the average value relative to the matrix-matched baseline in the present dataset. In contrast, for weak inclusions \((\Gcinc=0.5\GcZero)\), increasing \(\Kinc\) raises the resistance, while for tough inclusions \((\Gcinc=1.5\GcZero)\), the compliant-inclusion cases carry the largest values. This reversal shows that stiffness contrast cannot be interpreted independently of the inclusion fracture resistance.
+The inclusion stiffness has an equally path-dependent influence. At \(\Ginc=1.0\), compliant inclusions change the mean effective resistance by \(\MeanKLowEffect\), while stiff inclusions change it by \(\MeanKHighEffect\). Both stiffness contrasts therefore reduce the average value relative to the matrix-matched baseline in the present dataset. In contrast, for weak inclusions \((\Ginc=0.5)\), increasing \(\Kinc\) raises the resistance, while for tough inclusions \((\Ginc=1.5)\), the compliant-inclusion cases carry the largest values. This reversal shows that stiffness contrast cannot be interpreted independently of the inclusion fracture resistance.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.735\textwidth]{pics/fig14_combined_parameter_contribution.png}
-    \caption{Combined parameter contribution at selected ligament widths. The entries show \(\Jeff\) normalized by the corresponding baseline case with \(\Kinc=1.0\) and \(\Gcinc=\GcZero\) at the same \(w_s\).}
+    \includegraphics[width=0.95\textwidth]{pics/fig14_combined_parameter_contribution.png}
+    \caption{Normalized effective crack resistance at selected ligament widths: a) \(w_s=0.5L\), b) \(w_s=1.0L\), and c) \(w_s=2.0L\). Each cell shows \(\Jeff\) divided by the corresponding baseline value for \((\Kinc,\Ginc)=(1.0,1.0)\) at the same \(w_s\). Weak compliant inclusions \((0.5,0.5)\) give the lowest response, whereas tough compliant inclusions \((0.5,1.5)\) give the largest response in all three panels.}
     \label{fig:combined_parameter_contribution}
 \end{figure}
 
-The normalized comparison in Fig.~\ref{fig:combined_parameter_contribution} separates the direct inclusion-property effects from the absolute variation with \(w_s\). The lowest values are obtained for weak and compliant inclusions. The highest values in the present evaluation, however, occur for tough and compliant inclusions rather than for tough and stiff inclusions. The combined effect is therefore not additive: changing stiffness also changes the local crack path and therefore the amount of matrix and inclusion material crossed by the diffuse crack.
+The normalized comparison in Fig.~\ref{fig:combined_parameter_contribution} separates the direct inclusion-property effects from the absolute variation with \(w_s\). From panels a) to c), the weak/compliant combination \((\Kinc,\Ginc)=(0.5,0.5)\) increases from \(0.60\) to \(0.78\) of the baseline but remains the weakest response. The tough/compliant combination \((0.5,1.5)\) remains highest, changing only from \(1.06\) to \(1.09\). Stiffening weak inclusions increases their resistance, whereas stiffening tough inclusions removes the gain obtained for compliant tough inclusions. The combined effect is therefore not additive: stiffness contrast changes the crack path and hence the matrix and inclusion material traversed by the diffuse crack.
 
 \section{Discussion}\label{sec:discussion}
 
 The simulations show that replacing pores by circular inclusions changes the interpretation of the numerical experiment. Pores act primarily as crack traps and stress concentrators, whereas inclusions can either attract, shield, deflect, or resist the crack depending on their stiffness and fracture resistance. In the current evaluation, only \(w_s/L\le2.0\) is retained and the problematic \(w_s=0.75L\) data point is omitted. The reported values therefore focus on the interaction-dominated part of the parameter space rather than on a possible large-ligament saturation regime.
 
-The revised plots show a strong coupling between inclusion toughness and stiffness. Weak inclusions reduce the effective resistance for all stiffnesses, but their response becomes larger as the inclusions are stiffened. Matrix-matched inclusions give the highest resistance for \(\Gcinc=\GcZero\), whereas tough inclusions give the highest resistance when they are compliant. This behavior is consistent with a crack-path effect: the measured maximum J-integral depends not only on the local value of \(G_c\), but also on whether the crack is guided into, around, or between inclusions during the selected central interaction section.
+The revised plots show a strong coupling between inclusion toughness and stiffness. Weak inclusions generally reduce the effective resistance, although the stiffest case at \(w_s=2L\) is marginally above its corresponding \(\Ginc=1.0\) case. Their response becomes larger as the inclusions are stiffened. Matrix-matched inclusions give the highest resistance for \(\Ginc=1.0\), whereas tough inclusions give the highest resistance when they are compliant. This behavior is consistent with a crack-path effect: the measured maximum J-integral depends not only on the local value of \(G_c\), but also on whether the crack is guided into, around, or between inclusions during the selected inclusion-4-to-inclusion-6 interaction pattern.
 
 The ligament-width dependence is clearest for the weak-inclusion cases, where \(\Jeff\) generally increases from small \(w_s\) toward \(w_s=2L\). The matrix-matched baseline is comparatively flat, with \(\Jeff/\GcZero\) between \(\JeffBaselineMin\) and \(\JeffBaselineMax\). For tough inclusions the mean response is also nearly flat over the retained ligament widths, but its level depends strongly on stiffness contrast. The rescaled vertical axis in Fig.~\ref{fig:Jx_sections_Gcinc_1p5} makes this especially visible: the relevant peaks remain in a narrow band between \(J_x/\GcZero=1.3\) and \(2\), yet their ordering changes with \(\Kinc\).
 
@@ -308,12 +310,12 @@ A short numerical study was performed to quantify the effective crack resistance
 
 The main findings are:
 \begin{itemize}
-    \item Weak inclusions reduce the effective crack resistance throughout the retained parameter range.
+    \item Weak inclusions generally reduce the effective crack resistance; the stiffest case at \(w_s=2L\) is a small exception.
     \item Tough inclusions do not produce a universal increase; their effect depends strongly on inclusion stiffness and crack path.
     \item Stiffness contrast is coupled to inclusion fracture resistance: stiff inclusions raise the response for weak inclusions, whereas compliant inclusions give the largest response for tough inclusions.
     \item The ligament width remains important because it controls the spacing and intensity of crack-inclusion interactions, especially for weak inclusions.
 \end{itemize}
-These observations support the use of the numerical experiment as a compact way to compare microstructural design choices for ductile heterogeneous materials.
+These observations support the use of the numerical experiment as a compact way to compare microstructural design choices for ductile heterogeneous materials. Whereas phase-field studies have previously considered elastic heterogeneity and elastic inclusion microstructures~\cite{hossain_effective_2014,kuhn_discussion_2016,bohnen_simulation_2024,singh_optimization_2023}, the present study adds plastic dissipation in the matrix surrounding explicit inclusions. To the authors' knowledge, this combined inclusion--plasticity setting has not previously been addressed for effective crack resistance.
 
 \bibliography{bib/literatur}
 

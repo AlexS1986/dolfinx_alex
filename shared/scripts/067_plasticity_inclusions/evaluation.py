@@ -42,8 +42,8 @@ PICS = MANUSCRIPT / "pics"
 REPRESENTATIVE = RESULTS / "simulation_20260511_152054_WSTEG1.0_KINC0.5_GCINC0.5"
 EXCLUDED_WSTEGS = {0.75}
 MAX_WSTEG = 2.0
-starting_hole_to_evaluate = 3
-starting_hole_to_evaluate_high_gc = 4
+# Evaluate the repeated interaction pattern spanning inclusions 4 through 6.
+EVALUATED_PATTERN_FIRST_INCLUSION = 4
 
 COL_T = 0
 COL_JX = 1
@@ -171,15 +171,9 @@ def inclusion_start_positions(case: Case) -> list[float]:
     return starts
 
 
-def starting_hole_for_case(case: Case) -> int:
-    if np.isclose(case.gcinc, 1.5):
-        return starting_hole_to_evaluate_high_gc
-    return starting_hole_to_evaluate
-
-
 def characteristic_bounds(case: Case, start_inclusion: int | None = None) -> tuple[float, float]:
     if start_inclusion is None:
-        start_inclusion = starting_hole_for_case(case)
+        start_inclusion = EVALUATED_PATTERN_FIRST_INCLUSION
     return effective_resistance_bounds(case, start_inclusion)
 
 
@@ -189,7 +183,7 @@ def effective_resistance_bounds(case: Case, start_inclusion: int | None = None) 
     # section.  A virtual downstream start position is permitted so the final
     # inclusion section can be evaluated for start_inclusion == nholes.
     if start_inclusion is None:
-        start_inclusion = starting_hole_for_case(case)
+        start_inclusion = EVALUATED_PATTERN_FIRST_INCLUSION
     cell_width = case.dinclusion + case.wsteg
     if start_inclusion < 1 or start_inclusion > case.nholes:
         raise ValueError(
@@ -233,23 +227,36 @@ def plot_crack_tip(cases: list[Case]) -> None:
     savefig(PICS / "fig09_crack_tip_tracking.png")
 
 
-def plot_fig10_stiffness_at_constant_gc(cases: list[Case]) -> None:
-    fig, ax = plt.subplots(figsize=(5.6, 3.5))
-    colors = {0.5: "#0072B2", 1.0: "#333333", 1.5: "#D55E00"}
-    for case in subset(cases, wsteg=1.0, gcinc=1.0):
+def plot_fig10_selected_cases(cases: list[Case]) -> None:
+    fig, ax = plt.subplots(figsize=(6.6, 3.7))
+    selected_cases = [
+        (1.0, 1.0, "#333333", "reference"),
+        (1.5, 0.5, "#D55E00", "stiff, weak"),
+        (0.5, 1.0, "#0072B2", "compliant"),
+    ]
+    for kinc, ginc, color, description in selected_cases:
+        case = subset(cases, wsteg=1.0, kinc=kinc, gcinc=ginc)[0]
         ax.plot(
             case.data[:, COL_XCT],
             case.data[:, COL_JX],
             lw=1.6,
-            color=colors.get(case.kinc),
-            label=label_factor(r"k_{\mathrm{inc}}", case.kinc),
+            color=color,
+            label=rf"{description} $({kinc:g},{ginc:g})$",
         )
     ax.set_xlabel(r"crack-tip position $x_{\rm ct}/L$")
     ax.set_ylabel(r"$J_x/G_c^0$")
     ax.set_xlim(0, 15)
-    ax.legend(frameon=False, title=r"$w_s=1.0L,\;G_{c,\mathrm{inc}}=G_c^0$")
+    ax.legend(
+        frameon=False,
+        title=r"$w_s=1.0L,\quad(k_{\mathrm{inc}},g_{\mathrm{inc}})$",
+        loc="lower center",
+        bbox_to_anchor=(0.5, 1.01),
+        ncol=3,
+        fontsize=8,
+        title_fontsize=9,
+    )
     style_axes(ax)
-    savefig(PICS / "fig10_Jx_xct_constant_Gc_vary_Kinc.png")
+    savefig(PICS / "fig10_Jx_xct_selected_cases.png")
 
 
 def plot_jintegral_sections(cases: list[Case], gcinc: float, figure_no: int) -> None:
@@ -296,7 +303,7 @@ def plot_jintegral_sections(cases: list[Case], gcinc: float, figure_no: int) -> 
         title=r"ligament width",
         bbox_to_anchor=(0.5, 0.005),
     )
-    fig.suptitle(label_factor(r"G_{c,\mathrm{inc}}/G_c^0", gcinc), y=0.995)
+    fig.suptitle(label_factor(r"g_{\mathrm{inc}}", gcinc), y=0.995)
     fig.subplots_adjust(top=0.94, bottom=0.15, hspace=0.28)
     savefig(PICS / f"fig{figure_no}_Jx_sections_Gcinc_{str(gcinc).replace('.', 'p')}.png", tight=False)
 
@@ -314,7 +321,7 @@ def plot_jeff_families(cases: list[Case]) -> None:
                 color=color,
                 label=label_factor(r"k_{\mathrm{inc}}", kinc),
             )
-        ax.set_title(label_factor(r"G_{c,\mathrm{inc}}/G_c^0", gcinc))
+        ax.set_title(label_factor(r"g_{\mathrm{inc}}", gcinc))
         ax.set_xlabel(r"wall width $w_s/L$")
         ax.set_xscale("log")
         ax.set_xticks(sorted({c.wsteg for c in cases}))
@@ -337,24 +344,34 @@ def plot_combined_heatmap(cases: list[Case]) -> None:
     ref = df[np.isclose(df.kinc, 1.0) & np.isclose(df.gcinc, 1.0)].set_index("wsteg")["jeff"]
     df["relative"] = [row.jeff / ref.loc[row.wsteg] for row in df.itertuples()]
 
-    fig, axes = plt.subplots(1, 3, figsize=(9.2, 3.0), sharey=True)
+    fig, axes = plt.subplots(1, 3, figsize=(10.8, 3.65), sharey=True)
     vmin = float(df["relative"].min())
     vmax = float(df["relative"].max())
-    for ax, wsteg in zip(axes, [0.5, 1.0, 2.0]):
+    for panel, ax, wsteg in zip(["a)", "b)", "c)"], axes, [0.5, 1.0, 2.0]):
         pivot = df[np.isclose(df.wsteg, wsteg)].pivot(index="gcinc", columns="kinc", values="relative")
         image = ax.imshow(pivot.values, origin="lower", vmin=vmin, vmax=vmax, cmap="viridis")
-        ax.set_title(rf"$w_s={wsteg:g}L$")
+        ax.set_title(rf"$w_s={wsteg:g}L$", fontsize=15, pad=10)
+        ax.text(-0.20, 1.10, panel, transform=ax.transAxes, fontsize=19, fontweight="bold")
         ax.set_xticks(range(len(pivot.columns)), [f"{v:g}" for v in pivot.columns])
         ax.set_yticks(range(len(pivot.index)), [f"{v:g}" for v in pivot.index])
-        ax.set_xlabel(r"$k_{\mathrm{inc}}$")
+        ax.tick_params(labelsize=14)
+        ax.set_xlabel(r"$k_{\mathrm{inc}}$", fontsize=15)
         if ax is axes[0]:
-            ax.set_ylabel(r"$G_{c,\mathrm{inc}}/G_c^0$")
+            ax.set_ylabel(r"$g_{\mathrm{inc}}$", fontsize=15)
         for i, gc in enumerate(pivot.index):
             for j, k in enumerate(pivot.columns):
-                ax.text(j, i, f"{pivot.loc[gc, k]:.2f}", ha="center", va="center", color="white", fontsize=8)
-    cbar = fig.colorbar(image, ax=axes, shrink=0.86, pad=0.02)
-    cbar.set_label(r"$J_{x,c}^{\rm eff}/J_{x,c}^{\rm eff}(k_{\mathrm{inc}}=1,G_{c,\mathrm{inc}}=1)$")
-    savefig(PICS / "fig14_combined_parameter_contribution.png")
+                value = pivot.loc[gc, k]
+                color = "white" if value < 0.88 else "#161616"
+                ax.text(j, i, f"{value:.2f}", ha="center", va="center", color=color, fontsize=17)
+    fig.subplots_adjust(left=0.08, right=0.82, top=0.84, bottom=0.20, wspace=0.30)
+    cbar_ax = fig.add_axes([0.87, 0.22, 0.028, 0.56])
+    cbar = fig.colorbar(image, cax=cbar_ax)
+    cbar.ax.tick_params(labelsize=13)
+    cbar.set_label(
+        r"$J_{x,c}^{\rm eff}/J_{x,c}^{\rm eff}(k_{\mathrm{inc}}=1,g_{\mathrm{inc}}=1)$",
+        fontsize=13,
+    )
+    savefig(PICS / "fig14_combined_parameter_contribution.png", tight=False)
 
 
 def render_material_schematic() -> None:
@@ -459,8 +476,8 @@ def render_hdf_snapshot() -> None:
         triang = mtri.Triangulation(points[:, 0], points[:, 1], triangles)
 
         fig, ax = plt.subplots(figsize=(7.8, 4.4))
-        ax.set_facecolor("#E7E1D8")
-        ax.triplot(triang, color="#141414", lw=0.045, alpha=0.82)
+        add_material_layout(ax, alpha=0.78)
+        ax.triplot(triang, color="#263746", lw=0.12, alpha=0.80, zorder=3)
         finalize_domain_axes(ax)
         savefig(PICS / "mesh_representative.png")
 
@@ -530,7 +547,7 @@ def main() -> None:
     cases = load_cases()
     write_summary(cases)
     plot_crack_tip(cases)
-    plot_fig10_stiffness_at_constant_gc(cases)
+    plot_fig10_selected_cases(cases)
     for number, gcinc in zip([11, 12, 13], [0.5, 1.0, 1.5]):
         plot_jintegral_sections(cases, gcinc=gcinc, figure_no=number)
     plot_combined_heatmap(cases)

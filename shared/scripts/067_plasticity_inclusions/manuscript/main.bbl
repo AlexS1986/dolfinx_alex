@@ -1,6 +1,6 @@
 %% BioMed_Central_Bib_Style_v1.01
 
-\begin{thebibliography}{7}
+\begin{thebibliography}{14}
 % BibTex style file: bmc-mathphys.bst (version 2.1), 2014-07-24
 \ifx \bisbn   \undefined \def \bisbn  #1{ISBN #1}\fi
 \ifx \binits  \undefined \def \binits#1{#1}\fi
@@ -127,6 +127,126 @@
 \endbibitem
 
 %%% 6
+\bibitem[\protect\citeauthoryear{Hsueh et~al.}{2018}]{hsueh_stress_2018}
+\begin{barticle}
+\bauthor{\bsnm{Hsueh}, \binits{C.-J.}},
+\bauthor{\bsnm{Avellar}, \binits{L.}},
+\bauthor{\bsnm{Bourdin}, \binits{B.}},
+\bauthor{\bsnm{Ravichandran}, \binits{G.}},
+\bauthor{\bsnm{Bhattacharya}, \binits{K.}}:
+\batitle{Stress fluctuation, crack renucleation and toughening in layered
+  materials}.
+\bjtitle{Journal of the Mechanics and Physics of Solids}
+\bvolume{120},
+\bfpage{68}--\blpage{78}
+(\byear{2018})
+\doiurl{10.1016/j.jmps.2018.04.011}
+\end{barticle}
+\endbibitem
+
+%%% 7
+\bibitem[\protect\citeauthoryear{Brach et~al.}{2019}]{brach_anisotropy_2019}
+\begin{barticle}
+\bauthor{\bsnm{Brach}, \binits{S.}},
+\bauthor{\bsnm{Hossain}, \binits{M.Z.}},
+\bauthor{\bsnm{Bourdin}, \binits{B.}},
+\bauthor{\bsnm{Bhattacharya}, \binits{K.}}:
+\batitle{Anisotropy of the effective toughness of layered media}.
+\bjtitle{Journal of the Mechanics and Physics of Solids}
+\bvolume{131},
+\bfpage{96}--\blpage{111}
+(\byear{2019})
+\doiurl{10.1016/j.jmps.2019.06.021}
+\end{barticle}
+\endbibitem
+
+%%% 8
+\bibitem[\protect\citeauthoryear{Kuhn and
+  M{\"u}ller}{2016}]{kuhn_discussion_2016}
+\begin{barticle}
+\bauthor{\bsnm{Kuhn}, \binits{C.}},
+\bauthor{\bsnm{M{\"u}ller}, \binits{R.}}:
+\batitle{A discussion of fracture mechanisms in heterogeneous materials by
+  means of configurational forces in a phase field fracture model}.
+\bjtitle{Computer Methods in Applied Mechanics and Engineering}
+\bvolume{312},
+\bfpage{95}--\blpage{116}
+(\byear{2016})
+\doiurl{10.1016/j.cma.2016.04.027}
+\end{barticle}
+\endbibitem
+
+%%% 9
+\bibitem[\protect\citeauthoryear{Bohnen et~al.}{2024}]{bohnen_simulation_2024}
+\begin{bchapter}
+\bauthor{\bsnm{Bohnen}, \binits{M.}},
+\bauthor{\bsnm{M{\"u}ller}, \binits{R.}},
+\bauthor{\bsnm{Gross}, \binits{D.}}:
+\bctitle{Simulation of~{{Crack Propagation}} in~{{Heterogeneous Materials}}
+  by~a~{{Fracture Phase Field}}}.
+In: \beditor{\bsnm{M{\"u}ller}, \binits{W.H.}},
+\beditor{\bsnm{Noe}, \binits{A.}},
+\beditor{\bsnm{Ferber}, \binits{F.}} (eds.)
+\bbtitle{New Achievements in Mechanics: A Tribute to Klaus Peter Herrmann},
+pp. \bfpage{191}--\blpage{215}.
+\bpublisher{Springer},
+\blocation{Cham}
+(\byear{2024}).
+\doiurl{10.1007/978-3-031-56132-0_10}
+\end{bchapter}
+\endbibitem
+
+%%% 10
+\bibitem[\protect\citeauthoryear{Singh et~al.}{2023}]{singh_optimization_2023}
+\begin{barticle}
+\bauthor{\bsnm{Singh}, \binits{S.}},
+\bauthor{\bsnm{Pflug}, \binits{L.}},
+\bauthor{\bsnm{Mergheim}, \binits{J.}},
+\bauthor{\bsnm{Stingl}, \binits{M.}}:
+\batitle{On optimization of heterogeneous materials for enhanced resistance to
+  bulk fracture}.
+\bjtitle{Forces in Mechanics}
+\bvolume{12},
+\bfpage{100200}
+(\byear{2023})
+\doiurl{10.1016/j.finmec.2023.100200}
+\end{barticle}
+\endbibitem
+
+%%% 11
+\bibitem[\protect\citeauthoryear{Schl{\"u}ter and
+  M{\"u}ller}{2025}]{schluter_determination_2025}
+\begin{barticle}
+\bauthor{\bsnm{Schl{\"u}ter}, \binits{A.}},
+\bauthor{\bsnm{M{\"u}ller}, \binits{R.}}:
+\batitle{Determination of the effective crack resistance in porous materials
+  using a fracture phase-field model}.
+\bjtitle{Engineering Fracture Mechanics}
+\bvolume{326},
+\bfpage{111348}
+(\byear{2025})
+\doiurl{10.1016/j.engfracmech.2025.111348}
+\end{barticle}
+\endbibitem
+
+%%% 12
+\bibitem[\protect\citeauthoryear{Schl{\"u}ter
+  et~al.}{2025}]{schluter_influence_2025}
+\begin{barticle}
+\bauthor{\bsnm{Schl{\"u}ter}, \binits{A.}},
+\bauthor{\bsnm{Medda}, \binits{R.}},
+\bauthor{\bsnm{M{\"u}ller}, \binits{R.}}:
+\batitle{Influence of {{Material Nonlinearity}} on the {{Effective Fracture
+  Resistance}} of {{Porous Materials}}}.
+\bjtitle{PAMM}
+\bvolume{25}(\bissue{4}),
+\bfpage{70044}
+(\byear{2025})
+\doiurl{10.1002/pamm.70044}
+\end{barticle}
+\endbibitem
+
+%%% 13
 \bibitem[\protect\citeauthoryear{Noll et~al.}{2020}]{noll_3d_2020}
 \begin{barticle}
 \bauthor{\bsnm{Noll}, \binits{T.}},
@@ -142,7 +262,7 @@
 \end{barticle}
 \endbibitem
 
-%%% 7
+%%% 14
 \bibitem[\protect\citeauthoryear{}{}]{_fenicsx_}
 \begin{botherref}
 {{FEniCSx Documentation}}.

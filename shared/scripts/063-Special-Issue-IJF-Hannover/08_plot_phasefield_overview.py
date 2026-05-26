@@ -469,7 +469,7 @@ def field_limits(xdmf_files: list[Path], field: str, target_time: float | None =
     lower = float(np.min(values))
     upper = float(np.max(values))
     if field == "sig_vol":
-        return -125.0, 125.0
+        return -100.0, 100.0
     if field == "sig_dev":
         return 0.0, 150.0
     if math.isclose(lower, upper):

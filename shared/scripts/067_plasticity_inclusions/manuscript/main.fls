@@ -994,11 +994,11 @@ INPUT ./pics/fig09_crack_tip_tracking.png
 INPUT pics/fig09_crack_tip_tracking.png
 INPUT ./pics/fig09_crack_tip_tracking.png
 INPUT ./pics/fig09_crack_tip_tracking.png
-INPUT ./pics/fig10_Jx_xct_constant_Gc_vary_Kinc.png
-INPUT ./pics/fig10_Jx_xct_constant_Gc_vary_Kinc.png
-INPUT pics/fig10_Jx_xct_constant_Gc_vary_Kinc.png
-INPUT ./pics/fig10_Jx_xct_constant_Gc_vary_Kinc.png
-INPUT ./pics/fig10_Jx_xct_constant_Gc_vary_Kinc.png
+INPUT ./pics/fig10_Jx_xct_selected_cases.png
+INPUT ./pics/fig10_Jx_xct_selected_cases.png
+INPUT pics/fig10_Jx_xct_selected_cases.png
+INPUT ./pics/fig10_Jx_xct_selected_cases.png
+INPUT ./pics/fig10_Jx_xct_selected_cases.png
 INPUT ./pics/fig11_Jx_sections_Gcinc_0p5.png
 INPUT ./pics/fig11_Jx_sections_Gcinc_0p5.png
 INPUT pics/fig11_Jx_sections_Gcinc_0p5.png
