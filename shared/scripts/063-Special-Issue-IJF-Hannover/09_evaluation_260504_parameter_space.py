@@ -98,7 +98,7 @@ WORK_LINESTYLES = {
     "total": (0, (2.0, 2.0)),
 }
 DISSIPATION_COLUMN = 9
-WHOLE_BOUNDARY_WORK_COLUMN = 13
+TOTAL_BOUNDARY_WORK_COLUMN = 13
 DEFAULT_UY_DISPLAY_MAX = 0.019
 FAILURE_MARKER_SIZE = 95
 FAILURE_MARKER_EDGE_COLOR = "#1f1f1f"
@@ -711,15 +711,15 @@ def uy_display_maximum(x_limit: float | None) -> float:
     return DEFAULT_UY_DISPLAY_MAX if x_limit is None else x_limit
 
 
-def whole_boundary_work_values(data: np.ndarray, path: Path) -> np.ndarray:
-    if data.shape[1] <= WHOLE_BOUNDARY_WORK_COLUMN:
+def total_boundary_work_values(data: np.ndarray, path: Path) -> np.ndarray:
+    if data.shape[1] <= TOTAL_BOUNDARY_WORK_COLUMN:
         raise ValueError(
-            f"{path} does not contain W_sigma_trap_boundary. "
+            f"{path} does not contain W_sigma_trap_total_boundary. "
             "Regenerate the simulation results with the updated "
             "000_template/01_phasefield_dcb_260504_folder.py before "
             "creating Fig. 17 panels (b) and (d)."
         )
-    return np.abs(data[:, WHOLE_BOUNDARY_WORK_COLUMN])
+    return np.abs(data[:, TOTAL_BOUNDARY_WORK_COLUMN])
 
 
 def plot_curves(records: list[ResultRecord], output_folder: Path, x_limit: float | None, fixed_beta: float) -> None:
@@ -1028,7 +1028,7 @@ def plot_response_energy_grid(
         data = load_graph_data(record.path)
         displacement = np.abs(data[:, 1])
         reaction = np.abs(data[:, QUANTITIES["Ry"]["column"]])
-        work = whole_boundary_work_values(data, record.path)
+        work = total_boundary_work_values(data, record.path)
         fracture = np.abs(data[:, QUANTITIES["Fracture"]["column"]])
         elastic = np.abs(data[:, QUANTITIES["Elastic"]["column"]])
         dissipation = np.abs(data[:, DISSIPATION_COLUMN])
