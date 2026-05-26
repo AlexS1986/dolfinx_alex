@@ -31,12 +31,14 @@ SIMULATION_FOLDER_RE = re.compile(
     r"^simulation_.*_SPLIT(?P<split>spectral|volumetric)_EPS(?P<epsilon>[0-9_]+)$"
 )
 
-CASE_TITLE_SIZE = 36
-PAGE_TITLE_SIZE = 24
-COLORBAR_LABEL_SIZE = 44
-COLORBAR_TICK_SIZE = 34
-COLORBAR_LABEL_PAD = 30
-ROW_LABEL_SIZE = 46
+# These wide overview canvases are included at \textwidth in the manuscript.
+# Use large source text so that the scaled labels are not smaller than \small.
+CASE_TITLE_SIZE = 56
+PAGE_TITLE_SIZE = 56
+COLORBAR_LABEL_SIZE = 56
+COLORBAR_TICK_SIZE = 56
+COLORBAR_LABEL_PAD = 28
+ROW_LABEL_SIZE = 56
 POISSON_RATIO = 0.3
 
 
@@ -60,8 +62,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--columns",
         type=int,
-        default=8,
-        help="Minimum number of width units per page. a=3 uses one unit, a=6 uses two.",
+        default=None,
+        help="Optional minimum number of width units per page. By default only occupied columns are rendered.",
     )
     parser.add_argument(
         "--field",
@@ -111,9 +113,9 @@ def parse_args() -> argparse.Namespace:
         help="Matplotlib colormap for the contour plot. Defaults to coolwarm, blue to red.",
     )
     parser.add_argument(
-        "--hide-corner-label",
+        "--show-corner-label",
         action="store_true",
-        help="Do not print the beta/epsilon annotation in the top right corner.",
+        help="Print the beta/epsilon annotation in the top right corner. Hidden by default.",
     )
     parser.add_argument(
         "--hide-page-title",
@@ -467,9 +469,9 @@ def field_limits(xdmf_files: list[Path], field: str, target_time: float | None =
     lower = float(np.min(values))
     upper = float(np.max(values))
     if field == "sig_vol":
-        return -500.0, 500.0
+        return -125.0, 125.0
     if field == "sig_dev":
-        return 0.0, 500.0
+        return 0.0, 150.0
     if math.isclose(lower, upper):
         padding = max(abs(lower) * 0.05, 1.0)
         return lower - padding, upper + padding
@@ -554,7 +556,7 @@ def write_overview(
             paths_by_mode = group_paths_by_mode(paths)
             rows = sum(1 for mode in ("min", "max", "vary") if paths_by_mode.get(mode))
             col_by_key, layout_width_units = build_column_layout(paths_by_mode)
-            max_width_units = max(columns, layout_width_units)
+            max_width_units = max(columns or 0, layout_width_units)
             fig_width = 9.36 * max_width_units
             fig_height = 4.25 * rows + 0.9
             fig = plt.figure(figsize=(fig_width, fig_height))
@@ -568,13 +570,10 @@ def write_overview(
                 wspace=0.20,
             )
             if include_page_title:
-                fig.suptitle(
-                    overview_title(field, split, paths, epsilon, include_corner_label),
-                    fontsize=PAGE_TITLE_SIZE,
-                )
+                fig.suptitle("", fontsize=PAGE_TITLE_SIZE)
             label = page_corner_label(paths, epsilon)
             if label and include_corner_label:
-                fig.text(0.98, 0.98, label, ha="right", va="top", fontsize=22)
+                fig.text(0.98, 0.98, label, ha="right", va="top", fontsize=CASE_TITLE_SIZE)
 
             filled_axes = []
             row = 0
@@ -653,7 +652,7 @@ def main() -> None:
             args.columns,
             field,
             args.cmap,
-            include_corner_label=not args.hide_corner_label,
+            include_corner_label=args.show_corner_label,
             include_page_title=not args.hide_page_title,
             include_a_label=not args.hide_a_label,
             target_time=args.target_time,

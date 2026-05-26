@@ -49,12 +49,12 @@ QUANTITIES = {
     "Fracture": {
         "column": 5,
         "curve_label": r"$\Pi_\mathrm{frac}$ in Nmm/mm",
-        "max_label": r"$\max \Pi_\mathrm{frac}$ in Nmm/mm",
+        "max_label": r"$\Pi_\mathrm{frac}(R_y=\max R_y)$ in Nmm/mm",
     },
     "Elastic": {
         "column": 6,
         "curve_label": r"$\Pi_\mathrm{el}$ in Nmm/mm",
-        "max_label": r"$\max \Pi_\mathrm{el}$ in Nmm/mm",
+        "max_label": r"$\Pi_\mathrm{el}(R_y=\max R_y)$ in Nmm/mm",
     },
 }
 
@@ -97,11 +97,20 @@ WORK_LINESTYLES = {
     "work": "-",
     "total": (0, (2.0, 2.0)),
 }
-AXIS_LABEL_SIZE = 22
-TICK_LABEL_SIZE = 17
-LEGEND_FONT_SIZE = 17
-TITLE_FONT_SIZE = 20
-SUPTITLE_FONT_SIZE = 22
+DISSIPATION_COLUMN = 9
+FAILURE_MARKER_SIZE = 95
+FAILURE_MARKER_EDGE_COLOR = "#1f1f1f"
+# Plots are included at 0.85\textwidth; maintain at least \small-sized
+# labels and annotations after manuscript scaling.
+AXIS_LABEL_SIZE = 24
+TICK_LABEL_SIZE = 22
+LEGEND_FONT_SIZE = 22
+TITLE_FONT_SIZE = 24
+SUPTITLE_FONT_SIZE = 24
+SIGMA_AXIS_LABEL_SIZE = 24
+SIGMA_TICK_LABEL_SIZE = 22
+SIGMA_LEGEND_FONT_SIZE = 22
+SIGMA_TITLE_FONT_SIZE = 24
 LEGEND_HANDLE_TEXT_PAD = 1.25
 LEGEND_LABEL_SPACING = 0.55
 AXIS_LABEL_PAD = 9
@@ -110,6 +119,8 @@ E_REFERENCE = 210000.0
 GC_REFERENCE = 1.0
 MU_REFERENCE = E_REFERENCE / (2.0 * (1.0 + POISSON_RATIO))
 REFERENCE_LENGTH = 1.0
+OMIT_A_IN_TITLES = False
+SHOW_PARAMETER_TITLES = False
 GC_FIT_A = 1.243657
 GC_FIT_B = 3.150239
 GC_FIT_C = 2.850765
@@ -196,6 +207,16 @@ def parse_args() -> argparse.Namespace:
         type=float,
         default=MU_REFERENCE,
         help="Reference shear modulus mu^0 used for nondimensional plot axes. Defaults to E^0/(2(1+nu)).",
+    )
+    parser.add_argument(
+        "--omit-a-in-titles",
+        action="store_true",
+        help="Do not show the a-value in plot titles.",
+    )
+    parser.add_argument(
+        "--show-parameter-titles",
+        action="store_true",
+        help="Show beta, epsilon and a metadata above plots. Hidden by default because captions normally carry them.",
     )
     return parser.parse_args()
 
@@ -338,10 +359,15 @@ def collect_records(resource_roots: list[Path]) -> list[ResultRecord]:
             if parsed is None:
                 continue
             data = load_graph_data(path)
+            failure_index = int(np.argmax(np.abs(data[:, QUANTITIES["Ry"]["column"]])))
             max_values = {
                 name: float(np.max(np.abs(data[:, spec["column"]])))
                 for name, spec in QUANTITIES.items()
             }
+            for name in ("Fracture", "Elastic"):
+                max_values[name] = float(
+                    np.abs(data[failure_index, QUANTITIES[name]["column"]])
+                )
             final_values = {
                 name: float(np.abs(data[-1, spec["column"]]))
                 for name, spec in QUANTITIES.items()
@@ -398,6 +424,26 @@ def fixed_beta_label(fixed_beta: float | None) -> str:
     return ", " + beta_label(fixed_beta)
 
 
+def title_parameter_label(
+    a_value: float,
+    fixed_beta: float | None,
+    epsilon: float | None = None,
+) -> str:
+    if not SHOW_PARAMETER_TITLES:
+        return ""
+    parts = []
+    if not OMIT_A_IN_TITLES:
+        parts.append(length_label("a", a_value))
+    if epsilon is not None:
+        parts.append(length_label(r"\epsilon", epsilon))
+
+    label = ", ".join(parts)
+    beta = fixed_beta_label(fixed_beta)
+    if label:
+        return label + beta
+    return beta.removeprefix(", ")
+
+
 def case_label(case: str) -> str:
     return CASE_LABELS.get(case, rf"$\mathrm{{{case}}}$")
 
@@ -420,6 +466,16 @@ def force_scale() -> float:
 
 def normalized_metric_value(metric: str, value: float) -> float:
     return value
+
+
+def peak_reaction_index(data: np.ndarray) -> int:
+    return int(np.argmax(np.abs(data[:, QUANTITIES["Ry"]["column"]])))
+
+
+def work_at_peak_reaction(data: np.ndarray) -> float:
+    return float(
+        np.abs(data[peak_reaction_index(data), QUANTITIES["Work"]["column"]])
+    )
 
 
 def normalized_metric_values(metric: str, values) -> np.ndarray:
@@ -515,10 +571,18 @@ def remove_existing_plots(output_folder: Path, pattern: str) -> None:
             plot_path.unlink()
 
 
-def style_legend(legend) -> None:
+def style_legend(legend, font_size: int = LEGEND_FONT_SIZE) -> None:
     if legend is None:
         return
-    legend.set_title(legend.get_title().get_text(), prop={"size": LEGEND_FONT_SIZE})
+    legend.set_frame_on(True)
+    frame = legend.get_frame()
+    frame.set_facecolor("white")
+    frame.set_alpha(0.86)
+    frame.set_edgecolor("0.82")
+    frame.set_linewidth(0.7)
+    legend.set_title(legend.get_title().get_text(), prop={"size": font_size})
+    for text in legend.get_texts():
+        text.set_fontsize(font_size)
     legend.handletextpad = LEGEND_HANDLE_TEXT_PAD
     legend.labelspacing = LEGEND_LABEL_SPACING
     try:
@@ -566,18 +630,29 @@ def case_order(case: str) -> int:
     return {"min": 0, "max": 1, "vary": 2}.get(case, 99)
 
 
-def format_axes(ax: plt.Axes, title_size: int = TITLE_FONT_SIZE) -> None:
-    ax.xaxis.label.set_size(AXIS_LABEL_SIZE)
-    ax.yaxis.label.set_size(AXIS_LABEL_SIZE)
+def format_axes(
+    ax: plt.Axes,
+    title_size: int = TITLE_FONT_SIZE,
+    axis_label_size: int = AXIS_LABEL_SIZE,
+    tick_label_size: int = TICK_LABEL_SIZE,
+) -> None:
+    ax.xaxis.label.set_size(axis_label_size)
+    ax.yaxis.label.set_size(axis_label_size)
     ax.xaxis.labelpad = AXIS_LABEL_PAD
     ax.yaxis.labelpad = AXIS_LABEL_PAD
     ax.title.set_size(title_size)
-    ax.tick_params(axis="both", labelsize=TICK_LABEL_SIZE)
+    ax.tick_params(axis="both", labelsize=tick_label_size)
 
 
 def format_suptitle(fig: plt.Figure) -> None:
     if fig._suptitle is not None:
         fig._suptitle.set_size(SUPTITLE_FONT_SIZE)
+
+
+def summary_figure_size(axis_count: int) -> tuple[float, float]:
+    if axis_count == 1:
+        return (10.0, 6.2)
+    return (6.3 * axis_count, 5.2)
 
 
 def write_summary_csv(records: list[ResultRecord], output_folder: Path) -> None:
@@ -648,6 +723,7 @@ def plot_curves(records: list[ResultRecord], output_folder: Path, x_limit: float
                     data = load_graph_data(record.path)
                     displacement = np.abs(data[:, 1])
                     values = normalized_metric_values(quantity, np.abs(data[:, spec["column"]]))
+                    failure_index = peak_reaction_index(data)
                     max_displacement = max(max_displacement, float(np.max(displacement)))
                     label = rf"$\rho={record.rho:g}$, {record.case}"
                     ax.plot(
@@ -658,11 +734,17 @@ def plot_curves(records: list[ResultRecord], output_folder: Path, x_limit: float
                         linewidth=1.6,
                         linestyle=line_style_for_case(record.case),
                     )
-                ax.set_title(
-                    length_label("a", a_value) + ", "
-                    + length_label(r"\epsilon", epsilon)
-                    + fixed_beta_label(fixed_beta)
-                )
+                    ax.scatter(
+                        displacement[failure_index],
+                        values[failure_index],
+                        s=FAILURE_MARKER_SIZE,
+                        marker="X",
+                        color=color_for_rho(record.rho),
+                        edgecolor=FAILURE_MARKER_EDGE_COLOR,
+                        linewidth=0.85,
+                        zorder=5,
+                    )
+                ax.set_title(title_parameter_label(a_value, fixed_beta, epsilon))
                 ax.set_xlabel(r"$u_y$ in mm")
                 ax.set_ylabel(quantity_label(quantity, "curve_label"))
                 ax.set_xlim(0.0, x_limit or nice_axis_upper_limit(max_displacement))
@@ -687,6 +769,14 @@ def plot_curves(records: list[ResultRecord], output_folder: Path, x_limit: float
                 epsilon,
                 x_limit,
                 fixed_beta,
+            )
+            plot_response_energy_grid(
+                parameter_records,
+                output_folder,
+                split,
+                a_value,
+                epsilon,
+                x_limit,
             )
 
 
@@ -729,11 +819,7 @@ def plot_work_balance_curve(
             linewidth=1.8,
         )
 
-    ax.set_title(
-        length_label("a", a_value) + ", "
-        + length_label(r"\epsilon", epsilon)
-        + fixed_beta_label(fixed_beta)
-    )
+    ax.set_title(title_parameter_label(a_value, fixed_beta, epsilon))
     ax.set_xlabel(r"$u_y$ in mm")
     ax.set_ylabel(r"$W,\ \Pi_\mathrm{el}+\Pi_\mathrm{frac}$ in Nmm/mm")
     ax.set_xlim(0.0, x_limit or nice_axis_upper_limit(max_displacement))
@@ -834,11 +920,7 @@ def plot_energy_components_curve(
                 linewidth=1.8,
             )
 
-    ax.set_title(
-        length_label("a", a_value) + ", "
-        + length_label(r"\epsilon", epsilon)
-        + fixed_beta_label(fixed_beta)
-    )
+    ax.set_title(title_parameter_label(a_value, fixed_beta, epsilon))
     ax.set_xlabel(r"$u_y$ in mm")
     ax.set_ylabel(r"$\Pi$ in Nmm/mm")
     ax.set_xlim(0.0, x_limit or nice_axis_upper_limit(max_displacement))
@@ -898,6 +980,182 @@ def plot_energy_components_curve(
         split_output_folder(output_folder, split)
         / (
             f"Energy_components_vs_uy_{split}_a_{a_value}"
+            f"_eps{float_filename_token(epsilon)}.png"
+        ),
+        dpi=300,
+    )
+    plt.close(fig)
+
+
+def plot_response_energy_grid(
+    parameter_records: list[ResultRecord],
+    output_folder: Path,
+    split: str,
+    a_value: int,
+    epsilon: float,
+    x_limit: float | None,
+) -> None:
+    """Plot the force response and energy balance in a manuscript four-panel figure."""
+    fig, axes = plt.subplots(2, 2, figsize=(15.0, 12.5), sharex=True)
+    (ax_force, ax_work), (ax_components, ax_balance) = axes
+    max_displacement = 0.0
+    max_force = 0.0
+    max_work = 0.0
+    max_components = 0.0
+    max_balance = 0.0
+
+    for record in parameter_records:
+        data = load_graph_data(record.path)
+        displacement = np.abs(data[:, 1])
+        reaction = np.abs(data[:, QUANTITIES["Ry"]["column"]])
+        work = np.abs(data[:, QUANTITIES["Work"]["column"]])
+        fracture = np.abs(data[:, QUANTITIES["Fracture"]["column"]])
+        elastic = np.abs(data[:, QUANTITIES["Elastic"]["column"]])
+        dissipation = np.abs(data[:, DISSIPATION_COLUMN])
+        total_energy = elastic + fracture + dissipation
+        peak_index = peak_reaction_index(data)
+        color = energy_color_for_record(record)
+
+        max_displacement = max(max_displacement, float(np.max(displacement)))
+        max_force = max(max_force, float(np.max(reaction)))
+        max_work = max(max_work, float(np.max(work)))
+        max_components = max(max_components, float(np.max(elastic)), float(np.max(fracture)))
+        max_balance = max(max_balance, float(np.max(work)), float(np.max(total_energy)))
+
+        ax_force.plot(displacement, reaction, color=color, linewidth=1.8)
+        ax_work.plot(displacement, work, color=color, linewidth=1.8)
+        ax_components.plot(
+            displacement,
+            elastic,
+            color=color,
+            linestyle=ENERGY_LINESTYLES["elastic"],
+            linewidth=1.8,
+        )
+        ax_components.plot(
+            displacement,
+            fracture,
+            color=color,
+            linestyle=ENERGY_LINESTYLES["fracture"],
+            linewidth=1.8,
+        )
+        ax_balance.plot(
+            displacement,
+            work,
+            color=color,
+            linestyle=WORK_LINESTYLES["work"],
+            linewidth=1.8,
+        )
+        ax_balance.plot(
+            displacement,
+            total_energy,
+            color=color,
+            linestyle=WORK_LINESTYLES["total"],
+            linewidth=1.8,
+        )
+
+        for ax, values in (
+            (ax_force, reaction),
+            (ax_work, work),
+            (ax_components, elastic),
+            (ax_components, fracture),
+            (ax_balance, work),
+            (ax_balance, total_energy),
+        ):
+            ax.scatter(
+                displacement[peak_index],
+                values[peak_index],
+                s=FAILURE_MARKER_SIZE,
+                marker="X",
+                color=color,
+                edgecolor=FAILURE_MARKER_EDGE_COLOR,
+                linewidth=0.85,
+                zorder=5,
+            )
+
+    x_upper = x_limit or nice_axis_upper_limit(max_displacement)
+    for panel_label, ax in zip(("a", "b", "c", "d"), axes.ravel()):
+        ax.text(
+            0.02,
+            0.95,
+            rf"\textbf{{({panel_label})}}",
+            transform=ax.transAxes,
+            ha="left",
+            va="top",
+            fontsize=TITLE_FONT_SIZE,
+        )
+        ax.set_xlim(0.0, x_upper)
+        ax.grid(True, alpha=0.3)
+        format_axes(ax)
+
+    ax_force.set_ylabel(r"$R_y$ in N/mm")
+    ax_work.set_ylabel(r"$W$ in Nmm/mm")
+    ax_components.set_ylabel(r"$\Pi$ in Nmm/mm")
+    ax_balance.set_ylabel(r"$W,\ \Pi_\mathrm{tot}$ in Nmm/mm")
+    ax_components.set_xlabel(r"$u_y$ in mm")
+    ax_balance.set_xlabel(r"$u_y$ in mm")
+    ax_force.set_ylim(0.0, nice_axis_upper_limit(max_force))
+    ax_work.set_ylim(0.0, nice_axis_upper_limit(max_work))
+    ax_components.set_ylim(0.0, nice_axis_upper_limit(max_components))
+    ax_balance.set_ylim(0.0, nice_axis_upper_limit(max_balance))
+
+    dataset_handles = [
+        Line2D(
+            [0],
+            [0],
+            color=energy_color_for_record(record),
+            linewidth=2.4,
+            label=rf"$\rho={record.rho:g}$, {case_label(record.case)}",
+        )
+        for record in parameter_records
+    ]
+    curve_handles = [
+        Line2D([0], [0], color="#2f2f2f", linewidth=2.2, label=r"$\Pi_\mathrm{el}$ / $W$"),
+        Line2D(
+            [0],
+            [0],
+            color="#2f2f2f",
+            linestyle=ENERGY_LINESTYLES["fracture"],
+            linewidth=2.2,
+            label=r"$\Pi_\mathrm{frac}$ / $\Pi_\mathrm{tot}$",
+        ),
+        Line2D(
+            [0],
+            [0],
+            marker="X",
+            color="#2f2f2f",
+            linewidth=0.0,
+            markersize=9,
+            label=r"$R_y=\max R_y$",
+        ),
+    ]
+    dataset_legend = fig.legend(
+        handles=dataset_handles,
+        loc="upper center",
+        bbox_to_anchor=(0.5, 0.995),
+        ncol=3,
+        fontsize=LEGEND_FONT_SIZE,
+        handlelength=2.8,
+        handletextpad=LEGEND_HANDLE_TEXT_PAD,
+        labelspacing=LEGEND_LABEL_SPACING,
+    )
+    style_legend(dataset_legend)
+    curve_legend = fig.legend(
+        handles=curve_handles,
+        loc="lower center",
+        bbox_to_anchor=(0.5, 0.008),
+        ncol=3,
+        fontsize=LEGEND_FONT_SIZE,
+        handlelength=2.8,
+        handletextpad=LEGEND_HANDLE_TEXT_PAD,
+        labelspacing=LEGEND_LABEL_SPACING,
+    )
+    style_legend(curve_legend)
+
+    fig.subplots_adjust(top=0.88, bottom=0.13, left=0.10, right=0.98, hspace=0.20, wspace=0.20)
+    fig.savefig(
+        split_output_folder(output_folder, split)
+        / (
+            f"Response_energy_grid_vs_uy_{split}_a_{a_value}"
             f"_eps{float_filename_token(epsilon)}.png"
         ),
         dpi=300,
@@ -996,7 +1254,7 @@ def plot_metric_vs_rho(records: list[ResultRecord], output_folder: Path, metric:
                             zorder=3,
                         )
                 ax.set_xlabel(r"$\rho$")
-                ax.set_title(length_label("a", a_value) + fixed_beta_label(fixed_beta))
+                ax.set_title(title_parameter_label(a_value, fixed_beta))
                 ax.set_xticks(rho_values)
                 ax.set_ylabel(quantity_label(metric))
                 ax.grid(True, alpha=0.3)
@@ -1016,7 +1274,12 @@ def plot_metric_vs_epsilon(records: list[ResultRecord], output_folder: Path, met
             continue
 
         a_values = sorted({record.a for record in split_records})
-        fig, axes = plt.subplots(1, len(a_values), figsize=(6.3 * len(a_values), 5.2), squeeze=False)
+        fig, axes = plt.subplots(
+            1,
+            len(a_values),
+            figsize=summary_figure_size(len(a_values)),
+            squeeze=False,
+        )
         for ax, a_value in zip(axes.ravel(), a_values):
             subset = [record for record in split_records if record.a == a_value]
             for rho in sorted({record.rho for record in subset}):
@@ -1043,14 +1306,108 @@ def plot_metric_vs_epsilon(records: list[ResultRecord], output_folder: Path, met
                         linewidth=1.8,
                         label=label,
                     )
-            ax.set_title(length_label("a", a_value) + fixed_beta_label(fixed_beta))
+            ax.set_title(title_parameter_label(a_value, fixed_beta))
             ax.set_xlabel(length_axis_label(r"\epsilon"))
             ax.set_ylabel(quantity_label(metric))
             ax.grid(True, alpha=0.3)
-            style_legend(ax.legend(frameon=False, handlelength=3.8, handletextpad=LEGEND_HANDLE_TEXT_PAD, labelspacing=LEGEND_LABEL_SPACING, fontsize=LEGEND_FONT_SIZE))
-            format_axes(ax)
+            style_legend(
+                ax.legend(
+                    frameon=False,
+                    handlelength=3.8,
+                    handletextpad=LEGEND_HANDLE_TEXT_PAD,
+                    labelspacing=LEGEND_LABEL_SPACING,
+                    fontsize=SIGMA_LEGEND_FONT_SIZE,
+                ),
+                font_size=SIGMA_LEGEND_FONT_SIZE,
+            )
+            format_axes(
+                ax,
+                title_size=SIGMA_TITLE_FONT_SIZE,
+                axis_label_size=SIGMA_AXIS_LABEL_SIZE,
+                tick_label_size=SIGMA_TICK_LABEL_SIZE,
+            )
         fig.tight_layout()
         fig.savefig(split_output_folder(output_folder, split) / f"max_{metric}_vs_epsilon_{split}.png", dpi=300)
+        plt.close(fig)
+
+
+def plot_work_at_peak_reaction_vs_epsilon(
+    records: list[ResultRecord],
+    output_folder: Path,
+    fixed_beta: float,
+) -> None:
+    remove_existing_plots(output_folder, "Work_at_peak_Ry_vs_epsilon_*.png")
+
+    for split in sorted({record.split for record in records}):
+        split_records = [record for record in records if record.split == split]
+        if not split_records:
+            continue
+
+        a_values = [6]
+        fig, axes = plt.subplots(
+            1,
+            len(a_values),
+            figsize=summary_figure_size(len(a_values)),
+            squeeze=False,
+        )
+        for ax, a_value in zip(axes.ravel(), a_values):
+            subset = [record for record in split_records if record.a == a_value]
+            for rho in sorted({record.rho for record in subset}):
+                rho_records = [
+                    record
+                    for record in subset
+                    if math.isclose(record.rho, rho)
+                ]
+                for case in sorted(
+                    {record.case for record in rho_records},
+                    key=case_order,
+                ):
+                    rho_subset = sorted(
+                        [
+                            record
+                            for record in rho_records
+                            if record.case == case
+                        ],
+                        key=lambda record: record.epsilon,
+                    )
+                    if not rho_subset:
+                        continue
+
+                    ax.plot(
+                        [record.epsilon for record in rho_subset],
+                        [
+                            normalized_metric_value(
+                                "Work",
+                                work_at_peak_reaction(load_graph_data(record.path)),
+                            )
+                            for record in rho_subset
+                        ],
+                        color=color_for_rho(rho),
+                        linestyle=line_style_for_case(case),
+                        marker="o",
+                        linewidth=1.8,
+                        label=rf"$\rho={rho:g}$, {case_label(case)}",
+                    )
+            ax.set_title(title_parameter_label(a_value, fixed_beta))
+            ax.set_xlabel(length_axis_label(r"\epsilon"))
+            ax.set_ylabel(r"$W(R_y=\max R_y)$ in Nmm/mm")
+            ax.grid(True, alpha=0.3)
+            style_legend(
+                ax.legend(
+                    frameon=False,
+                    handlelength=3.8,
+                    handletextpad=LEGEND_HANDLE_TEXT_PAD,
+                    labelspacing=LEGEND_LABEL_SPACING,
+                    fontsize=LEGEND_FONT_SIZE,
+                )
+            )
+            format_axes(ax)
+        fig.tight_layout()
+        fig.savefig(
+            split_output_folder(output_folder, split)
+            / f"Work_at_peak_Ry_vs_epsilon_{split}.png",
+            dpi=300,
+        )
         plt.close(fig)
 
 
@@ -1079,7 +1436,7 @@ def plot_metric_vs_sigma_c(records: list[ResultRecord], output_folder: Path, met
 
                     label = rf"$\rho={rho:g}$, {case_label(case)}"
                     ax.plot(
-                        [record.sigma_c / stress_scale() for record in sigma_subset],
+                        [record.sigma_c for record in sigma_subset],
                         [normalized_metric_value(metric, record.max_values[metric]) for record in sigma_subset],
                         color=color_for_rho(rho),
                         linestyle=line_style_for_case(case),
@@ -1087,12 +1444,26 @@ def plot_metric_vs_sigma_c(records: list[ResultRecord], output_folder: Path, met
                         linewidth=1.8,
                         label=label,
                     )
-            ax.set_title(length_label("a", a_value) + fixed_beta_label(fixed_beta))
-            ax.set_xlabel(r"$\sigma_c/\sqrt{2\mu^0 G_c^0/\mathrm{mm}}$")
+            ax.set_title(title_parameter_label(a_value, fixed_beta))
+            ax.set_xlabel(r"$\sigma_c$ in N/mm$^2$")
             ax.set_ylabel(quantity_label(metric))
             ax.grid(True, alpha=0.3)
-            style_legend(ax.legend(frameon=False, handlelength=3.8, handletextpad=LEGEND_HANDLE_TEXT_PAD, labelspacing=LEGEND_LABEL_SPACING, fontsize=LEGEND_FONT_SIZE))
-            format_axes(ax)
+            style_legend(
+                ax.legend(
+                    frameon=False,
+                    handlelength=3.8,
+                    handletextpad=LEGEND_HANDLE_TEXT_PAD,
+                    labelspacing=LEGEND_LABEL_SPACING,
+                    fontsize=SIGMA_LEGEND_FONT_SIZE,
+                ),
+                font_size=SIGMA_LEGEND_FONT_SIZE,
+            )
+            format_axes(
+                ax,
+                title_size=SIGMA_TITLE_FONT_SIZE,
+                axis_label_size=SIGMA_AXIS_LABEL_SIZE,
+                tick_label_size=SIGMA_TICK_LABEL_SIZE,
+            )
         fig.tight_layout()
         fig.savefig(split_output_folder(output_folder, split) / f"max_{metric}_vs_sig_c_{split}.png", dpi=300)
         plt.close(fig)
@@ -1303,7 +1674,7 @@ def plot_porosity_volume_vs_density_a(
 
 
 def main() -> None:
-    global GC_REFERENCE, MU_REFERENCE, REFERENCE_LENGTH
+    global GC_REFERENCE, MU_REFERENCE, OMIT_A_IN_TITLES, REFERENCE_LENGTH, SHOW_PARAMETER_TITLES
 
     args = parse_args()
     if args.reference_length <= 0.0:
@@ -1315,6 +1686,8 @@ def main() -> None:
     REFERENCE_LENGTH = args.reference_length
     GC_REFERENCE = args.reference_gc
     MU_REFERENCE = args.reference_mu
+    OMIT_A_IN_TITLES = args.omit_a_in_titles
+    SHOW_PARAMETER_TITLES = args.show_parameter_titles
 
     script_path = Path(__file__).resolve().parent
     result_roots = args.result_roots or [script_path / "results"]
@@ -1337,6 +1710,7 @@ def main() -> None:
         plot_metric_vs_epsilon(fixed_beta_records, output_folder, metric, fixed_beta)
         plot_metric_vs_sigma_c(fixed_beta_records, output_folder, metric, fixed_beta)
         plot_split_comparison(fixed_beta_records, output_folder, metric, fixed_beta)
+    plot_work_at_peak_reaction_vs_epsilon(fixed_beta_records, output_folder, fixed_beta)
     plot_volume(fixed_beta_records, output_folder, fixed_beta)
     plot_volume_vs_rho_a(fixed_beta_records, output_folder, fixed_beta)
     plot_porosity_volume_vs_density_a(fixed_beta_records, output_folder, fixed_beta)

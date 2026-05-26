@@ -6,6 +6,18 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 import os
 
+plt.rcParams.update({
+    "text.usetex": True,
+    "font.family": "serif",
+    "font.serif": ["Computer Modern Roman"],
+    "mathtext.fontset": "cm",
+    "axes.unicode_minus": False,
+    "axes.labelsize": 18,
+    "xtick.labelsize": 15,
+    "ytick.labelsize": 15,
+    "legend.fontsize": 14,
+})
+
 # --------------------------------------------------
 # Digitized circular pore data (EDIT if needed)
 # --------------------------------------------------
@@ -68,8 +80,11 @@ ax1 = fig.add_subplot(1, 2, 1)
 ax1.scatter(x_data, y_data, label='Data')
 ax1.plot(x_fit, y_fit, label='Fit')
 ax1.set_xlabel(r'$w_s/L$')
-ax1.set_ylabel(r'$G_c/G_c^{\mathrm{hom}}$')
-ax1.legend()
+ax1.set_ylabel(r'$G_c/G_c^0$')
+legend = ax1.legend()
+legend.get_frame().set_facecolor("white")
+legend.get_frame().set_alpha(0.86)
+legend.get_frame().set_edgecolor("0.82")
 ax1.grid(True)
 
 # Show parameters inside plot
@@ -91,7 +106,7 @@ ax2.plot(phi_plot, J_phi_clipped)
 
 ax2.set_xlim(0, 0.5)
 ax2.set_xlabel(r'$\phi_r$')
-ax2.set_ylabel(r'$G_c/G_c^{\mathrm{hom}}$')
+ax2.set_ylabel(r'$G_c/G_c^0$')
 ax2.grid(True)
 
 plt.tight_layout()
@@ -111,7 +126,7 @@ fig_right, ax_right = plt.subplots(figsize=(5, 4))
 ax_right.plot(phi_plot, J_phi_clipped)
 ax_right.set_xlim(0, 0.5)
 ax_right.set_xlabel(r'$\phi_r$')
-ax_right.set_ylabel(r'$G_c/G_c^{\mathrm{hom}}$')
+ax_right.set_ylabel(r'$G_c/G_c^0$')
 ax_right.grid(True)
 fig_right.tight_layout()
 

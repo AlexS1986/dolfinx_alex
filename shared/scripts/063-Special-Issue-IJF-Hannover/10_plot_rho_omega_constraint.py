@@ -20,6 +20,10 @@ plt.rcParams.update({
     "font.serif": ["Computer Modern Roman"],
     "mathtext.fontset": "cm",
     "axes.unicode_minus": False,
+    "axes.labelsize": 18,
+    "xtick.labelsize": 15,
+    "ytick.labelsize": 15,
+    "legend.fontsize": 14,
 })
 
 
@@ -199,7 +203,11 @@ def plot_records(records: list[ConstraintRecord], output: Path) -> None:
     ax.tick_params(axis="y", labelsize=15)
     ax.grid(True, axis="y", alpha=0.28)
     ax.set_axisbelow(True)
-    ax.legend(frameon=False, fontsize=14)
+    legend = ax.legend(fontsize=14)
+    legend.get_frame().set_facecolor("white")
+    legend.get_frame().set_alpha(0.86)
+    legend.get_frame().set_edgecolor("0.82")
+    legend.get_frame().set_linewidth(0.7)
     fig.tight_layout()
     fig.savefig(output, dpi=300)
     fig.savefig(output.with_suffix(".png"), dpi=300)

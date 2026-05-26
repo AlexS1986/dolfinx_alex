@@ -1,0 +1,153 @@
+%% BioMed_Central_Bib_Style_v1.01
+
+\begin{thebibliography}{7}
+% BibTex style file: bmc-mathphys.bst (version 2.1), 2014-07-24
+\ifx \bisbn   \undefined \def \bisbn  #1{ISBN #1}\fi
+\ifx \binits  \undefined \def \binits#1{#1}\fi
+\ifx \bauthor  \undefined \def \bauthor#1{#1}\fi
+\ifx \batitle  \undefined \def \batitle#1{#1}\fi
+\ifx \bjtitle  \undefined \def \bjtitle#1{#1}\fi
+\ifx \bvolume  \undefined \def \bvolume#1{\textbf{#1}}\fi
+\ifx \byear  \undefined \def \byear#1{#1}\fi
+\ifx \bissue  \undefined \def \bissue#1{#1}\fi
+\ifx \bfpage  \undefined \def \bfpage#1{#1}\fi
+\ifx \blpage  \undefined \def \blpage #1{#1}\fi
+\ifx \burl  \undefined \def \burl#1{\textsf{#1}}\fi
+\ifx \doiurl  \undefined \def \doiurl#1{\url{https://doi.org/#1}}\fi
+\ifx \betal  \undefined \def \betal{\textit{et al.}}\fi
+\ifx \binstitute  \undefined \def \binstitute#1{#1}\fi
+\ifx \binstitutionaled  \undefined \def \binstitutionaled#1{#1}\fi
+\ifx \bctitle  \undefined \def \bctitle#1{#1}\fi
+\ifx \beditor  \undefined \def \beditor#1{#1}\fi
+\ifx \bpublisher  \undefined \def \bpublisher#1{#1}\fi
+\ifx \bbtitle  \undefined \def \bbtitle#1{#1}\fi
+\ifx \bedition  \undefined \def \bedition#1{#1}\fi
+\ifx \bseriesno  \undefined \def \bseriesno#1{#1}\fi
+\ifx \blocation  \undefined \def \blocation#1{#1}\fi
+\ifx \bsertitle  \undefined \def \bsertitle#1{#1}\fi
+\ifx \bsnm \undefined \def \bsnm#1{#1}\fi
+\ifx \bsuffix \undefined \def \bsuffix#1{#1}\fi
+\ifx \bparticle \undefined \def \bparticle#1{#1}\fi
+\ifx \barticle \undefined \def \barticle#1{#1}\fi
+\bibcommenthead
+\ifx \bconfdate \undefined \def \bconfdate #1{#1}\fi
+\ifx \botherref \undefined \def \botherref #1{#1}\fi
+\ifx \url \undefined \def \url#1{\textsf{#1}}\fi
+\ifx \bchapter \undefined \def \bchapter#1{#1}\fi
+\ifx \bbook \undefined \def \bbook#1{#1}\fi
+\ifx \bcomment \undefined \def \bcomment#1{#1}\fi
+\ifx \oauthor \undefined \def \oauthor#1{#1}\fi
+\ifx \citeauthoryear \undefined \def \citeauthoryear#1{#1}\fi
+\ifx \endbibitem  \undefined \def \endbibitem {}\fi
+\ifx \bconflocation  \undefined \def \bconflocation#1{#1}\fi
+\ifx \arxivurl  \undefined \def \arxivurl#1{\textsf{#1}}\fi
+\csname PreBibitemsHook\endcsname
+
+%%% 1
+\bibitem[\protect\citeauthoryear{Gross and Seelig}{2011}]{gross_fracture_2011}
+\begin{bbook}
+\bauthor{\bsnm{Gross}, \binits{D.}},
+\bauthor{\bsnm{Seelig}, \binits{T.}}:
+\bbtitle{Fracture {{Mechanics}}: {{With}} an {{Introduction}} to
+  {{Micromechanics}}}.
+\bsertitle{Mechanical {{Engineering Series}}}.
+\bpublisher{Springer},
+\blocation{Berlin, Heidelberg}
+(\byear{2011}).
+\doiurl{10.1007/978-3-642-19240-1}
+\end{bbook}
+\endbibitem
+
+%%% 2
+\bibitem[\protect\citeauthoryear{Hauser et~al.}{2021}]{hauser_porosity_2021}
+\begin{barticle}
+\bauthor{\bsnm{Hauser}, \binits{T.}},
+\bauthor{\bsnm{Reisch}, \binits{R.T.}},
+\bauthor{\bsnm{Breese}, \binits{P.P.}},
+\bauthor{\bsnm{Lutz}, \binits{B.S.}},
+\bauthor{\bsnm{Pantano}, \binits{M.}},
+\bauthor{\bsnm{Nalam}, \binits{Y.}},
+\bauthor{\bsnm{Bela}, \binits{K.}},
+\bauthor{\bsnm{Kamps}, \binits{T.}},
+\bauthor{\bsnm{Volpp}, \binits{J.}},
+\bauthor{\bsnm{Kaplan}, \binits{A.F.H.}}:
+\batitle{Porosity in wire arc additive manufacturing of aluminium alloys}.
+\bjtitle{Additive Manufacturing}
+\bvolume{41},
+\bfpage{101993}
+(\byear{2021})
+\doiurl{10.1016/j.addma.2021.101993}
+\end{barticle}
+\endbibitem
+
+%%% 3
+\bibitem[\protect\citeauthoryear{Schneider}{2020}]{schneider_fftbased_2020}
+\begin{barticle}
+\bauthor{\bsnm{Schneider}, \binits{M.}}:
+\batitle{An {{FFT-based}} method for computing weighted minimal surfaces in
+  microstructures with applications to the computational homogenization of
+  brittle fracture}.
+\bjtitle{International Journal for Numerical Methods in Engineering}
+\bvolume{121}(\bissue{7}),
+\bfpage{1367}--\blpage{1387}
+(\byear{2020})
+\doiurl{10.1002/nme.6270}
+\end{barticle}
+\endbibitem
+
+%%% 4
+\bibitem[\protect\citeauthoryear{Michel and Suquet}{2022}]{michel_merits_2022}
+\begin{barticle}
+\bauthor{\bsnm{Michel}, \binits{J.-C.}},
+\bauthor{\bsnm{Suquet}, \binits{P.}}:
+\batitle{Merits and limits of a variational definition of the effective
+  toughness of heterogeneous materials}.
+\bjtitle{Journal of the Mechanics and Physics of Solids}
+\bvolume{164},
+\bfpage{104889}
+(\byear{2022})
+\doiurl{10.1016/j.jmps.2022.104889}
+\end{barticle}
+\endbibitem
+
+%%% 5
+\bibitem[\protect\citeauthoryear{Hossain et~al.}{2014}]{hossain_effective_2014}
+\begin{barticle}
+\bauthor{\bsnm{Hossain}, \binits{M.Z.}},
+\bauthor{\bsnm{Hsueh}, \binits{C.-J.}},
+\bauthor{\bsnm{Bourdin}, \binits{B.}},
+\bauthor{\bsnm{Bhattacharya}, \binits{K.}}:
+\batitle{Effective toughness of heterogeneous media}.
+\bjtitle{Journal of the Mechanics and Physics of Solids}
+\bvolume{71},
+\bfpage{15}--\blpage{32}
+(\byear{2014})
+\doiurl{10.1016/j.jmps.2014.06.002}
+\end{barticle}
+\endbibitem
+
+%%% 6
+\bibitem[\protect\citeauthoryear{Noll et~al.}{2020}]{noll_3d_2020}
+\begin{barticle}
+\bauthor{\bsnm{Noll}, \binits{T.}},
+\bauthor{\bsnm{Kuhn}, \binits{C.}},
+\bauthor{\bsnm{Olesch}, \binits{D.}},
+\bauthor{\bsnm{M{\"u}ller}, \binits{R.}}:
+\batitle{{{3D}} phase field simulations of ductile fracture}.
+\bjtitle{GAMM-Mitteilungen}
+\bvolume{43}(\bissue{2}),
+\bfpage{202000008}
+(\byear{2020})
+\doiurl{10.1002/gamm.202000008}
+\end{barticle}
+\endbibitem
+
+%%% 7
+\bibitem[\protect\citeauthoryear{}{}]{_fenicsx_}
+\begin{botherref}
+{{FEniCSx Documentation}}.
+https://fenicsproject.org/template.html
+\end{botherref}
+\endbibitem
+
+\end{thebibliography}

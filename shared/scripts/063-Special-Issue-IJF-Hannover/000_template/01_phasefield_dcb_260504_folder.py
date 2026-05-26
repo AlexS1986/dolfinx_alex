@@ -748,9 +748,15 @@ for split_name, case in [
         )
 
     n = ufl.FacetNormal(domain)
-    # external_surface_tag = 5
-    # external_surface_tags = pp.tag_part_of_boundary(domain,bc.get_boundary_of_box_as_function(domain, comm,atol=atol*0.0),external_surface_tag)
-    # ds = ufl.Measure('ds', domain=domain, subdomain_data=external_surface_tags)
+    external_surface_tag = 5
+    external_surface_tags = pp.tag_part_of_boundary(
+        domain,
+        bc.get_boundary_of_box_as_function(domain, comm, atol=atol * 0.0),
+        external_surface_tag,
+    )
+    ds_external_tagged = ufl.Measure(
+        "ds", domain=domain, subdomain_data=external_surface_tags
+    )
     
     
     
@@ -867,6 +873,7 @@ for split_name, case in [
         return bcs
 
     Work = dlfx.fem.Constant(domain, 0.0)
+    Work_sigma_trap_boundary = dlfx.fem.Constant(domain, 0.0)
     Work_interpolated_legacy = dlfx.fem.Constant(domain, 0.0)
     Dissipation = dlfx.fem.Constant(domain, 0.0)
     
@@ -966,6 +973,20 @@ for split_name, case in [
         dW = dW_left + dW_right
         Work.value = Work.value + dW
 
+        # Same non-interpolated trapezoidal work, integrated over the full exterior boundary.
+        dW_sigma_trap_boundary = trapezoidal_work_increment_from_stress_expression(
+            sigma,
+            sigma_m1,
+            u,
+            um1,
+            n,
+            ds_external_tagged(external_surface_tag),
+            comm,
+        )
+        Work_sigma_trap_boundary.value = (
+            Work_sigma_trap_boundary.value + dW_sigma_trap_boundary
+        )
+
         dW_interpolated_legacy = 0.0
         if WRITE_LEGACY_INTERPOLATED_WORK:
             dW_left_interpolated = pp.work_increment_external_forces(
@@ -1012,6 +1033,8 @@ for split_name, case in [
                 Dissipation.value,
                 dW_interpolated_legacy,
                 Work_interpolated_legacy.value,
+                dW_sigma_trap_boundary,
+                Work_sigma_trap_boundary.value,
             )
 
         if rank == 0:
@@ -1082,6 +1105,8 @@ for split_name, case in [
                     "D_s",
                     "dW_interpolated_legacy",
                     "W_interpolated_legacy",
+                    "dW_sigma_trap_boundary",
+                    "W_sigma_trap_boundary",
                 ],
             )
 
