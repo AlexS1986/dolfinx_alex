@@ -1,0 +1,22 @@
+\begin{picture}(0,0)%
+\includegraphics{Images_A02/cdb_setup.pdf}%
+\end{picture}%
+\setlength{\unitlength}{3947sp}%
+\begin{picture}(8124,5628)(1489,-4873)
+\put(2101,464){\makebox(0,0)[lb]{\smash{\fontsize{24}{28.8}\normalfont\rmfamily {\color[rgb]{0,0,0}$y$}%
+}}}
+\put(7951,-2536){\makebox(0,0)[lb]{\smash{\fontsize{24}{28.8}\normalfont\rmfamily {\color[rgb]{0,0,0}$b$}%
+}}}
+\put(4501,-4261){\makebox(0,0)[lb]{\smash{\fontsize{24}{28.8}\normalfont\rmfamily {\color[rgb]{0,0,0}$a$}%
+}}}
+\put(2551,-811){\makebox(0,0)[lb]{\smash{\fontsize{24}{28.8}\normalfont\rmfamily {\color[rgb]{0,0,0}$a/3$}%
+}}}
+\put(4201,-811){\makebox(0,0)[lb]{\smash{\fontsize{24}{28.8}\normalfont\rmfamily {\color[rgb]{0,0,0}$a/3$}%
+}}}
+\put(3226,-361){\makebox(0,0)[lb]{\smash{\fontsize{24}{28.8}\normalfont\rmfamily {\color[rgb]{1,0,0}$F$}%
+}}}
+\put(5701,-361){\makebox(0,0)[lb]{\smash{\fontsize{24}{28.8}\normalfont\rmfamily {\color[rgb]{1,0,0}$F$}%
+}}}
+\put(9451,-3886){\makebox(0,0)[lb]{\smash{\fontsize{24}{28.8}\normalfont\rmfamily {\color[rgb]{0,0,0}$x$}%
+}}}
+\end{picture}%

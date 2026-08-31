@@ -1,0 +1,41 @@
+{
+  "tag": "homog",
+  "direction": "homogen (Verifikation)",
+  "sfun": "1.0",
+  "Gc_input_GPa_um": 10.0,
+  "E_prime_GPa": 200.0,
+  "J_reference_GPa_um": 10.000000000000002,
+  "n_steps": 150,
+  "crack_tip_range_um": [
+    -2.0,
+    38.906
+  ],
+  "steady_window_x_um": [
+    13.617099999999999,
+    38.906
+  ],
+  "crack_growth_um": 40.906,
+  "crack_propagated": true,
+  "patch_fraction_traversed": null,
+  "Jx_steady": {
+    "n": 35,
+    "mean": 10.745142857142858,
+    "median": 10.746,
+    "std": 0.021461515292622416,
+    "min": 10.705,
+    "max": 10.787
+  },
+  "Jy_steady": {
+    "n": 35,
+    "mean": -0.020265828571428574,
+    "median": -0.020304,
+    "std": 0.0006314578131181046,
+    "min": -0.021259,
+    "max": -0.019143
+  },
+  "Jx_last": 10.74,
+  "Gc_eff_GPa_um": 10.745142857142858,
+  "Gc_eff_over_Gc": 1.0745142857142858,
+  "K_eff_MPa_sqrt_m": 46.35761611028517,
+  "Gc_eff_scatter_rel": 0.001997322471925613
+}

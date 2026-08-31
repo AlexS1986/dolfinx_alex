@@ -1,0 +1,31 @@
+{
+  "Lx_um": 401.149,
+  "Ly_um": 198.889,
+  "margin_x_um": 200.5745,
+  "margin_y_um": 198.889,
+  "domain_um": [
+    -200.5745,
+    -298.3335,
+    601.7235000000001,
+    298.3335
+  ],
+  "patch_um": [
+    0.0,
+    -99.4445,
+    401.149,
+    99.4445
+  ],
+  "e_fine": 2.0,
+  "e_patch": 5.0,
+  "e_far": 30.0,
+  "corridor_um": 80.0,
+  "epsilon_um": 8.0,
+  "micro": "/home/scripts/071-waam-n1-fracture-2d/test_out/micro_test.npz",
+  "rotated": false,
+  "n_nodes": 36134,
+  "n_cells": 72074,
+  "cell_tag": {
+    "0": "embedding (isotropic)",
+    "1": "microstructure patch"
+  }
+}

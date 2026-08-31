@@ -1,0 +1,110 @@
+[
+ {
+  "tag": "roi",
+  "label": "Referenzband (Bericht Kap. 2)",
+  "y0": 1339.0,
+  "y1": 2225.0,
+  "nx": 825,
+  "ny": 263,
+  "zones": [
+   666.6,
+   1494.5
+  ],
+  "zone_source": "aus der Markierung \u00fcbernommen",
+  "zones_detected": [
+   709.2564999999997,
+   1393.5694999999996
+  ],
+  "n_grains": 7601
+ },
+ {
+  "tag": "band1",
+  "label": "Band 1 (y = 0\u2026886 \u00b5m)",
+  "y0": 0.0,
+  "y1": 886.0,
+  "nx": 825,
+  "ny": 263,
+  "zones": [
+   837.3544999999997,
+   1036.2434999999996
+  ],
+  "zone_source": "aus der Mikrostruktur bestimmt",
+  "zones_detected": [
+   837.3544999999997,
+   1036.2434999999996
+  ],
+  "n_grains": 12928
+ },
+ {
+  "tag": "band2",
+  "label": "Band 2 (y = 886\u20261772 \u00b5m)",
+  "y0": 886.0,
+  "y1": 1772.0,
+  "nx": 825,
+  "ny": 263,
+  "zones": [
+   736.2244999999998,
+   1326.1494999999995
+  ],
+  "zone_source": "aus der Mikrostruktur bestimmt",
+  "zones_detected": [
+   736.2244999999998,
+   1326.1494999999995
+  ],
+  "n_grains": 9174
+ },
+ {
+  "tag": "band3",
+  "label": "Band 3 (y = 1772\u20262658 \u00b5m)",
+  "y0": 1772.0,
+  "y1": 2658.0,
+  "nx": 825,
+  "ny": 263,
+  "zones": [
+   550.8194999999998,
+   1676.7334999999994
+  ],
+  "zone_source": "aus der Mikrostruktur bestimmt",
+  "zones_detected": [
+   550.8194999999998,
+   1676.7334999999994
+  ],
+  "n_grains": 5266
+ },
+ {
+  "tag": "band4",
+  "label": "Band 4 (y = 2658\u20263544 \u00b5m)",
+  "y0": 2658.0,
+  "y1": 3544.0,
+  "nx": 825,
+  "ny": 263,
+  "zones": [
+   898.0324999999997,
+   1423.9084999999995
+  ],
+  "zone_source": "aus der Mikrostruktur bestimmt",
+  "zones_detected": [
+   898.0324999999997,
+   1423.9084999999995
+  ],
+  "n_grains": 3132
+ },
+ {
+  "tag": "full",
+  "label": "volle Kartenh\u00f6he",
+  "y0": 0.0,
+  "y1": 3697.987,
+  "nx": 825,
+  "ny": 1097,
+  "zones": [
+   813.7574999999997,
+   1552.0064999999995
+  ],
+  "zone_source": "aus der Mikrostruktur bestimmt",
+  "zones_detected": [
+   813.7574999999997,
+   1552.0064999999995
+  ],
+  "n_grains": 30673
+ }
+]

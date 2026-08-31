@@ -1,0 +1,54 @@
+{
+  "_comment": "071 WAAM N=1 2D phase-field FRACTURE. Own config, deliberately separate from 070/config.json so the fracture study can be re-parameterised without touching the tensile-stiffness study. The single-crystal block is a VERBATIM COPY of 070/config.json (literature placeholders, same as 069) - keep in sync manually and say so in any reported number.",
+
+  "region_material": {
+    "0": "17-4PH",
+    "1": "trans",
+    "2": "316L"
+  },
+
+  "single_crystal_cubic_GPa": {
+    "17-4PH": {
+      "bcc": { "C11": 231.4, "C12": 134.7, "C44": 116.4, "_ref": "alpha-Fe / martensite, ~Rayne-Chandrasekhar" },
+      "fcc": { "C11": 204.6, "C12": 137.7, "C44": 126.2, "_ref": "retained austenite in 17-4PH" }
+    },
+    "316L": {
+      "fcc": { "C11": 204.6, "C12": 137.7, "C44": 126.2, "_ref": "316L austenite, ~Ledbetter" },
+      "bcc": { "C11": 231.4, "C12": 134.7, "C44": 116.4, "_ref": "stray delta-ferrite" }
+    },
+    "trans": {
+      "_comment": "Transition zone: composition unknown. Default = parent-phase constants; the spatially varying scalar prefactor s(x) (--sfun) is the separate knob.",
+      "fcc": { "C11": 204.6, "C12": 137.7, "C44": 126.2, "_ref": "default: as 316L austenite" },
+      "bcc": { "C11": 231.4, "C12": 134.7, "C44": 116.4, "_ref": "default: as 17-4PH martensite" }
+    }
+  },
+
+  "fracture": {
+    "_comment": "Units throughout 071: GPa, um. Then 1 GPa*um = 1 kJ/m^2, so Gc_GPa_um IS Gc in kJ/m^2. Gc is CONSTANT for every material and every region by design of this study - the only heterogeneity is the elastic one (per-grain C). Do not make Gc region-dependent without saying so explicitly in the report.",
+    "Gc_GPa_um": 10.0,
+    "epsilon_um": 12.0,
+    "eta": 1.0e-4,
+    "mobility": 1000.0,
+    "_comment_degradation": "QUADRATIC g(s) = s^2 + eta (the classical AT2 form). With Gc = 10 GPa*um and epsilon = 12 um this gives sig_c = 9/16*sqrt(Gc*2mu/(6 eps)) = 2.60 GPa, which is in the right range for the cleavage strength of steel. The cubic form used by 067 (beta = 0.1) would give 4.74 GPa at the same Gc and epsilon - to bring that down to 2.6 one would have to drop Gc to 3.0 GPa*um and with it K_eq from 44.7 to 24.6 MPa*sqrt(m). Known trade-off of AT2: there is no purely elastic limit, s dips below 1 as soon as any load is applied. With a pre-existing crack under a surfing load that is acceptable and standard.",
+    "_comment_crack_width": "FULL width of the initial crack [um]. Inside |y| < W/2 the material starts fully broken (s = 0, held by the Dirichlet condition); outside, the analytic profile s = 1-exp(-d/(2 eps)) continues. W = 0 (default) is the pure exponential profile on a single node row - the sharpest crack the regularisation allows. A blunt notch (e.g. W = 2*eps) is closer to a machined starter crack; it was tried and works, but is not needed. The startup self-check A/L must then equal 1 + W/(4*eps), not 1.",
+    "crack_width_um": 0.0,
+    "degradation": "quadratic",
+    "degradation_beta": 0.1,
+    "plane_state": "stress"
+  },
+
+  "embedding": {
+    "_comment": "Homogeneous ISOTROPIC steel the explicitly modelled microstructure patch is embedded in. ASSUMED engineering constants - NOT obtained by homogenisation (that is the explicit difference to 067). Gc of the embedding is the same Gc as everywhere else.",
+    "material": "isotropic steel (assumed)",
+    "E_GPa": 200.0,
+    "nu": 0.30
+  },
+
+  "roi": {
+    "_comment": "ROIs in MAP coordinates [um] (origin top-left, y DOWN), for preprocess_ebsd_to_grid.py of project 070. 'long' = the 070 ROI (crack runs along x = build-direction axis, through the transition zone). 'trans' = a tall strip inside the MIXED band, rotated by +90 deg in the FE frame so the crack again runs along +x but now transverse to the build direction.",
+    "long": { "roi_um": [30.0, 1339.0, 1900.0, 2225.0], "zones_um": [667.0, 1495.0], "rotate_ccw90": false },
+
+    "_comment_trans": "NOTE, deviation from 070: the 070 transition zone x = 667..1495 is 88.6 % austenite by area (measured on the pixel reconstruction over the full map height) - it sits on the 316L side, not in the mixed band. A strip there would compare 316L against 316L. x = 450..1000 has an FCC area fraction of 0.67 with 11159 grains (median grain area 5936 vs 31248 um^2), i.e. genuinely mixed material. The zone bounds are set to the strip itself so the whole strip is region 1; otherwise it would be split into region 0 and 1 and s(x) would only act on part of it. State this deviation in any report. Both ROIs are cut to the SAME crack path length (~1.9 mm) so the two directions are comparable; the long ROI drops the right part of the 316L zone, which was 1.3 mm of essentially ONE grain.",
+    "trans": { "roi_um": [450.0, 700.0, 1000.0, 2600.0], "zones_um": [450.0, 1000.0], "rotate_ccw90": true }
+  }
+}

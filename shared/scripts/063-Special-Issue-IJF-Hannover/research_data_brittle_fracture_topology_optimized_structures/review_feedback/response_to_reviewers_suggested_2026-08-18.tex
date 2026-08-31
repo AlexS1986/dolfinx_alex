@@ -1,0 +1,621 @@
+% Suggested response to reviewers and editor
+% Manuscript: Brittle fracture in topology-optimized structures
+% Submission ID: cc51f1c5-c888-45a4-8fae-ebefd5a3c8f7
+% Review date: 18 August 2026
+%
+% This is a draft response and revision checklist. It intentionally does not
+% modify the manuscript.
+
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{amsmath,amssymb}
+\usepackage{hyperref}
+
+\geometry{margin=25mm}
+\hypersetup{colorlinks=true,linkcolor=blue!60!black,urlcolor=blue!60!black}
+
+\newcommand{\Evar}{\ensuremath{\mathbf{E}_{\mathrm{var}}}}
+\newcommand{\Emin}{\ensuremath{\mathbf{E}_{\mathrm{min}}}}
+\newcommand{\Emax}{\ensuremath{\mathbf{E}_{\mathrm{max}}}}
+\newcommand{\comment}[1]{\par\noindent\textbf{Reviewer comment.} #1\par}
+\newcommand{\response}[1]{\par\noindent\textbf{Suggested response.} #1\par}
+\newcommand{\change}[1]{\par\noindent\textbf{Suggested manuscript change.} #1\par}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.45\baselineskip}
+\setlist[itemize]{leftmargin=*,topsep=0.2\baselineskip,itemsep=0.1\baselineskip}
+
+\title{Suggested Response to Reviewers and Editor}
+\author{Alexander Schlueter, Jan Pravda, Dustin Roman Jantos, Philipp Junker, Ralf Mueller}
+\date{18 August 2026}
+
+\begin{document}
+\maketitle
+
+\section*{Cover Letter to the Editor}
+
+Dear Professor Schroeder,
+
+We thank you and the reviewers for the careful assessment of our manuscript
+``Brittle fracture in topology-optimized structures''. We have prepared a revised
+manuscript that addresses the comments point by point. In particular, we have
+clarified the scope of the contribution, moderated conclusions that could be
+read as overstated, expanded the discussion of limitations of the employed
+phase-field fracture model, and added details on the numerical implementation,
+mesh resolution, porosity-to-fracture-resistance mapping, and interpretation of
+the topology-optimization results.
+
+The revision keeps the study as a sequential design-and-assessment
+investigation: stiffness-based topology optimization is performed first, and
+fracture is then assessed on the fixed optimized structures. We now state this
+scope more explicitly and avoid implying that fracture resistance is optimized
+or experimentally validated in the present work.
+
+A detailed point-by-point response is provided below. We hope that the revised
+manuscript now addresses the concerns raised during review and is suitable for
+further consideration in \emph{Archive of Applied Mechanics}.
+
+Sincerely,
+
+Alexander Schlueter, on behalf of all authors
+
+\section*{General Response}
+
+We thank both reviewers for their thoughtful and constructive feedback. The
+comments helped identify places where the manuscript needed a clearer scope,
+more careful wording, and more transparent numerical details. The most important
+planned revisions are:
+\begin{itemize}
+  \item narrow the title and contribution statement so the paper is clearly
+  presented as a numerical post-optimization fracture assessment of
+  stiffness-optimized graded porous structures;
+  \item clarify the distinction from prior phase-field/topology-optimization
+  studies, especially works that directly optimize fracture resistance;
+  \item acknowledge limitations of the spectral split, mobility regularization,
+  diffuse crack resolution, and porosity-to-\(G_c\) mapping;
+  \item add mesh and implementation details for both topology optimization and
+  fracture simulations;
+  \item replace stress plots or add principal tensile stress/principal direction
+  information, because these are more directly connected to the spectral split;
+  \item temper claims about ``efficient use of material'' and explain
+  alternative interpretations of distributed/fat damage zones;
+  \item add quantitative highlights to the conclusion and correct the minor
+  typographical and notation issues.
+\end{itemize}
+
+\section*{Response to the Editor}
+
+\comment{Please ensure the results are accurately reported, any overstated
+conclusions are rewritten and the limitations of the work fully explained.}
+
+\response{We agree and have revised the manuscript with this in mind. The
+revision now states more explicitly that the work is a numerical
+post-optimization assessment, not a fracture-resistance optimization method and
+not an experimentally validated material model. We have moderated statements
+that could be interpreted as broad claims about material efficiency or general
+fracture performance, and we have added a dedicated limitations discussion
+covering the spectral energy split, the rate-dependent mobility term, the
+diffuse nature of the predicted crack zones, the absence of experimental
+validation for the porosity-to-\(G_c\) relation, and the restriction to one
+benchmark geometry and loading configuration.}
+
+\change{Add a short limitations paragraph at the end of the phase-field model
+section and a second limitations paragraph in the conclusion. Also revise
+sentences in the abstract, introduction, results discussion, and conclusion that
+currently imply general material-efficiency conclusions.}
+
+\section*{Reviewer 1}
+
+\subsection*{General Scope and Contribution}
+
+\comment{The manuscript would benefit from a clearer articulation of its
+distinction from prior studies, e.g. 10.1016/j.cma.2018.10.010 and
+10.1016/j.compstruc.2020.106205.}
+
+\response{We agree that the distinction should be stated more sharply. The
+suggested references address topology optimization and graded/infill concepts,
+including approaches where fracture or related performance measures are part of
+the optimization. Our contribution is different in scope: we do not propose a
+new fracture-resistance optimization method. Instead, we take structures
+obtained from thermodynamic topology optimization of porous media, where
+stiffness is optimized through separate density and porosity fields, and then
+ask how these fixed designs behave under a subsequent brittle phase-field
+fracture assessment when the optimized porosity field is mapped to both
+stiffness and local fracture resistance. This sequential assessment highlights
+how a stiffness-driven porosity distribution changes crack initiation, crack
+paths, peak load, and work up to peak load.}
+
+\change{Revise the final paragraphs of the introduction to explicitly compare
+the present sequential workflow with topology-optimization methods that include
+fracture resistance, phase-field fracture, or stress constraints directly in the
+optimization objective/constraints. Add the two suggested references if they are
+not already cited at the relevant location.}
+
+\comment{The mapping of porosity to fracture toughness appears to be based
+solely on numerical investigations, without experimental validation or detailed
+microstructural justification.}
+
+\response{This is correct, and the manuscript should be clearer about this
+limitation. The \(G_c(\phi_r)\) relation is a phenomenological numerical
+mapping motivated by previous simulations on simplified porous media with
+circular pores. It is not experimentally calibrated in the present work and is
+not claimed to be universal. We use it only for the post-optimization fracture
+assessment to study the consequences of assigning lower fracture resistance to
+more porous regions.}
+
+\change{In the subsection ``Fracture toughness as a function of porosity'', add
+that the relation is numerically motivated, microstructure-specific, and not
+experimentally validated here. Explain that different pore topologies, ligament
+mechanisms, and porosity ranges may lead to different \(G_c\)-porosity trends.}
+
+\comment{The title suggests a primary focus on brittle fracture, but the paper
+devotes equal attention to topology optimization and fracture analysis. This may
+mislead readers regarding the manuscript's main contribution.}
+
+\response{We agree that the current title is broad. We propose to use a more
+specific title that reflects the sequential design-and-assessment character of
+the work.}
+
+\change{Suggested title: ``Post-optimization brittle-fracture assessment of
+topology-optimized graded porous structures''. Alternative shorter title:
+``Brittle-fracture assessment of topology-optimized graded porous structures''.}
+
+\subsection*{Phase-Field Fracture Model}
+
+\comment{The total energy functional includes external work, which is
+inconsistent with the original Griffith/Francfort-Marigo variational setting
+for fracture. Larsen's two-potential approach resolves this only in a staggered
+scheme, which is not clearly implemented or discussed here.}
+
+\response{We thank the reviewer for pointing this out. Our implementation is a
+rate-regularized phase-field fracture evolution under prescribed displacement
+loading, solved monolithically in pseudo-time. The functional in the manuscript
+was intended as the potential used to derive equilibrium equations under the
+applied boundary conditions, while the crack evolution is governed by the
+elastic/fracture terms plus the mobility regularization. We agree that the
+wording can incorrectly suggest that we minimize a Griffith/Francfort-Marigo
+functional including external work in the original global variational sense.
+We will therefore revise the formulation and discussion to distinguish the
+classical variational fracture setting from the incremental, rate-regularized
+boundary-value problem solved here.}
+
+\change{Rewrite the paragraph around the total potential in the phase-field
+section. State explicitly that the external-work term enters the mechanical
+equilibrium under prescribed boundary conditions, while the manuscript does not
+claim existence of global minimizers for the original Francfort-Marigo problem
+under Neumann loading. Add the reviewer-suggested references on this issue and
+explain that no Larsen two-potential staggered scheme is used here.}
+
+\comment{The statement that crack growth is driven by minimization of elastic
+plus fracture energy contradicts Eq. (21) and adopts a Griffith statement
+originally given for systems with no change in external energy.}
+
+\response{We agree. The statement is imprecise for the boundary-value problem
+as written and should be corrected.}
+
+\change{Replace the sentence with a more careful formulation such as:
+``In the present rate-regularized phase-field formulation, damage evolution is
+driven by the local energetic competition between the degraded tensile elastic
+energy and the regularized fracture energy, while the external loading supplies
+work to the system through the imposed boundary conditions.''}
+
+\comment{The spectral decomposition is known to fail in predicting traction-free
+crack surfaces under shear deformations. The known drawbacks should be
+acknowledged.}
+
+\response{We agree. The spectral split is widely used and was chosen for its
+standard ability to suppress crack growth under compression, but it has known
+limitations in mixed-mode and shear-dominated situations. This matters for our
+benchmark because several members are bending- and shear-influenced. We will
+add an explicit limitation and avoid interpreting the final diffuse damage zones
+as fully resolved traction-free cracks.}
+
+\change{Add a paragraph after the spectral split equations acknowledging that
+the Miehe spectral decomposition can lead to nonphysical residual tractions or
+inaccurate mixed-mode behavior, especially under shear. Cite improved
+alternatives, including representative crack elements or physically motivated
+decompositions. Also refer back to this limitation when discussing Figs. 14--18.}
+
+\comment{When using the spectral energy split, the first principal stress and
+principal direction are of more interest than volumetric and deviatoric
+stresses.}
+
+\response{We agree. The present volumetric/deviatoric plots give general
+orientation about tension/compression and shear-dominated regions, but they are
+not the most direct diagnostic for the spectral split.}
+
+\change{Replace the volumetric/deviatoric stress figures or add a new figure
+showing the maximum principal tensile stress and corresponding principal
+direction before fracture. Revise the discussion accordingly. If figure count
+must be limited, move volumetric/deviatoric plots to supplementary material and
+keep the principal-stress plot in the main manuscript.}
+
+\comment{What portion of dissipated energy is contributed by the mobility
+approach? Can this portion be physically motivated? Why is artificial damping
+preferred over the staggered solution approach?}
+
+\response{The mobility contribution is numerical/rate regularization rather
+than a separately calibrated physical dissipation mechanism. It was introduced
+to stabilize crack nucleation from initially undamaged material in the
+monolithic solution. We agree that its energetic contribution should be reported
+and its role should not be overinterpreted physically. The current manuscript
+already defines \(D_s\), but it should quantify its magnitude relative to
+\(\Pi_{\mathrm{frac}}\) and total supplied work.}
+
+\change{Compute and report
+\(D_s/(\Pi_{\mathrm{frac}}+D_s)\) and \(D_s/W\) at peak load and at the final
+stored state for the cases shown in the energy-response figure. Add a short
+paragraph stating that the mobility term is used for numerical robustness and
+that its contribution is monitored to assess the degree of rate-regularization
+influence. Explain that a staggered solution was not used because the present
+implementation solves the coupled fields monolithically; note this as a
+modeling/numerical choice rather than a claim of superiority.}
+
+\comment{Fig. 18a demonstrates that the phase-field approach has issues
+predicting component failure/vanishing reaction forces. The phase-field
+evolution fails in bending dominated regions.}
+
+\response{We agree that the final loss of load-carrying capacity is not fully
+captured for all cases. For this reason, the manuscript uses the peak reaction
+force and work up to peak load as comparison measures and does not interpret
+the post-peak response as a reliable complete component-failure simulation.
+This should be made more explicit.}
+
+\change{In the discussion of the reaction-force plots, add that post-peak
+behavior and full separation are affected by the diffuse crack approximation,
+spectral split, mobility regularization, and nonlinear solver termination.
+State that the comparison therefore focuses on pre-peak and peak-load measures,
+not on complete structural separation or vanishing residual force.}
+
+\comment{The reviewer is not convinced by the conclusion that widespread
+damage hints at more efficient use of material. The thick crack zone could also
+come from drawbacks of the spectral energy decomposition and mobility approach.}
+
+\response{We agree that this conclusion was too strong. Distributed damage can
+indicate that more regions approach criticality, but in the present model it can
+also reflect the spectral split, the selected phase-field length scale, and the
+mobility regularization. We will revise the wording to avoid claiming material
+efficiency from the final damage pattern alone.}
+
+\change{Replace the current sentence with: ``The \Evar cases show more
+spatially distributed degradation than the homogeneous-porosity references.
+This indicates that the optimized porosity field changes where critical states
+are reached, but the width and extent of the diffuse damage zones must be
+interpreted with caution because they can also be influenced by the spectral
+split, mobility regularization, and chosen phase-field length scale.''}
+
+\comment{Irreversibility is based on \(s=0\). Is any threshold used in the
+implementation? Several points may never reach perfect \(s=0\).}
+
+\response{The implementation should be described more precisely. In practice,
+irreversibility is imposed using a numerical threshold for the phase field,
+rather than relying on exact floating-point equality.}
+
+\change{Verify the actual threshold in the code and state it explicitly, e.g.
+``Nodes/quadrature points with \(s \le s_{\mathrm{irr}}\) are fixed at
+\(s=0\) in subsequent increments, with \(s_{\mathrm{irr}}=\ldots\).'' If no
+threshold is currently used, change the implementation in the revision stage or
+state that no threshold was used and discuss the limitation.}
+
+\comment{The manuscript claims that \(\kappa_s\) controls residual stiffness in
+broken material, but this is the role of the undegraded compressive energy
+\(\psi_e^-\).}
+
+\response{We agree that the statement needs to be more precise. The parameter
+\(\kappa_s\) controls only the residual part of the degraded tensile energy
+contribution. The compressive contribution remains undegraded through
+\(\psi_e^-\), which also affects the mechanical response in cracked regions.}
+
+\change{Revise the sentence to: ``The parameter \(\kappa_s\) prevents complete
+loss of the degraded tensile stiffness contribution, while the compressive
+energy \(\psi_e^-\) remains undegraded in the spectral split.''}
+
+\comment{The mapping from porosity to fracture toughness is based solely on
+numerical studies. Experimental evidence and microstructural mechanisms are not
+referenced. The porosity range may cross transitions depending on
+microstructure topology.}
+
+\response{We agree and will clarify that the chosen relation is not a general
+law for porous materials. The relation depends on the assumed circular-pore
+microstructure and on the numerical experiment used in the previous study.
+Other microstructures may show different mechanisms, including transitions
+between tension/compression-dominated and bending-dominated ligament response.}
+
+\change{Add a paragraph in the \(G_c(\phi_r)\) subsection discussing possible
+microstructural-mechanism changes and stating that the present mapping should
+be regarded as a model assumption for this numerical study. Add suitable
+references to experimental or micromechanical studies on porous/cellular
+material fracture if available.}
+
+\comment{Explicit crack resolution is not achieved due to fat phase-field
+regions. Similar results could perhaps be achieved by a non-local damage model
+at lower computational cost.}
+
+\response{We agree that the final phase-field zones are diffuse and should not
+be interpreted as explicitly resolved sharp cracks. The phase-field model is
+used because it naturally handles nucleation and path changes in complex
+optimized geometries, but the present results do not prove that a non-local
+damage model would be insufficient.}
+
+\change{Add this as a limitation: the present phase-field simulations represent
+regularized damage/crack zones whose width depends on \(\beta_s\), and a
+comparison with non-local damage or cohesive-zone formulations is outside the
+scope but would be valuable future work.}
+
+\subsection*{Topology Optimization}
+
+\comment{Fig. 4: The schematic does not adequately represent the staggered
+solution scheme for topology optimization.}
+
+\response{We agree that the current schematic is too schematic and does not
+show all relevant update loops.}
+
+\change{Revise Fig. 4 to show initialization, mechanical equilibrium solve,
+sensitivity evaluation, separate \(\chi\)- and \(\phi\)-evolution/update steps,
+constraint/KKT update, convergence checks for objective and design variables,
+and the loop to the next iteration.}
+
+\comment{There is no comparison of constant-porosity optimization results with
+established literature.}
+
+\response{We agree that a short contextual comparison would help. Since our
+constant-porosity cases reduce to a density-based topology optimization problem
+with different homogeneous stiffness values, the resulting truss-like
+double-cantilever structures can be compared qualitatively with established
+compliance-minimizing topology-optimization benchmarks. We will add such a
+comparison without claiming one-to-one quantitative identity, because exact
+geometries, loads, regularization, and constraints differ between studies.}
+
+\change{Add a paragraph after the constant-porosity results comparing the
+observed truss-like layouts with literature benchmark behavior for
+compliance-minimizing topology optimization and noting the limitations of this
+comparison.}
+
+\comment{The manuscript lacks mesh homogeneity, element size, and number of
+elements, which are critical for assessing the accuracy, especially for thin
+structures.}
+
+\response{We agree and will add the missing details. The topology-optimization
+mesh uses \(600\times100\) structured quadrilateral elements over a
+\(6\,\mathrm{mm}\times1\,\mathrm{mm}\) design domain, corresponding to a
+uniform element size of \(0.01\,\mathrm{mm}\) in both directions. The fracture
+domains are re-meshed with first-order triangular elements; the manuscript
+should report representative element sizes and element counts for each
+\(\Omega_f\).}
+
+\change{Add a table with, for each fracture case, the number of triangular
+elements, minimum/maximum/mean element edge length or area, and the ratio of
+element size to \(\beta_s\). Also state explicitly that the topology mesh is
+homogeneous with \(h_x=h_y=0.01\,\mathrm{mm}\).}
+
+\comment{Intermediate-density regions in Figs. 5 and 7 contradict the intended
+separation of topology and stiffness optimization.}
+
+\response{We understand the concern. The method uses a density field to define
+material presence and a porosity field to distribute stiffness within material,
+but numerical regularization and finite penalization do not produce a perfectly
+binary density field everywhere. The fracture simulations therefore extract
+\(\Omega_f\) using the threshold \(\chi\ge0.5\), after which \(\chi\) is set to
+one and stiffness variation is governed by \(\phi\). We will clarify that the
+separation is conceptual and algorithmic, not a claim that the optimized
+density field is exactly binary before thresholding.}
+
+\change{Add this clarification near the definition of \(\Omega_f\) and in the
+discussion of Figs. 5 and 7. Also report the amount of intermediate-density
+area, e.g. area fraction with \(0.1<\chi<0.9\), if available.}
+
+\comment{The porosity field shows clusters without larger transitions. The
+potential of the method is not well represented if it simplifies to two
+materials. The interaction of porosity length scale and phase-field length
+scale cannot be sufficiently studied when porosity only contains sharp
+transitions.}
+
+\response{We agree that much of the optimized porosity field is close to its
+bounds for the chosen material interpolation and parameter set. The method
+allows graded porosity fields, and larger \(\beta_\phi\) indeed smooths the
+transitions, but the present benchmark and stiffness objective favor
+near-extreme porosity values. Therefore, the interaction between
+\(\beta_\phi\) and \(\beta_s\) is studied only for the transitions that occur
+in this benchmark, not for a fully smooth continuously graded material field.
+We will state this limitation explicitly.}
+
+\change{Revise the \(\beta_\phi\) discussion to say that the investigated
+optimized fields are largely clustered near porosity bounds, so conclusions
+about porosity/fracture length-scale interaction are limited to these
+optimization outcomes. Also temper the sentence about the internal fracture
+length scale needing to be small compared with geometric features by adding
+that it should also be interpreted relative to material-field transition
+widths.}
+
+\comment{For the spectral split, principal tensile stress and direction are
+more relevant than volumetric or deviatoric stresses.}
+
+\response{We agree and will address this together with the analogous
+phase-field comment above.}
+
+\change{Add or replace stress visualization with maximum principal tensile
+stress and principal directions.}
+
+\section*{Reviewer 2}
+
+\comment{The title is too broad and should be specified.}
+
+\response{We agree. As also noted by Reviewer 1, the title should better
+reflect the sequential design-and-assessment scope.}
+
+\change{Change the title to ``Post-optimization brittle-fracture assessment of
+topology-optimized graded porous structures'' or ``Brittle-fracture assessment
+of topology-optimized graded porous structures''.}
+
+\comment{The more general part of the introduction could be condensed.}
+
+\response{We agree. The introduction can be shortened before the more directly
+related literature discussion. This will also help the paper emphasize its
+specific contribution more clearly.}
+
+\change{Condense the broad introductory material on porous materials and
+general topology optimization, keeping only the context necessary to motivate
+graded porosity, stiffness optimization, and post-optimization fracture
+assessment.}
+
+\comment{Why was fracture resistance not incorporated directly into the
+optimization problem? Why is this more challenging?}
+
+\response{This is an important point. We chose a sequential strategy because it
+separates two questions: first, what structures are obtained when porous
+topology optimization targets stiffness; second, how do those fixed structures
+perform under brittle fracture assessment when the same porosity field affects
+local fracture resistance. Incorporating fracture resistance directly into the
+optimization is substantially more challenging because crack initiation and
+propagation introduce path dependence, irreversibility, non-smooth or
+history-dependent objectives, high computational cost for each design update,
+and sensitivity-analysis difficulties for evolving crack topologies.}
+
+\change{Add this rationale to the end of the workflow paragraph in
+Section 2. Emphasize that direct fracture-resistance optimization is a natural
+future extension rather than the objective of the present paper.}
+
+\comment{The contour for \(\Emin\) with \(\rho=0.3\) and \(\Emax\) with
+\(\rho=0.6\) are the same, whereas \(\Emax\) with \(\rho=0.3\) differs
+significantly. Can this be explained in more detail?}
+
+\response{Yes. The similarity follows from the mass constraint and homogeneous
+porosity values. In \(\Emin\), the material has the maximum allowed physical
+porosity, so only half of the local material density is present in regions with
+\(\chi=1\). Thus, \(\rho=0.3\) with \(\Emin\) allows a similar occupied
+geometric domain as \(\rho=0.6\) with \(\Emax\), where material is fully dense.
+By contrast, \(\Emax\) with \(\rho=0.3\) has fully dense material but only half
+the allowed total mass, so the optimizer produces a more delicate structure
+with fewer/thinner members.}
+
+\change{Add this explanation after Fig. 7 and/or Table 2, including the
+relation between \(\phi_\mathrm{min}=0.5\), homogeneous porosity, and the mass
+constraint.}
+
+\comment{For the more widespread \(\Evar\) damage patterns, it would be
+interesting to see how the pattern evolves. Where is first crack onset, and how
+does propagation proceed within the structure?}
+
+\response{We agree that the final damage field alone does not show the crack
+sequence. We will add a short evolution description and, if space permits, an
+additional figure with selected phase-field snapshots for representative cases.
+For the present simulations, crack onset is expected at tensile fixed-boundary
+regions or in the highly loaded inclined members depending on \(\rho\),
+\(\beta_s\), and the local porosity field; the exact onset locations should be
+reported from the stored simulation data.}
+
+\change{Inspect the stored phase-field histories and add either a new figure
+with three or four snapshots for representative \(\Evar\) cases, or add a
+concise text paragraph identifying first crack onset and subsequent propagation
+for the cases in Fig. 17/related final-pattern figures.}
+
+\comment{In the conclusions, highlight the most important quantitative results
+for the different cases considered, e.g. 36--64\% increase.}
+
+\response{We agree and will add the key numerical ranges to the conclusion.
+This will make the main findings easier to extract.}
+
+\change{Add quantitative statements such as: for \(\rho=0.3\), \(\Evar\)
+increases \(\max R_y\) by approximately 36--64\% relative to \(\Emin\) over
+the considered \(\beta_s\) range; for \(\rho=0.6\), \(\Evar\) gives peak loads
+comparable to or slightly above \(\Emax\); the stiffness gain of \(\Evar\)
+relative to the homogeneous-porosity alternatives is about 2.5\% for
+\(\rho=0.3\) and about 8\% for \(\rho=0.6\). Verify exact percentages before
+final revision.}
+
+\subsection*{Minor Corrections}
+
+\comment{In some references, journals are not given, but an access date is
+given. Add journal information and remove the date.}
+
+\response{We will check and correct the bibliography entries.}
+
+\change{Clean the BibTeX files by adding missing journal fields where
+available and removing unnecessary access dates for journal articles.}
+
+\comment{In equations (5)--(7), upper and lower indices seem mixed up.}
+
+\response{We will correct the notation.}
+
+\change{Check Eqs. (5)--(7) and make superscripts/subscripts consistent with
+the surrounding definitions.}
+
+\comment{In equations (5), (8), and (9), brackets seem to be missing.}
+
+\response{We will correct the bracket notation.}
+
+\change{Review Eqs. (5), (8), and (9) and add missing brackets/parentheses.}
+
+\comment{It seems inconsistent to denote \(p\) as a penalization factor, as it
+is an exponent rather than a factor.}
+
+\response{We agree.}
+
+\change{Replace ``penalization factor'' by ``penalization exponent'' wherever
+\(p\) is discussed.}
+
+\comment{For the parameters before Eq. (14), it does not make sense to give
+decimal places for large numbers such as \(\mu_1\) and \(\lambda_1\).}
+
+\response{We agree.}
+
+\change{Round \(\mu_1\) and \(\lambda_1\) to sensible precision, e.g.
+\(\mu_1\approx 8.08\cdot10^4\,\mathrm{N/mm^2}\) and
+\(\lambda_1\approx 1.21\cdot10^5\,\mathrm{N/mm^2}\), or state only the
+formulas and \(E_1,\nu\).}
+
+\comment{In Eq. (24), why is the summation until \(n\), but not until 3? If it
+is not 3, use another symbol because \(n\) denotes the number of finite
+elements in \(x\)-direction.}
+
+\response{We agree. The spectral decomposition should use the spatial
+dimension as summation limit and avoid conflict with the mesh notation.}
+
+\change{Replace \(\sum_{i=1}^{n}\) by \(\sum_{i=1}^{d}\), with \(d\) the
+spatial dimension, or by \(\sum_{i=1}^{2}\) if the implementation and
+presentation are strictly two-dimensional plane strain.}
+
+\comment{There must not be a subsection 2.2.1 without a following subsection
+2.2.2.}
+
+\response{We agree.}
+
+\change{Change ``2.2.1 Fracture toughness as a function of porosity'' to an
+unnumbered paragraph heading or create a matching second subsubsection if the
+section structure is expanded.}
+
+\comment{On page 23, the sentence ``Recall that in all cases the same mass of
+material is employed,'' should conclude with a period instead of a comma.}
+
+\response{We agree and will correct the punctuation.}
+
+\change{Replace the comma by a period.}
+
+\section*{Revision Checklist}
+
+\begin{itemize}
+  \item Decide final title.
+  \item Add/adjust citations requested by Reviewer 1, especially the two
+  topology/fracture-related works and the phase-field variational/spectral-split
+  limitation references.
+  \item Rewrite phase-field potential discussion and energy-minimization
+  wording.
+  \item Add spectral-split limitations and replace/add stress diagnostics using
+  principal tensile stress and direction.
+  \item Quantify mobility dissipation contribution \(D_s\).
+  \item Verify and report irreversibility threshold.
+  \item Add fracture mesh statistics and topology mesh element size.
+  \item Add explanation of \(\Emin,\rho=0.3\) versus \(\Emax,\rho=0.6\).
+  \item Add crack-evolution snapshots or text from stored phase-field histories.
+  \item Moderate claims about distributed damage/material efficiency.
+  \item Add quantitative conclusions and all minor corrections.
+\end{itemize}
+
+\end{document}

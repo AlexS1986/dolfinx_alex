@@ -1,0 +1,56 @@
+{
+  "homog": {
+    "direction": "homogen (Verifikation)",
+    "sfun": "1.0",
+    "Gc_input_GPa_um": 10.0,
+    "Gc_eff_GPa_um": 10.745142857142858,
+    "Gc_eff_over_Gc": 1.0745142857142858,
+    "K_eff_MPa_sqrt_m": 46.35761611028517,
+    "Gc_eff_scatter_rel": 0.001997322471925613,
+    "crack_propagated": true,
+    "crack_growth_um": 40.906,
+    "warning": null,
+    "patch_fraction_traversed": null,
+    "per_zone": {}
+  },
+  "test_long": {
+    "direction": "in Aufbaurichtung",
+    "sfun": "1.0",
+    "Gc_input_GPa_um": 10.0,
+    "Gc_eff_GPa_um": 11.229191727493918,
+    "Gc_eff_over_Gc": 1.1229191727493917,
+    "K_eff_MPa_sqrt_m": 47.39027690886374,
+    "Gc_eff_scatter_rel": 0.11479740668375342,
+    "crack_propagated": true,
+    "crack_growth_um": 584.83,
+    "warning": null,
+    "patch_fraction_traversed": 1.4578872189635275,
+    "per_zone": {
+      "transition": {
+        "Gc_eff_GPa_um": 11.747547572815535,
+        "K_eff_MPa_sqrt_m": 48.47173933915625,
+        "n": 206
+      },
+      "316L": {
+        "Gc_eff_GPa_um": 10.708307317073173,
+        "K_eff_MPa_sqrt_m": 46.278088372518525,
+        "n": 205
+      }
+    }
+  },
+  "test_trans": {
+    "direction": "quer zur Aufbaurichtung",
+    "sfun": "1.0",
+    "Gc_input_GPa_um": 10.0,
+    "Gc_eff_GPa_um": null,
+    "Gc_eff_over_Gc": null,
+    "K_eff_MPa_sqrt_m": null,
+    "Gc_eff_scatter_rel": null,
+    "crack_propagated": false,
+    "crack_growth_um": 0.0,
+    "warning": "Der Riss ist nicht gewachsen (Spitze bewegte sich 0 um, Schwelle 2*epsilon). Es gibt kein quasistationaeres Plateau, also auch kein Gc_eff. Typische Ursachen: zu wenige Zeitschritte (--max_steps), K_scale zu klein, oder der Lauf steckt noch im Anfangstransienten (J faellt dann monoton Richtung J_reference_GPa_um).",
+    "patch_fraction_traversed": 0.0,
+    "per_zone": {}
+  },
+  "_anisotropy": {}
+}

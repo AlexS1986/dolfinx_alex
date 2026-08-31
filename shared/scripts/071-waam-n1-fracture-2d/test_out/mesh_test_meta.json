@@ -1,0 +1,31 @@
+{
+  "Lx_um": 400.0,
+  "Ly_um": 200.0,
+  "margin_x_um": 200.0,
+  "margin_y_um": 200.0,
+  "domain_um": [
+    -200.0,
+    -300.0,
+    600.0,
+    300.0
+  ],
+  "patch_um": [
+    0.0,
+    -100.0,
+    400.0,
+    100.0
+  ],
+  "e_fine": 2.0,
+  "e_patch": 5.0,
+  "e_far": 30.0,
+  "corridor_um": 80.0,
+  "epsilon_um": 8.0,
+  "micro": null,
+  "rotated": false,
+  "n_nodes": 35953,
+  "n_cells": 71712,
+  "cell_tag": {
+    "0": "embedding (isotropic)",
+    "1": "microstructure patch"
+  }
+}

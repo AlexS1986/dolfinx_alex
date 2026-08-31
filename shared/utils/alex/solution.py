@@ -569,6 +569,11 @@ def get_solver(w, comm, max_iters, Res, dResdw, bcs):
     solver = NewtonSolver(comm, problem)
     solver.report = True
     solver.max_it = max_iters
+    # Globale PETSc-Optionen mit dem Prefix des NewtonSolver ("nls_solve_")
+    # sicher uebernehmen, z. B. MUMPS-Workspace (mat_mumps_icntl_14), die ein
+    # Skript vor dem Aufruf in PETSc.Options() gesetzt hat. Ohne gesetzte
+    # Optionen ist der Aufruf ein No-op.
+    solver.krylov_solver.setFromOptions()
 
     # ksp = solver.krylov_solver
     # opts = PETSc.Options()

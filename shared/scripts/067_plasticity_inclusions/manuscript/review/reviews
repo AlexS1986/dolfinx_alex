@@ -1,0 +1,29 @@
+The following reviewer comments were taken into consideration during the peer review process.
+“
+Reviewer 1 Comments to the Author
+ 
+The proceeding "Effective crack resistance of a simplified ductile heterogeneous material with circular inclusions" by Schlüter et al. provides interesting insights into the influence of microscopic inclusions on macroscopic crack resistance through numerical simulations employing homogenization and a phase field model. In light of the thoroughness of the performed study and the unique interplay of the inclusion properties it reveals, the proceeding is suitable for publication. Nevertheless, a few minor queries should be addressed:
+
+- A change of dot{x}_bc to dot{x}^bc above Eq. (2) would be consistent with Fig. 1.
+
+- Some symbols are not properly introduced in the text. These include:
+1) J of Eq. (1),
+2) Phi_el, bold{1} and Sigma of Eq. (5),
+3) epsilon^e and epsilon^p of Eq. (7),
+4) M of Eq. (15).
+
+- It would be helpful for the reader to mention which norm is used in Eq. (9), for it is not clear from the context.
+ 
+Reviewer 2 Comments to the Author
+ 
+Overall, I found the manuscript interesting and enjoyable to read. The proposed methodology is consistent with the framework presented in Refs. [5,9], extending it to elastoplastic deformation while investigating the influence of additional parameters. The manuscript is well structured and presents most of the relevant information in a clear manner.
+For future work, it would be interesting to include a comparison between a purely elastic and an elastoplastic example in order to better highlight the additional insights provided by the present formulation with respect to the original studies.
+One question, however, remained unclear to me: What is the physical/mechanical interpretation of the quantity represented by the contour integral used in this work?
+From the perspective of classical LEFM, the J-integral is a local crack-tip quantity associated with a single crack tip. For sharp cracks, path independence requires special treatment of the crack faces. In the case of diffuse cracks, where no physical crack faces exist, a simple rectangular contour appears to be sufficient. However, material heterogeneities and plastic deformation are also known to influence the interpretation and path independence of the J-integral. In the literature, additional treatments are often discussed for these cases. Hosain et al. also appear to acknowledge this issue (p. 17), although it is not discussed in detail.
+Initially, I assumed that the contour integral in the present work was intended to represent the total energy dissipation rate within the enclosed region during crack growth rather than a crack-tip quantity. However, in Hosain et al. (Fig. 4), the effective J is validated against Gao's analytical solution for the stress intensity factor together with Irwin's relation for the crack-tip J-integral.
+Therefore, I would appreciate a brief discussion when introducing the J-integral, together with appropriate references addressing its application to diffuse cracks and elastoplastic materials. In particular, it would be helpful to explain why the adopted contour integral provides a suitable definition of (J^{\mathrm{eff}}) in the present framework, despite the apparent loss of strict path independence.
+Additional suggestions
+1.In Fig. 2, it would be helpful to state more explicitly that the model does not represent a complete CT specimen containing a locally resolved substructure. Instead, only the microstructure within a homogeneous domain is modeled explicitly, while the near-tip field corresponding to a crack with constant stress intensity factor is imposed through the boundary conditions. Although this is explained in the manuscript, the figure may initially suggest a different interpretation.
+2.Similar to the underlying references, it would be useful to explicitly mention that interface properties between the inclusions and the matrix are neglected.
+3.Fig. 2 would benefit from showing the contour used for the J-integral evaluation together with the principal dimensions of the model (e.g., (L), (w_s), ligament width, etc.). This would make the numerical setup easier to understand.
+4.I initially expected crack deflection to occur for stiff and tough inclusions, particularly since the considered configuration appears comparable to the offset configuration shown in Fig. 11 of Hosain et al. [5]. It would therefore be helpful to comment on whether the absence of crack deflection is primarily a consequence of the relatively moderate inclusion-to-matrix property contrast considered in the present study. Alternatively, a brief reference to the corresponding observations in Ref. [5] would also help readers interpret the results.

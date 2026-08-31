@@ -1,0 +1,4 @@
+results/
+input_mesh/
+__pycache__/
+*.py[cod]

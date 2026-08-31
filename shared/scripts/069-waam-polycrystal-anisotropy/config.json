@@ -1,0 +1,9 @@
+{
+  "_comment": "Single-crystal CUBIC stiffness constants [GPa] per crystal system. LITERATURE PLACEHOLDERS - replace with your own values. fcc = 316L austenite, bcc = 17-4PH martensite / alpha-Fe. Voigt order [xx,yy,zz,yz,xz,xy]; mesh length unit (um) is irrelevant for elastic moduli.",
+  "single_crystal_cubic_GPa": {
+    "fcc": { "C11": 204.6, "C12": 137.7, "C44": 126.2, "_ref": "316L / austenitic stainless, ~Ledbetter" },
+    "bcc": { "C11": 231.4, "C12": 134.7, "C44": 116.4, "_ref": "alpha-Fe / martensite, ~Rayne-Chandrasekhar" },
+    "hcp": { "C11": 231.4, "C12": 134.7, "C44": 116.4, "_ref": "negligible epsilon -> fall back to bcc" }
+  },
+  "crystal_fallback": "fcc"
+}

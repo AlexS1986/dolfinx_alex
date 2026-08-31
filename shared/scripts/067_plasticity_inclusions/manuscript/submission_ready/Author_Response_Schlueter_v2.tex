@@ -1,0 +1,348 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage[markup=underlined,authormarkup=none]{changes}
+\usepackage{xspace}
+
+\geometry{margin=2.5cm}
+\newenvironment{ReviewerComment}{\begin{quote}\small}{\end{quote}}
+
+\newcommand{\Kinc}{k_{\rm inc}}
+\newcommand{\Jinc}{j_{\text{inc}}}
+\newcommand{\JcZero}{J_c^0}
+\newcommand{\Jeff}{J_{x,c}^{\rm eff}}
+\definechangesauthor[name={Response to Reviewers}]{REVISION}
+
+\title{Response to Reviewers}
+\author{Alexander Schl\"uter, Ronjit Medda, Ralf M\"uller}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55\baselineskip}
+
+We thank both reviewers for their careful reading of the manuscript
+and for the constructive suggestions. We have revised the manuscript
+accordingly. The main changes are summarized below and are shown in
+the highlighted manuscript version.
+
+\section*{Summary of Changes}
+
+\begin{itemize}
+  \item Corrected the notation for the velocity of the surfing
+  boundary condition from \(\dot{x}_{\rm bc}\) to
+  \(\dot{x}^{\rm bc}\) in the text above Eq.~(2).
+  \item Added missing definitions of \(J\), \(\psi_{\rm el}\),
+  \(\boldsymbol{1}\), \(\boldsymbol{\sigma}\),
+  \(\boldsymbol{\varepsilon}^e\),
+  \(\boldsymbol{\varepsilon}^p\), and \(M\).
+  \item Specified that the norm in the von Mises yield function is
+  the Frobenius norm.
+  \item Expanded the discussion of the boundary J-integral and
+  clarified that it is used as an operational macroscopic energy-flux
+  measure for the prescribed numerical experiment, not as a strictly
+  path-independent local crack-tip quantity in the classical LEFM
+  sense.
+  \item Clarified in the figure captions and setup description that
+  the model is not a complete compact-tension specimen with locally
+  resolved microstructure, but a resolved microstructural region
+  embedded in a homogeneous domain and loaded by a prescribed
+  near-tip field.
+  \item Added that matrix--inclusion interface properties are not
+  modeled separately; the interfaces are assumed perfectly bonded.
+  \item Added the J-integral contour information to the description
+  of Fig.~2 and identified the outer boundary of the plotted domain
+  as the contour used for evaluation.
+  \item Added a short comment on the absence of crack deflection in
+  the present parameter range and related this to the moderate
+  inclusion-to-matrix contrasts considered.
+\end{itemize}
+
+\section*{Reviewer 1}
+
+\textbf{Reviewer comment.}
+\begin{ReviewerComment}
+The proceeding ``Effective crack resistance of a simplified ductile
+heterogeneous material with circular inclusions'' by Schlüter et al.
+provides interesting insights into the influence of microscopic
+inclusions on macroscopic crack resistance through numerical
+simulations employing homogenization and a phase field model. In
+light of the thoroughness of the performed study and the unique
+interplay of the inclusion properties it reveals, the proceeding is
+suitable for publication. Nevertheless, a few minor queries should be
+addressed:
+\end{ReviewerComment}
+
+\textbf{Comment 1.}
+\begin{ReviewerComment}
+A change of \(\dot{x}_{bc}\) to \(\dot{x}^{bc}\) above Eq. (2) would
+be consistent with Fig. 1.
+\end{ReviewerComment}
+
+\emph{Response.} We agree and have corrected the notation in the
+text above Eq.~(2).
+
+\emph{Related change.} Above Eq.~(2):
+\[
+\replaced{\dot{x}_{\rm bc}}{\dot{x}^{\rm bc}} .
+\]
+The same notation is also used in the definition of the phase-field
+mobility.
+
+\textbf{Comment 2.}
+\begin{ReviewerComment}
+Some symbols are not properly introduced in the text. These include:
+1) \(J\) of Eq. (1),
+2) \(\Phi_{\rm el}\), \(\boldsymbol{1}\) and \(\Sigma\) of Eq. (5),
+3) \(\epsilon^e\) and \(\epsilon^p\) of Eq. (7),
+4) \(M\) of Eq. (15).
+\end{ReviewerComment}
+
+\emph{Response.} We agree that several symbols were introduced too
+briefly. We have added explicit definitions at the first relevant
+locations. In the manuscript notation, the elastic energy density and
+stress tensor are denoted by \(\psi_{\rm el}\) and
+\(\boldsymbol{\sigma}\), respectively.
+
+\emph{Related changes.}
+\begin{itemize}
+  \item Introduction, Eq.~(1): \added{Here, \(J\) denotes the
+  J-Integral as a measure of the macroscopically observable energetic
+  crack-driving force.}
+  \item Section~2, after the J-integral: \added{Here,
+  \(\psi_{\rm el}\) denotes the degraded elastic energy density
+  specified in Section~3.1, \(\boldsymbol{1}\) is the second-order
+  identity tensor, and \(\boldsymbol{\sigma}\) is the Cauchy stress
+  tensor.}
+  \item Section~3.1, after the additive strain decomposition:
+  \added{Here, \(\boldsymbol{\varepsilon}^e\) and
+  \(\boldsymbol{\varepsilon}^p\) are the elastic and plastic strain
+  tensors, respectively.}
+  \item Section~3.1, after the phase-field evolution equation:
+  \added{The mobility \(M\) controls the relaxation rate of the phase
+  field in the pseudo-time evolution equation.}
+\end{itemize}
+
+\textbf{Comment 3.}
+\begin{ReviewerComment}
+It would be helpful for the reader to mention which norm is used in
+Eq. (9), for it is not clear from the context.
+\end{ReviewerComment}
+
+\emph{Response.} We agree and have specified the norm directly after
+the yield function.
+
+\emph{Related change.} Section~3.1:
+\[
+\added{\|\boldsymbol{s}\|=(\boldsymbol{s}:\boldsymbol{s})^{1/2}.}
+\]
+
+\section*{Reviewer 2}
+
+\textbf{Reviewer comment.}
+\begin{ReviewerComment}
+Overall, I found the manuscript interesting and enjoyable to read.
+The proposed methodology is consistent with the framework presented
+in Refs. [5,9], extending it to elastoplastic deformation while
+investigating the influence of additional parameters. The manuscript
+is well structured and presents most of the relevant information in a
+clear manner.
+
+For future work, it would be interesting to include a comparison
+between a purely elastic and an elastoplastic example in order to
+better highlight the additional insights provided by the present
+formulation with respect to the original studies.
+
+One question, however, remained unclear to me: What is the
+physical/mechanical interpretation of the quantity represented by the
+contour integral used in this work?
+
+From the perspective of classical LEFM, the J-integral is a local
+crack-tip quantity associated with a single crack tip. For sharp
+cracks, path independence requires special treatment of the crack
+faces. In the case of diffuse cracks, where no physical crack faces
+exist, a simple rectangular contour appears to be sufficient.
+However, material heterogeneities and plastic deformation are also
+known to influence the interpretation and path independence of the
+J-integral. In the literature, additional treatments are often
+discussed for these cases. Hosain et al. also appear to acknowledge
+this issue (p. 17), although it is not discussed in detail.
+
+Initially, I assumed that the contour integral in the present work
+was intended to represent the total energy dissipation rate within
+the enclosed region during crack growth rather than a crack-tip
+quantity. However, in Hosain et al. (Fig. 4), the effective \(J\) is
+validated against Gao's analytical solution for the stress intensity
+factor together with Irwin's relation for the crack-tip J-integral.
+
+Therefore, I would appreciate a brief discussion when introducing the
+J-integral, together with appropriate references addressing its
+application to diffuse cracks and elastoplastic materials. In
+particular, it would be helpful to explain why the adopted contour
+integral provides a suitable definition of \((J^{\mathrm{eff}})\) in
+the present framework, despite the apparent loss of strict path
+independence.
+\end{ReviewerComment}
+
+\emph{Response.} We thank the reviewer for this positive assessment.
+We agree that a direct comparison between purely elastic and
+elastoplastic examples would be valuable; however, such a comparison
+is beyond the scope of this short proceedings contribution and is a
+natural extension for future work. We also agree that the manuscript
+should more clearly
+state the interpretation of the contour integral. We have revised the
+text after the J-integral definition. The revised manuscript now
+explains that the boundary integral is not used as a strictly
+path-independent local crack-tip quantity in the classical LEFM
+sense, particularly when different paths are compared that intersect
+the microstructure-resolved region with complex crack patterns and
+inelastic material behavior. Instead, following Hossain et al., it is evaluated on the
+outer boundary of the prescribed numerical experiment and interpreted
+as the macroscopic energy flux required to drive separation of the
+resolved microstructure. We also explicitly state that material
+heterogeneity, plastic dissipation, and the possible presence of
+multiple diffuse cracks may affect path independence within the
+microstructure-resolved region. However, path independence is
+expected to be restored for contours that enclose the complete
+microstructural crack pattern and lie entirely in the idealized
+homogeneous embedding domain of effective stiffness, which is
+expected to deform elastically. Therefore, the maximum recorded
+boundary value is used as a suitable operational definition of the
+macroscopic driving force necessary to enforce macroscopic crack
+propagation, as it could be observed in an experiment, in the given
+microstructure with the given material behavior. It is therefore
+interpreted as the effective crack resistance for this specific
+numerical experiment.
+
+\emph{Related change.} Section~2, after Eq.~(5):
+\begin{quote}
+\added{In the present diffuse-crack and heterogeneous elastoplastic
+setting, the boundary integral is not used as a strictly
+path-independent local crack-tip quantity in the classical LEFM
+sense, particularly when different paths are compared that intersect
+the microstructure-resolved region with complex crack patterns and
+inelastic material behavior. Instead, following Hossain et al., it is evaluated on the
+outer boundary of the numerical experiment and interpreted as the
+macroscopic energy flux required to drive separation of the enclosed
+resolved microstructure. Material heterogeneity, plastic
+dissipation, and the possible presence of multiple diffuse cracks may
+affect path independence within the microstructure-resolved region.
+However, path independence is expected to be restored for contours
+that enclose the complete microstructural crack pattern and lie
+entirely in the idealized homogeneous embedding domain of effective
+stiffness, which is expected to deform elastically. Therefore, the
+maximum recorded boundary value is used here as a suitable
+operational definition of the macroscopic driving force necessary to
+enforce macroscopic crack propagation, as it could be observed in an
+experiment, in the given microstructure with the given material
+behavior. It is therefore interpreted as the effective crack
+resistance for the prescribed numerical experiment.}
+\end{quote}
+
+\textbf{Additional suggestions}
+
+\textbf{Additional suggestion 1.}
+\begin{ReviewerComment}
+1.In Fig. 2, it would be helpful to state more explicitly that the
+model does not represent a complete CT specimen containing a locally
+resolved substructure. Instead, only the microstructure within a
+homogeneous domain is modeled explicitly, while the near-tip field
+corresponding to a crack with constant stress intensity factor is
+imposed through the boundary conditions. Although this is explained
+in the manuscript, the figure may initially suggest a different
+interpretation.
+\end{ReviewerComment}
+
+\emph{Response.} We agree and have clarified this point in the
+captions of both setup figures. The revised text now states that the
+figures show a resolved microstructural region embedded in a
+homogeneous domain and subjected to a prescribed near-tip field, not
+a complete compact-tension specimen.
+
+\emph{Related changes.}
+\begin{itemize}
+  \item Caption of Fig.~1: \added{The sketch illustrates the imposed
+  near-tip boundary field around the resolved region and should not
+  be read as a complete compact-tension specimen with locally
+  resolved substructure.}
+  \item Caption of Fig.~2: \added{The model resolves the
+  microstructure inside a homogeneous embedding domain subjected to a
+  prescribed near-tip field, not a complete compact-tension
+  specimen.}
+\end{itemize}
+
+\textbf{Additional suggestion 2.}
+\begin{ReviewerComment}
+2.Similar to the underlying references, it would be useful to
+explicitly mention that interface properties between the inclusions
+and the matrix are neglected.
+\end{ReviewerComment}
+
+\emph{Response.} We agree and have added this assumption to the
+geometry and material-parameter section.
+
+\emph{Related change.} Section~4.1:
+\begin{quote}
+\added{The interfaces between inclusions and matrix are assumed
+perfectly bonded; separate interface stiffnesses, strengths, or
+fracture resistances are not introduced.}
+\end{quote}
+
+\textbf{Additional suggestion 3.}
+\begin{ReviewerComment}
+3.Fig. 2 would benefit from showing the contour used for the
+J-integral evaluation together with the principal dimensions of the
+model (e.g., \((L)\), \((w_s)\), ligament width, etc.). This would
+make the numerical setup easier to understand.
+\end{ReviewerComment}
+
+\emph{Response.} We have clarified the contour used for the
+J-integral evaluation in the figure caption and accompanying setup
+description. In the present formulation, \(J_x\) is evaluated on the
+outer boundary of the plotted computational domain. The principal
+geometric dimensions are already defined in the text: inclusion
+diameter \(L\), ligament width \(w_s\), cell size
+\(w_c=L+w_s\), and the \(6\times3\) resolved inclusion array. We
+therefore chose a caption/text clarification rather than redrawing
+the figure for this minor revision.
+
+\textbf{Additional suggestion 4.}
+\begin{ReviewerComment}
+4.I initially expected crack deflection to occur for stiff and tough
+inclusions, particularly since the considered configuration appears
+comparable to the offset configuration shown in Fig. 11 of Hosain et
+al. [5]. It would therefore be helpful to comment on whether the
+absence of crack deflection is primarily a consequence of the
+relatively moderate inclusion-to-matrix property contrast considered
+in the present study. Alternatively, a brief reference to the
+corresponding observations in Ref. [5] would also help readers
+interpret the results.
+\end{ReviewerComment}
+
+\emph{Response.} We agree and have added a short comment before the
+geometry subsection. The revised manuscript states that no crack
+deflection around stiff and tough inclusions was observed in the
+present parameter range, and that this is consistent with the
+moderate inclusion-to-matrix contrasts considered. We also note that
+stronger contrasts or different offset configurations, such as those
+discussed by Hossain et al., may lead to different crack-path
+selection.
+
+\emph{Related change.} Section~4:
+\begin{quote}
+\added{Crack deflection around stiff and tough inclusions was not
+observed in the present parameter range. This is consistent with
+interpreting the investigated inclusion-to-matrix property contrasts
+as moderate; stronger contrasts or different offset configurations,
+such as those discussed by Hossain et al., may lead to different
+crack-path selection.}
+\end{quote}
+
+\end{document}

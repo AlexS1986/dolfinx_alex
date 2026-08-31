@@ -1,0 +1,28 @@
+{
+  "tag": "test_trans",
+  "direction": "quer zur Aufbaurichtung",
+  "sfun": "1.0",
+  "Gc_input_GPa_um": 10.0,
+  "E_prime_GPa": 200.0,
+  "J_reference_GPa_um": 12.100000000000005,
+  "n_steps": 10,
+  "crack_tip_range_um": [
+    0.0,
+    0.0
+  ],
+  "steady_window_x_um": [
+    3.5e-10,
+    0.0
+  ],
+  "crack_growth_um": 0.0,
+  "crack_propagated": false,
+  "patch_fraction_traversed": 0.0,
+  "Jx_steady": {
+    "n": 0
+  },
+  "Jy_steady": {
+    "n": 0
+  },
+  "Jx_last": 11.534,
+  "warning": "Der Riss ist nicht gewachsen (Spitze bewegte sich 0 um, Schwelle 2*epsilon). Es gibt kein quasistationaeres Plateau, also auch kein Gc_eff. Typische Ursachen: zu wenige Zeitschritte (--max_steps), K_scale zu klein, oder der Lauf steckt noch im Anfangstransienten (J faellt dann monoton Richtung J_reference_GPa_um)."
+}

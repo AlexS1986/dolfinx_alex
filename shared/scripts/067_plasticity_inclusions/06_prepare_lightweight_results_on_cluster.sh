@@ -10,10 +10,20 @@ mkdir -p "$TARGET_DIR"
 
 cd "$SOURCE_DIR"
 
-echo "Copying folder structure, parameters.txt, and run_simulation_graphs.txt"
+echo "Copying folder structure, result tables, and generated phase-field plots"
 find . -type d -exec mkdir -p "$TARGET_DIR/{}" \;
-find . -type f \( -name parameters.txt -o -name run_simulation_graphs.txt \) \
+find . -type f \( \
+    -name parameters.txt \
+    -o -name run_simulation_graphs.txt \
+    -o -name 's_field_screenshot_*.png' \
+\) \
     -exec cp --parents {} "$TARGET_DIR" \;
+
+plot_count="$(find "$TARGET_DIR" -type f -name 's_field_screenshot_*.png' | wc -l)"
+echo "Included $plot_count generated phase-field plot(s)"
+if [[ "$plot_count" -eq 0 ]]; then
+    echo "Warning: no generated s_field_screenshot_*.png files were found." >&2
+fi
 
 first_wsteg_dir=""
 while IFS= read -r parameters_file; do

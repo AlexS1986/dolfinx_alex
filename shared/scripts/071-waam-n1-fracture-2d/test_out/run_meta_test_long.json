@@ -1,0 +1,145 @@
+{
+  "tag": "test_long",
+  "mesh_file": "/home/scripts/071-waam-n1-fracture-2d/test_out/mesh_test_long.xdmf",
+  "micro": "/home/scripts/071-waam-n1-fracture-2d/test_out/micro_test.npz",
+  "sfun": "1.0",
+  "rotate_ccw90": false,
+  "Gc_GPa_um": 10.0,
+  "epsilon_um": 8.0,
+  "eta": 1e-05,
+  "mobility": 1000.0,
+  "degradation": "cubic",
+  "degradation_beta": 0.1,
+  "plane_state": "stress",
+  "embedding_E_GPa": 200.0,
+  "embedding_nu": 0.3,
+  "E_prime_GPa": 200.0,
+  "kappa": 2.076923076923077,
+  "K_scale": 1.1,
+  "K1_GPa_sqrt_um": 49.19349550499538,
+  "K1_MPa_sqrt_m": 49.19349550499538,
+  "J_reference_GPa_um": 12.100000000000005,
+  "init_profile": true,
+  "min_iters": 5,
+  "max_iters": 8,
+  "max_steps": 0,
+  "postprocessing_interval": 10,
+  "stop_reason": "laeuft noch / abgebrochen",
+  "v_crack": 40.1149,
+  "a0_um": 200.5745,
+  "crack_tip_x0_um": 0.0,
+  "Tend": 32.00000000000001,
+  "dt_start": 0.0003200000000000001,
+  "dt_max": 0.03200000000000001,
+  "domain_um": [
+    -200.5745,
+    -298.3335,
+    601.7235000000001,
+    298.3335
+  ],
+  "graph_columns": [
+    "t",
+    "Jx",
+    "Jy",
+    "x_crack_tip",
+    "x_K_field",
+    "Rx_top",
+    "Ry_top",
+    "dW",
+    "W",
+    "A_surf",
+    "dt",
+    "E_el",
+    "E_surf",
+    "E_total",
+    "newton_iters",
+    "s_min"
+  ],
+  "mpi_ranks": 4,
+  "started": "2026-08-21T16:47:39",
+  "microstructure": {
+    "n_distinct_grain_tensors": 374,
+    "grains_per_material_crystal": {
+      "17-4PH/bcc": 203,
+      "17-4PH/fcc": 102,
+      "316L/fcc": 6,
+      "trans/bcc": 29,
+      "trans/fcc": 34
+    },
+    "region_material": {
+      "0": "17-4PH",
+      "1": "trans",
+      "2": "316L"
+    },
+    "single_crystal_cubic_GPa": {
+      "17-4PH": {
+        "bcc": {
+          "C11": 231.4,
+          "C12": 134.7,
+          "C44": 116.4,
+          "_ref": "alpha-Fe / martensite, ~Rayne-Chandrasekhar"
+        },
+        "fcc": {
+          "C11": 204.6,
+          "C12": 137.7,
+          "C44": 126.2,
+          "_ref": "retained austenite in 17-4PH"
+        }
+      },
+      "316L": {
+        "fcc": {
+          "C11": 204.6,
+          "C12": 137.7,
+          "C44": 126.2,
+          "_ref": "316L austenite, ~Ledbetter"
+        },
+        "bcc": {
+          "C11": 231.4,
+          "C12": 134.7,
+          "C44": 116.4,
+          "_ref": "stray delta-ferrite"
+        }
+      },
+      "trans": {
+        "fcc": {
+          "C11": 204.6,
+          "C12": 137.7,
+          "C44": 126.2,
+          "_ref": "default: as 316L austenite"
+        },
+        "bcc": {
+          "C11": 231.4,
+          "C12": 134.7,
+          "C44": 116.4,
+          "_ref": "default: as 17-4PH martensite"
+        }
+      }
+    },
+    "plane_state": "stress",
+    "E_x_range_GPa": [
+      94.23970858100324,
+      299.7697707348058
+    ],
+    "patch_grid_ny_nx": [
+      59,
+      119
+    ],
+    "patch_Lx_um": 401.149,
+    "patch_Ly_um": 198.889,
+    "rotated_ccw90": false
+  },
+  "roi_um": [
+    0.0,
+    0.0,
+    401.149,
+    198.889
+  ],
+  "zones_um": [
+    133.33333333333334,
+    266.6666666666667
+  ],
+  "finished": "2026-08-21T16:47:40",
+  "t_reached": 0.0,
+  "successful_steps": 0,
+  "dt_final": 0.0003200000000000001
+}

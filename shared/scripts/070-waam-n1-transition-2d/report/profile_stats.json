@@ -1,0 +1,17 @@
+{
+ "bin_um": 99.32410714285713,
+ "nbin": 28,
+ "cells_per_bin": 7627,
+ "k_example": 12,
+ "x_example_um": [
+  1191.8892857142855,
+  1291.2133928571427
+ ],
+ "sum_sig_example_GPa": 1394.7128821885676,
+ "sum_eps_example": 7.202372485738259,
+ "E_example_GPa": 193.64631375984806,
+ "cv_strip_mean_sigma_pct": 7.611895060309643e-09,
+ "cv_strip_mean_eps_pct": 4.659272322794323,
+ "E_profile_min_GPa": 159.9195590631312,
+ "E_profile_max_GPa": 194.84507511051896
+}

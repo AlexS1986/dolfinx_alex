@@ -1,0 +1,47 @@
+{
+ "n_strips_with_contrast": 15,
+ "n_strips_FE_inside_bounds": 15,
+ "xi_FE_mean": 0.39537512798329816,
+ "xi_FE_min": 0.23325403980510392,
+ "xi_FE_max": 0.5679739997302373,
+ "xi_arith_mean": 0.3941169676540243,
+ "mean_diff_arith": 0.03402438496558956,
+ "max_abs_diff_arith": 9.760253103085802,
+ "mean_diff_harm": 5.680750005043987,
+ "mean_diff_voigt": -9.14674983593825,
+ "corr_arith": 0.9566975941664205,
+ "corr_harm": 0.8784067314249207,
+ "corr_voigt": 0.47253329566611035,
+ "zone_arith": {
+  "17-4PH": 189.2368892845457,
+  "trans": 174.40870824757147,
+  "316L": 185.794926386273
+ },
+ "zone_harm": {
+  "17-4PH": 176.5181370944269,
+  "trans": 164.2136651142739,
+  "316L": 185.79143731315818
+ },
+ "zone_fe": {
+  "17-4PH": 187.0370226306839,
+  "trans": 175.19388682112105,
+  "316L": 185.96252103554667
+ },
+ "interaction": {
+  "sigma_mean_MPa": 182.86520023844577,
+  "sigma_min_MPa": 63.67690711461621,
+  "sigma_max_MPa": 380.3420944544928,
+  "sigma_std_pct": 12.125139228280203,
+  "sigma_p1_MPa": 120.25494621913357,
+  "sigma_p99_MPa": 249.43114518518922,
+  "concentration_max_over_mean": 2.079904180557856,
+  "corr_Ex_sigma": 0.6415267580349213,
+  "err_voigt_assumption_pct": 8.715959200481597,
+  "err_reuss_assumption_pct": 7.814022979039402,
+  "band_200_205_n": 3216,
+  "band_200_205_sigma_mean_MPa": 192.41716163754487,
+  "band_200_205_sigma_std_MPa": 25.38989519046781,
+  "band_200_205_sigma_min_MPa": 127.41626693291008,
+  "band_200_205_sigma_max_MPa": 328.37665644376096
+ }
+}

@@ -1,71 +1,46 @@
 This is BibTeX, Version 0.99d (TeX Live 2022/dev/Debian)
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: main.aux
-The style file: sn-mathphys-num.bst
-Reallocated glb_str_ptr (elt_size=4) to 20 items from 10.
-Reallocated global_strs (elt_size=200001) to 20 items from 10.
-Reallocated glb_str_end (elt_size=4) to 20 items from 10.
-Reallocated singl_function (elt_size=4) to 100 items from 50.
-Reallocated singl_function (elt_size=4) to 100 items from 50.
-Reallocated singl_function (elt_size=4) to 100 items from 50.
-Reallocated singl_function (elt_size=4) to 100 items from 50.
-Reallocated singl_function (elt_size=4) to 100 items from 50.
-Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
-Reallocated singl_function (elt_size=4) to 100 items from 50.
-Reallocated singl_function (elt_size=4) to 100 items from 50.
-Reallocated singl_function (elt_size=4) to 100 items from 50.
-Reallocated singl_function (elt_size=4) to 100 items from 50.
-Reallocated singl_function (elt_size=4) to 100 items from 50.
-Reallocated singl_function (elt_size=4) to 100 items from 50.
-Reallocated singl_function (elt_size=4) to 100 items from 50.
-Reallocated singl_function (elt_size=4) to 100 items from 50.
+The style file: pamm.bst
 Database file #1: bib/literatur.bib
-sn-mathphys-num.bst [2024/07/19 v1.1  bibliography style]
-Reallocated wiz_functions (elt_size=4) to 9000 items from 6000.
-Reallocated singl_function (elt_size=4) to 100 items from 50.
-Warning--to sort, need author or key in _fenicsx_
-Reallocated singl_function (elt_size=4) to 100 items from 50.
-Reallocated singl_function (elt_size=4) to 100 items from 50.
-Reallocated singl_function (elt_size=4) to 100 items from 50.
-You've used 14 entries,
-            7485 wiz_defined-function locations,
-            1306 strings with 13770 characters,
-and the built_in function-call counts, 149781 in all, are:
-= -- 26262
-> -- 509
-< -- 229
-+ -- 14886
-- -- 167
-* -- 4656
-:= -- 26550
-add.period$ -- 18
-call.type$ -- 14
-change.case$ -- 96
-chr.to.int$ -- 623
-cite$ -- 16
-duplicate$ -- 682
-empty$ -- 3250
-format.name$ -- 371
-if$ -- 37998
-int.to.chr$ -- 1
-int.to.str$ -- 23
-missing$ -- 0
-newline$ -- 260
-num.names$ -- 68
-pop$ -- 335
+You've used 15 entries,
+            2691 wiz_defined-function locations,
+            701 strings with 7945 characters,
+and the built_in function-call counts, 6763 in all, are:
+= -- 704
+> -- 284
+< -- 0
++ -- 118
+- -- 101
+* -- 689
+:= -- 1002
+add.period$ -- 15
+call.type$ -- 15
+change.case$ -- 92
+chr.to.int$ -- 0
+cite$ -- 15
+duplicate$ -- 336
+empty$ -- 559
+format.name$ -- 101
+if$ -- 1431
+int.to.chr$ -- 0
+int.to.str$ -- 15
+missing$ -- 16
+newline$ -- 91
+num.names$ -- 31
+pop$ -- 126
 preamble$ -- 1
-purify$ -- 63
+purify$ -- 79
 quote$ -- 0
-skip$ -- 15830
+skip$ -- 90
 stack$ -- 0
-substring$ -- 14908
-swap$ -- 389
-text.length$ -- 186
+substring$ -- 342
+swap$ -- 233
+text.length$ -- 0
 text.prefix$ -- 0
-top$ -- 1
-type$ -- 609
-warning$ -- 1
-while$ -- 434
-width$ -- 0
-write$ -- 345
-(There was 1 warning)
+top$ -- 0
+type$ -- 71
+warning$ -- 0
+while$ -- 50
+width$ -- 17
+write$ -- 139

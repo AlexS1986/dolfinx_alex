@@ -448,6 +448,14 @@ simulation_*
 *.zip
 */resources/*
 
+# Large local research/simulation artifacts (keep source and metadata trackable)
+/shared/scripts/063-Special-Issue-IJF-Hannover/research_data_brittle_fracture_topology_optimized_structures/resources/
+/shared/scripts/063-Special-Issue-IJF-Hannover/research_data_brittle_fracture_topology_optimized_structures/results/
+/shared/scripts/069-waam-polycrystal-anisotropy/inputs/new_exp/EBSD Rohdaten+Map/*.bmp
+/shared/scripts/070-waam-n1-transition-2d/fields_*.npz
+/shared/scripts/070-waam-n1-transition-2d/_to_delete/
+*.avi
+
 *.err.*
 *.out.*
 *_results

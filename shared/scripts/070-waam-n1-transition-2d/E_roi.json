@@ -1,0 +1,33 @@
+{
+  "tag": "roi",
+  "units": "GPa, um",
+  "load_axis": "x",
+  "applied_eps_xx": 0.001,
+  "sfun": "1.0",
+  "grid": [
+    263,
+    825
+  ],
+  "Lx_um": 2781.075,
+  "Ly_um": 886.573,
+  "E_apparent_GPa": 182.86520023846117,
+  "nu_xy_apparent": 0.058181699173099725,
+  "zone_17-4PH": {
+    "area_frac": 0.22909090908972196,
+    "avg_sigma_xx_GPa": 0.1828652002369348,
+    "avg_eps_xx": 0.0009776952052857211,
+    "E_local_GPa": 187.03702263068212
+  },
+  "zone_transition": {
+    "area_frac": 0.29696969696783576,
+    "avg_sigma_xx_GPa": 0.18286520023764524,
+    "avg_eps_xx": 0.0010437875633432275,
+    "E_local_GPa": 175.19388682111924
+  },
+  "zone_316L": {
+    "area_frac": 0.47393939393776935,
+    "avg_sigma_xx_GPa": 0.18286520024151873,
+    "avg_eps_xx": 0.0009833443815626033,
+    "E_local_GPa": 185.9625210355431
+  }
+}

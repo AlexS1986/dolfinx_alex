@@ -1,0 +1,71 @@
+{
+  "tag": "test_long",
+  "direction": "in Aufbaurichtung",
+  "sfun": "1.0",
+  "Gc_input_GPa_um": 10.0,
+  "E_prime_GPa": 200.0,
+  "J_reference_GPa_um": 12.100000000000005,
+  "n_steps": 964,
+  "crack_tip_range_um": [
+    0.0,
+    584.83
+  ],
+  "steady_window_x_um": [
+    140.40214999999998,
+    401.149
+  ],
+  "crack_growth_um": 584.83,
+  "crack_propagated": true,
+  "patch_fraction_traversed": 1.4578872189635275,
+  "Jx_steady": {
+    "n": 411,
+    "mean": 11.229191727493918,
+    "median": 11.09,
+    "std": 1.289082089470959,
+    "min": 9.1286,
+    "max": 14.394
+  },
+  "Jy_steady": {
+    "n": 411,
+    "mean": 0.1907931426034063,
+    "median": 0.22723,
+    "std": 0.1270763118730457,
+    "min": -0.035413,
+    "max": 0.409
+  },
+  "Jx_last": 0.5211,
+  "Gc_eff_GPa_um": 11.229191727493918,
+  "Gc_eff_over_Gc": 1.1229191727493917,
+  "K_eff_MPa_sqrt_m": 47.39027690886374,
+  "Gc_eff_scatter_rel": 0.11479740668375342,
+  "per_zone": {
+    "transition": {
+      "n": 206,
+      "mean": 11.747547572815535,
+      "median": 11.274000000000001,
+      "std": 1.2810310010791257,
+      "min": 9.892,
+      "max": 14.394,
+      "Gc_eff_GPa_um": 11.747547572815535,
+      "K_eff_MPa_sqrt_m": 48.47173933915625,
+      "x_range_um": [
+        133.33333333333334,
+        266.6666666666667
+      ]
+    },
+    "316L": {
+      "n": 205,
+      "mean": 10.708307317073173,
+      "median": 10.624,
+      "std": 1.070838187825323,
+      "min": 9.1286,
+      "max": 13.407,
+      "Gc_eff_GPa_um": 10.708307317073173,
+      "K_eff_MPa_sqrt_m": 46.278088372518525,
+      "x_range_um": [
+        266.6666666666667,
+        401.149
+      ]
+    }
+  }
+}

@@ -1,0 +1,823 @@
+%% BioMed_Central_Bib_Style_v1.01
+
+\begin{thebibliography}{48}
+% BibTex style file: bmc-mathphys.bst (version 2.1), 2014-07-24
+\ifx \bisbn   \undefined \def \bisbn  #1{ISBN #1}\fi
+\ifx \binits  \undefined \def \binits#1{#1}\fi
+\ifx \bauthor  \undefined \def \bauthor#1{#1}\fi
+\ifx \batitle  \undefined \def \batitle#1{#1}\fi
+\ifx \bjtitle  \undefined \def \bjtitle#1{#1}\fi
+\ifx \bvolume  \undefined \def \bvolume#1{\textbf{#1}}\fi
+\ifx \byear  \undefined \def \byear#1{#1}\fi
+\ifx \bissue  \undefined \def \bissue#1{#1}\fi
+\ifx \bfpage  \undefined \def \bfpage#1{#1}\fi
+\ifx \blpage  \undefined \def \blpage #1{#1}\fi
+\ifx \burl  \undefined \def \burl#1{\textsf{#1}}\fi
+\ifx \doiurl  \undefined \def \doiurl#1{\url{https://doi.org/#1}}\fi
+\ifx \betal  \undefined \def \betal{\textit{et al.}}\fi
+\ifx \binstitute  \undefined \def \binstitute#1{#1}\fi
+\ifx \binstitutionaled  \undefined \def \binstitutionaled#1{#1}\fi
+\ifx \bctitle  \undefined \def \bctitle#1{#1}\fi
+\ifx \beditor  \undefined \def \beditor#1{#1}\fi
+\ifx \bpublisher  \undefined \def \bpublisher#1{#1}\fi
+\ifx \bbtitle  \undefined \def \bbtitle#1{#1}\fi
+\ifx \bedition  \undefined \def \bedition#1{#1}\fi
+\ifx \bseriesno  \undefined \def \bseriesno#1{#1}\fi
+\ifx \blocation  \undefined \def \blocation#1{#1}\fi
+\ifx \bsertitle  \undefined \def \bsertitle#1{#1}\fi
+\ifx \bsnm \undefined \def \bsnm#1{#1}\fi
+\ifx \bsuffix \undefined \def \bsuffix#1{#1}\fi
+\ifx \bparticle \undefined \def \bparticle#1{#1}\fi
+\ifx \barticle \undefined \def \barticle#1{#1}\fi
+\bibcommenthead
+\ifx \bconfdate \undefined \def \bconfdate #1{#1}\fi
+\ifx \botherref \undefined \def \botherref #1{#1}\fi
+\ifx \url \undefined \def \url#1{\textsf{#1}}\fi
+\ifx \bchapter \undefined \def \bchapter#1{#1}\fi
+\ifx \bbook \undefined \def \bbook#1{#1}\fi
+\ifx \bcomment \undefined \def \bcomment#1{#1}\fi
+\ifx \oauthor \undefined \def \oauthor#1{#1}\fi
+\ifx \citeauthoryear \undefined \def \citeauthoryear#1{#1}\fi
+\ifx \endbibitem  \undefined \def \endbibitem {}\fi
+\ifx \bconflocation  \undefined \def \bconflocation#1{#1}\fi
+\ifx \arxivurl  \undefined \def \arxivurl#1{\textsf{#1}}\fi
+\csname PreBibitemsHook\endcsname
+
+%%% 1
+\bibitem[\protect\citeauthoryear{Li et~al.}{2019}]{li_additively_2019}
+\begin{barticle}
+\bauthor{\bsnm{Li}, \binits{Y.}},
+\bauthor{\bsnm{Jahr}, \binits{H.}},
+\bauthor{\bsnm{Pavanram}, \binits{P.}},
+\bauthor{\bsnm{Bobbert}, \binits{F.S.L.}},
+\bauthor{\bsnm{Puggi}, \binits{U.}},
+\bauthor{\bsnm{Zhang}, \binits{X.-Y.}},
+\bauthor{\bsnm{Pouran}, \binits{B.}},
+\bauthor{\bsnm{Leeflang}, \binits{M.A.}},
+\bauthor{\bsnm{Weinans}, \binits{H.}},
+\bauthor{\bsnm{Zhou}, \binits{J.}},
+\bauthor{\bsnm{Zadpoor}, \binits{A.A.}}:
+\batitle{Additively manufactured functionally graded biodegradable porous
+  iron}.
+\bjtitle{Acta Biomaterialia}
+\bvolume{96},
+\bfpage{646}--\blpage{661}
+(\byear{2019})
+\doiurl{10.1016/j.actbio.2019.07.013}
+\end{barticle}
+\endbibitem
+
+%%% 2
+\bibitem[\protect\citeauthoryear{Hou et~al.}{2022}]{hou_additive_2022}
+\begin{barticle}
+\bauthor{\bsnm{Hou}, \binits{C.}},
+\bauthor{\bsnm{Liu}, \binits{Y.}},
+\bauthor{\bsnm{Xu}, \binits{W.}},
+\bauthor{\bsnm{Lu}, \binits{X.}},
+\bauthor{\bsnm{Guo}, \binits{L.}},
+\bauthor{\bsnm{Liu}, \binits{Y.}},
+\bauthor{\bsnm{Tian}, \binits{S.}},
+\bauthor{\bsnm{Liu}, \binits{B.}},
+\bauthor{\bsnm{Zhang}, \binits{J.}},
+\bauthor{\bsnm{Wen}, \binits{C.}}:
+\batitle{Additive manufacturing of functionally graded porous titanium
+  scaffolds for dental applications}.
+\bjtitle{Biomaterials Advances}
+\bvolume{139},
+\bfpage{213018}
+(\byear{2022})
+\doiurl{10.1016/j.bioadv.2022.213018}
+\end{barticle}
+\endbibitem
+
+%%% 3
+\bibitem[\protect\citeauthoryear{Cheng et~al.}{2019}]{cheng_functionally_2019}
+\begin{barticle}
+\bauthor{\bsnm{Cheng}, \binits{L.}},
+\bauthor{\bsnm{Bai}, \binits{J.}},
+\bauthor{\bsnm{To}, \binits{A.C.}}:
+\batitle{Functionally graded lattice structure topology optimization for the
+  design of additive manufactured components with stress constraints}.
+\bjtitle{Computer Methods in Applied Mechanics and Engineering}
+\bvolume{344},
+\bfpage{334}--\blpage{359}
+(\byear{2019})
+\doiurl{10.1016/j.cma.2018.10.010}
+\end{barticle}
+\endbibitem
+
+%%% 4
+\bibitem[\protect\citeauthoryear{Jansen and Pierard}{2020}]{jansen_hybrid_2020}
+\begin{barticle}
+\bauthor{\bsnm{Jansen}, \binits{M.}},
+\bauthor{\bsnm{Pierard}, \binits{O.}}:
+\batitle{A hybrid density/level set formulation for topology optimization of
+  functionally graded lattice structures}.
+\bjtitle{Computers \& Structures}
+\bvolume{231},
+\bfpage{106205}
+(\byear{2020})
+\doiurl{10.1016/j.compstruc.2020.106205}
+\end{barticle}
+\endbibitem
+
+%%% 5
+\bibitem[\protect\citeauthoryear{Gibson and
+  Ashby}{1982}]{gibson_mechanics_1982}
+\begin{barticle}
+\bauthor{\bsnm{Gibson}, \binits{I.J.}},
+\bauthor{\bsnm{Ashby}, \binits{M.F.}}:
+\batitle{The mechanics of three-dimensional cellular materials}.
+\bjtitle{Proceedings of the Royal Society of London. A. Mathematical and
+  Physical Sciences}
+\bvolume{382}(\bissue{1782}),
+\bfpage{43}--\blpage{59}
+(\byear{1982})
+\doiurl{10.1098/rspa.1982.0088} .
+\bcomment{\_eprint:
+  https://royalsocietypublishing.org/doi/pdf/10.1098/rspa.1982.0088}
+\end{barticle}
+\endbibitem
+
+%%% 6
+\bibitem[\protect\citeauthoryear{Gibson and Ashby}{1997}]{gibson_cellular_1997}
+\begin{bbook}
+\bauthor{\bsnm{Gibson}, \binits{L.J.}},
+\bauthor{\bsnm{Ashby}, \binits{M.F.}}:
+\bbtitle{Cellular {{Solids}}: {{Structure}} and {{Properties}}},
+\bedition{2}nd edn.
+\bsertitle{Cambridge {{Solid State Science Series}}}.
+\bpublisher{Cambridge University Press},
+\blocation{Cambridge}
+(\byear{1997}).
+\doiurl{10.1017/CBO9781139878326}
+\end{bbook}
+\endbibitem
+
+%%% 7
+\bibitem[\protect\citeauthoryear{Ashby et~al.}{2000}]{_metal_2000}
+\begin{bbook}
+\bauthor{\bsnm{Ashby}, \binits{M.F.}},
+\bauthor{\bsnm{Evans}, \binits{A.}},
+\bauthor{\bsnm{Fleck}, \binits{N.A.}},
+\bauthor{\bsnm{Gibson}, \binits{L.J.}},
+\bauthor{\bsnm{Hutchinson}, \binits{J.W.}},
+\bauthor{\bsnm{Wadley}, \binits{H.N.G.}}:
+\bbtitle{Metal Foams: A Design Guide}.
+\bpublisher{Butterworth-Heinemann},
+\blocation{Oxford}
+(\byear{2000})
+\end{bbook}
+\endbibitem
+
+%%% 8
+\bibitem[\protect\citeauthoryear{Banhart}{2018}]{BANHART2018347}
+\begin{bchapter}
+\bauthor{\bsnm{Banhart}, \binits{J.}}:
+\bctitle{4.14 production of metal foams}.
+In: \beditor{\bsnm{Beaumont}, \binits{P.W.R.}},
+\beditor{\bsnm{Zweben}, \binits{C.H.}} (eds.)
+\bbtitle{Comprehensive Composite Materials {{II}}},
+pp. \bfpage{347}--\blpage{363}.
+\bpublisher{Elsevier},
+\blocation{Oxford}
+(\byear{2018}).
+\doiurl{10.1016/B978-0-12-803581-8.09976-8}
+\end{bchapter}
+\endbibitem
+
+%%% 9
+\bibitem[\protect\citeauthoryear{Bendsøe}{}]{bendsoe_optimal_1989}
+\begin{botherref}
+\oauthor{\bsnm{Bendsøe}, \binits{M.P.}}:
+Optimal shape design as a material distribution problem
+\textbf{1}(4),
+193--202
+\doiurl{10.1007/BF01650949} .
+Accessed 2025-03-31
+\end{botherref}
+\endbibitem
+
+%%% 10
+\bibitem[\protect\citeauthoryear{Yvonnet and Da}{2024}]{yvonnet_topology_2024}
+\begin{barticle}
+\bauthor{\bsnm{Yvonnet}, \binits{J.}},
+\bauthor{\bsnm{Da}, \binits{D.}}:
+\batitle{Topology optimization to fracture resistance: A review and recent
+  developments}.
+\bjtitle{Archives of Computational Methods in Engineering}
+\bvolume{31}(\bissue{4}),
+\bfpage{2295}--\blpage{2315}
+(\byear{2024})
+\doiurl{10.1007/s11831-023-10044-9}
+\end{barticle}
+\endbibitem
+
+%%% 11
+\bibitem[\protect\citeauthoryear{Verbart et~al.}{2016}]{verbart_damage_2016}
+\begin{barticle}
+\bauthor{\bsnm{Verbart}, \binits{A.}},
+\bauthor{\bsnm{Langelaar}, \binits{M.}},
+\bauthor{\bsnm{Keulen}, \binits{F.}}:
+\batitle{Damage approach: A new method for topology optimization with local
+  stress constraints}.
+\bjtitle{Structural and Multidisciplinary Optimization}
+\bvolume{53}(\bissue{5}),
+\bfpage{1081}--\blpage{1098}
+(\byear{2016})
+\doiurl{10.1007/s00158-015-1318-9}
+\end{barticle}
+\endbibitem
+
+%%% 12
+\bibitem[\protect\citeauthoryear{Francfort and
+  Marigo}{1998}]{francfort_revisiting_1998}
+\begin{barticle}
+\bauthor{\bsnm{Francfort}, \binits{G.A.}},
+\bauthor{\bsnm{Marigo}, \binits{J.-J.}}:
+\batitle{Revisiting brittle fracture as an energy minimization problem}.
+\bjtitle{Journal of the Mechanics and Physics of Solids}
+\bvolume{46}(\bissue{8}),
+\bfpage{1319}--\blpage{1342}
+(\byear{1998})
+\doiurl{10.1016/S0022-5096(98)00034-9}
+\end{barticle}
+\endbibitem
+
+%%% 13
+\bibitem[\protect\citeauthoryear{Bourdin et~al.}{2000}]{bourdin_numerical_2000}
+\begin{barticle}
+\bauthor{\bsnm{Bourdin}, \binits{B.}},
+\bauthor{\bsnm{Francfort}, \binits{G.A.}},
+\bauthor{\bsnm{Marigo}, \binits{J.-J.}}:
+\batitle{Numerical experiments in revisited brittle fracture}.
+\bjtitle{Journal of the Mechanics and Physics of Solids}
+\bvolume{48}(\bissue{4}),
+\bfpage{797}--\blpage{826}
+(\byear{2000})
+\doiurl{10.1016/S0022-5096(99)00028-9}
+\end{barticle}
+\endbibitem
+
+%%% 14
+\bibitem[\protect\citeauthoryear{Bourdin
+  et~al.}{2008}]{bourdin_variational_2008}
+\begin{barticle}
+\bauthor{\bsnm{Bourdin}, \binits{B.}},
+\bauthor{\bsnm{Francfort}, \binits{G.A.}},
+\bauthor{\bsnm{Marigo}, \binits{J.-J.}}:
+\batitle{The {{Variational Approach}} to {{Fracture}}}.
+\bjtitle{Journal of Elasticity}
+\bvolume{91}(\bissue{1}),
+\bfpage{5}--\blpage{148}
+(\byear{2008})
+\doiurl{10.1007/s10659-007-9107-3}
+\end{barticle}
+\endbibitem
+
+%%% 15
+\bibitem[\protect\citeauthoryear{Kuhn and
+  M{\"u}ller}{2010}]{kuhn_continuum_2010}
+\begin{barticle}
+\bauthor{\bsnm{Kuhn}, \binits{C.}},
+\bauthor{\bsnm{M{\"u}ller}, \binits{R.}}:
+\batitle{A continuum phase field model for fracture}.
+\bjtitle{Engineering Fracture Mechanics}
+\bvolume{77}(\bissue{18}),
+\bfpage{3625}--\blpage{3634}
+(\byear{2010})
+\doiurl{10.1016/j.engfracmech.2010.08.009}
+\end{barticle}
+\endbibitem
+
+%%% 16
+\bibitem[\protect\citeauthoryear{Miehe et~al.}{2010}]{miehe_phase_2010}
+\begin{barticle}
+\bauthor{\bsnm{Miehe}, \binits{C.}},
+\bauthor{\bsnm{Hofacker}, \binits{M.}},
+\bauthor{\bsnm{Welschinger}, \binits{F.}}:
+\batitle{A phase field model for rate-independent crack propagation: Robust
+  algorithmic implementation based on operator splits}.
+\bjtitle{Computer Methods in Applied Mechanics and Engineering}
+\bvolume{199}(\bissue{45--48}),
+\bfpage{2765}--\blpage{2778}
+(\byear{2010})
+\doiurl{10.1016/j.cma.2010.04.011}
+\end{barticle}
+\endbibitem
+
+%%% 17
+\bibitem[\protect\citeauthoryear{Ambati et~al.}{2015}]{ambati_review_2015}
+\begin{barticle}
+\bauthor{\bsnm{Ambati}, \binits{M.}},
+\bauthor{\bsnm{Gerasimov}, \binits{T.}},
+\bauthor{\bsnm{De~Lorenzis}, \binits{L.}}:
+\batitle{A review on phase-field models of brittle fracture and a new fast
+  hybrid formulation}.
+\bjtitle{Computational Mechanics}
+\bvolume{55}(\bissue{2}),
+\bfpage{383}--\blpage{405}
+(\byear{2015})
+\doiurl{10.1007/s00466-014-1109-y}
+\end{barticle}
+\endbibitem
+
+%%% 18
+\bibitem[\protect\citeauthoryear{Strobl and
+  Seelig}{2016}]{strobl_constitutive_2016}
+\begin{barticle}
+\bauthor{\bsnm{Strobl}, \binits{M.}},
+\bauthor{\bsnm{Seelig}, \binits{T.}}:
+\batitle{On constitutive assumptions in phase field approaches to brittle
+  fracture}.
+\bjtitle{Procedia Structural Integrity}
+\bvolume{2},
+\bfpage{3705}--\blpage{3712}
+(\byear{2016})
+\doiurl{10.1016/j.prostr.2016.06.460}
+\end{barticle}
+\endbibitem
+
+%%% 19
+\bibitem[\protect\citeauthoryear{Swamynathan
+  et~al.}{2021}]{swamynathan_energetically_2021}
+\begin{barticle}
+\bauthor{\bsnm{Swamynathan}, \binits{S.}},
+\bauthor{\bsnm{Jobst}, \binits{S.}},
+\bauthor{\bsnm{Keip}, \binits{M.-A.}}:
+\batitle{An energetically consistent tension--compression split for phase-field
+  models of fracture at large deformations}.
+\bjtitle{Mechanics of Materials}
+\bvolume{157},
+\bfpage{103802}
+(\byear{2021})
+\doiurl{10.1016/j.mechmat.2021.103802}
+\end{barticle}
+\endbibitem
+
+%%% 20
+\bibitem[\protect\citeauthoryear{Vicentini
+  et~al.}{2024}]{vicentini_energy_2024}
+\begin{barticle}
+\bauthor{\bsnm{Vicentini}, \binits{F.}},
+\bauthor{\bsnm{Zolesi}, \binits{C.}},
+\bauthor{\bsnm{Carrara}, \binits{P.}},
+\bauthor{\bsnm{Maurini}, \binits{C.}},
+\bauthor{\bsnm{De~Lorenzis}, \binits{L.}}:
+\batitle{On the energy decomposition in variational phase-field models for
+  brittle fracture under multi-axial stress states}.
+\bjtitle{International Journal of Fracture}
+\bvolume{247},
+\bfpage{291}--\blpage{317}
+(\byear{2024})
+\doiurl{10.1007/s10704-024-00763-w}
+\end{barticle}
+\endbibitem
+
+%%% 21
+\bibitem[\protect\citeauthoryear{Ambrosio and
+  Tortorelli}{1990}]{ambrosio_approximation_1990}
+\begin{barticle}
+\bauthor{\bsnm{Ambrosio}, \binits{L.}},
+\bauthor{\bsnm{Tortorelli}, \binits{V.M.}}:
+\batitle{Approximation of functional depending on jumps by elliptic functional
+  via t-convergence}.
+\bjtitle{Communications on Pure and Applied Mathematics}
+\bvolume{43}(\bissue{8}),
+\bfpage{999}--\blpage{1036}
+(\byear{1990})
+\doiurl{10.1002/cpa.3160430805}
+\end{barticle}
+\endbibitem
+
+%%% 22
+\bibitem[\protect\citeauthoryear{Tann{\'e} et~al.}{2018}]{tanne_crack_2018}
+\begin{barticle}
+\bauthor{\bsnm{Tann{\'e}}, \binits{E.}},
+\bauthor{\bsnm{Li}, \binits{T.}},
+\bauthor{\bsnm{Bourdin}, \binits{B.}},
+\bauthor{\bsnm{Marigo}, \binits{J.-J.}},
+\bauthor{\bsnm{Maurini}, \binits{C.}}:
+\batitle{Crack nucleation in variational phase-field models of brittle
+  fracture}.
+\bjtitle{Journal of the Mechanics and Physics of Solids}
+\bvolume{110},
+\bfpage{80}--\blpage{99}
+(\byear{2018})
+\doiurl{10.1016/j.jmps.2017.09.006}
+\end{barticle}
+\endbibitem
+
+%%% 23
+\bibitem[\protect\citeauthoryear{{Lopez-Pamies}
+  et~al.}{2024}]{lopez-pamies_classical_2024}
+\begin{botherref}
+\oauthor{\bsnm{{Lopez-Pamies}}, \binits{O.}},
+\oauthor{\bsnm{Dolbow}, \binits{J.E.}},
+\oauthor{\bsnm{Francfort}, \binits{G.A.}},
+\oauthor{\bsnm{Larsen}, \binits{C.J.}}:
+Classical Variational Phase-Field Models Cannot Predict Fracture Nucleation.
+arXiv
+(2024).
+\doiurl{10.48550/arXiv.2409.00242}
+\end{botherref}
+\endbibitem
+
+%%% 24
+\bibitem[\protect\citeauthoryear{Vicentini
+  et~al.}{2023}]{vicentini_phasefield_2023}
+\begin{barticle}
+\bauthor{\bsnm{Vicentini}, \binits{F.}},
+\bauthor{\bsnm{Carrara}, \binits{P.}},
+\bauthor{\bsnm{De~Lorenzis}, \binits{L.}}:
+\batitle{Phase-field modeling of brittle fracture in heterogeneous bars}.
+\bjtitle{European Journal of Mechanics - A/Solids}
+\bvolume{97},
+\bfpage{104826}
+(\byear{2023})
+\doiurl{10.1016/j.euromechsol.2022.104826}
+\end{barticle}
+\endbibitem
+
+%%% 25
+\bibitem[\protect\citeauthoryear{Hossain et~al.}{2014}]{hossain_effective_2014}
+\begin{barticle}
+\bauthor{\bsnm{Hossain}, \binits{M.Z.}},
+\bauthor{\bsnm{Hsueh}, \binits{C.-J.}},
+\bauthor{\bsnm{Bourdin}, \binits{B.}},
+\bauthor{\bsnm{Bhattacharya}, \binits{K.}}:
+\batitle{Effective toughness of heterogeneous media}.
+\bjtitle{Journal of the Mechanics and Physics of Solids}
+\bvolume{71},
+\bfpage{15}--\blpage{32}
+(\byear{2014})
+\doiurl{10.1016/j.jmps.2014.06.002}
+\end{barticle}
+\endbibitem
+
+%%% 26
+\bibitem[\protect\citeauthoryear{Brach et~al.}{2019}]{brach_anisotropy_2019}
+\begin{barticle}
+\bauthor{\bsnm{Brach}, \binits{S.}},
+\bauthor{\bsnm{Hossain}, \binits{M.Z.}},
+\bauthor{\bsnm{Bourdin}, \binits{B.}},
+\bauthor{\bsnm{Bhattacharya}, \binits{K.}}:
+\batitle{Anisotropy of the effective toughness of layered media}.
+\bjtitle{Journal of the Mechanics and Physics of Solids}
+\bvolume{131},
+\bfpage{96}--\blpage{111}
+(\byear{2019})
+\doiurl{10.1016/j.jmps.2019.06.021}
+\end{barticle}
+\endbibitem
+
+%%% 27
+\bibitem[\protect\citeauthoryear{Schl{\"u}ter and
+  M{\"u}ller}{2025}]{schluter_determination_2025a}
+\begin{barticle}
+\bauthor{\bsnm{Schl{\"u}ter}, \binits{A.}},
+\bauthor{\bsnm{M{\"u}ller}, \binits{R.}}:
+\batitle{Determination of the effective crack resistance in porous materials
+  using a fracture phase-field model}.
+\bjtitle{Engineering Fracture Mechanics}
+\bvolume{326},
+\bfpage{111348}
+(\byear{2025})
+\doiurl{10.1016/j.engfracmech.2025.111348}
+\end{barticle}
+\endbibitem
+
+%%% 28
+\bibitem[\protect\citeauthoryear{Russ and Waisman}{2019}]{russ_topology_2019}
+\begin{barticle}
+\bauthor{\bsnm{Russ}, \binits{J.B.}},
+\bauthor{\bsnm{Waisman}, \binits{H.}}:
+\batitle{Topology optimization for brittle fracture resistance}.
+\bjtitle{Computer Methods in Applied Mechanics and Engineering}
+\bvolume{347},
+\bfpage{238}--\blpage{263}
+(\byear{2019})
+\doiurl{10.1016/j.cma.2018.12.031}
+\end{barticle}
+\endbibitem
+
+%%% 29
+\bibitem[\protect\citeauthoryear{Xia et~al.}{2018}]{xia_topology_2018}
+\begin{barticle}
+\bauthor{\bsnm{Xia}, \binits{L.}},
+\bauthor{\bsnm{Da}, \binits{D.}},
+\bauthor{\bsnm{Yvonnet}, \binits{J.}}:
+\batitle{Topology optimization for maximizing the fracture resistance of
+  quasi-brittle composites}.
+\bjtitle{Computer Methods in Applied Mechanics and Engineering}
+\bvolume{332},
+\bfpage{234}--\blpage{254}
+(\byear{2018})
+\doiurl{10.1016/j.cma.2017.12.021}
+\end{barticle}
+\endbibitem
+
+%%% 30
+\bibitem[\protect\citeauthoryear{Da and Yvonnet}{2020}]{da_topology_2020}
+\begin{barticle}
+\bauthor{\bsnm{Da}, \binits{D.}},
+\bauthor{\bsnm{Yvonnet}, \binits{J.}}:
+\batitle{Topology optimization for maximizing the fracture resistance of
+  periodic quasi-brittle composites structures}.
+\bjtitle{Materials}
+\bvolume{13}(\bissue{15}),
+\bfpage{3279}
+(\byear{2020})
+\doiurl{10.3390/ma13153279}
+\end{barticle}
+\endbibitem
+
+%%% 31
+\bibitem[\protect\citeauthoryear{Li et~al.}{2021}]{li_simp_2021}
+\begin{barticle}
+\bauthor{\bsnm{Li}, \binits{P.}},
+\bauthor{\bsnm{Wu}, \binits{Y.}},
+\bauthor{\bsnm{Yvonnet}, \binits{J.}}:
+\batitle{A {SIMP}-phase field topology optimization framework to maximize
+  quasi-brittle fracture resistance of {2D} and {3D} composites}.
+\bjtitle{Theoretical and Applied Fracture Mechanics}
+\bvolume{114},
+\bfpage{102919}
+(\byear{2021})
+\doiurl{10.1016/j.tafmec.2021.102919}
+\end{barticle}
+\endbibitem
+
+%%% 32
+\bibitem[\protect\citeauthoryear{Wu et~al.}{2022}]{wu_topology_2022}
+\begin{barticle}
+\bauthor{\bsnm{Wu}, \binits{Y.}},
+\bauthor{\bsnm{Yvonnet}, \binits{J.}},
+\bauthor{\bsnm{Li}, \binits{P.}},
+\bauthor{\bsnm{He}, \binits{Z.}}:
+\batitle{Topology optimization for enhanced dynamic fracture resistance of
+  structures}.
+\bjtitle{Computer Methods in Applied Mechanics and Engineering}
+\bvolume{394},
+\bfpage{114846}
+(\byear{2022})
+\doiurl{10.1016/j.cma.2022.114846}
+\end{barticle}
+\endbibitem
+
+%%% 33
+\bibitem[\protect\citeauthoryear{Noii et~al.}{2023}]{noii_levelset_2023}
+\begin{barticle}
+\bauthor{\bsnm{Noii}, \binits{N.}},
+\bauthor{\bsnm{Jahangiry}, \binits{H.A.}},
+\bauthor{\bsnm{Waisman}, \binits{H.}}:
+\batitle{Level-set topology optimization for ductile and brittle fracture
+  resistance using the phase-field method}.
+\bjtitle{Computer Methods in Applied Mechanics and Engineering}
+\bvolume{409},
+\bfpage{115963}
+(\byear{2023})
+\doiurl{10.1016/j.cma.2023.115963}
+\end{barticle}
+\endbibitem
+
+%%% 34
+\bibitem[\protect\citeauthoryear{Zhang et~al.}{2024}]{zhang_adaptive_2024}
+\begin{barticle}
+\bauthor{\bsnm{Zhang}, \binits{Q.}},
+\bauthor{\bsnm{Liu}, \binits{Y.}},
+\bauthor{\bsnm{Nguyen-Thanh}, \binits{N.}},
+\bauthor{\bsnm{Li}, \binits{W.}},
+\bauthor{\bsnm{Li}, \binits{S.}},
+\bauthor{\bsnm{Zhou}, \binits{K.}}:
+\batitle{Adaptive topology optimization for enhancing resistance to brittle
+  fracture using the phase field model}.
+\bjtitle{Computer Methods in Applied Mechanics and Engineering}
+\bvolume{431},
+\bfpage{117237}
+(\byear{2024})
+\doiurl{10.1016/j.cma.2024.117237}
+\end{barticle}
+\endbibitem
+
+%%% 35
+\bibitem[\protect\citeauthoryear{Singh et~al.}{2023}]{singh_optimization_2023}
+\begin{barticle}
+\bauthor{\bsnm{Singh}, \binits{S.}},
+\bauthor{\bsnm{Pflug}, \binits{L.}},
+\bauthor{\bsnm{Mergheim}, \binits{J.}},
+\bauthor{\bsnm{Stingl}, \binits{M.}}:
+\batitle{On optimization of heterogeneous materials for enhanced resistance to
+  bulk fracture}.
+\bjtitle{Forces in Mechanics}
+\bvolume{12},
+\bfpage{100200}
+(\byear{2023})
+\doiurl{10.1016/j.finmec.2023.100200}
+\end{barticle}
+\endbibitem
+
+%%% 36
+\bibitem[\protect\citeauthoryear{Jewett and
+  Carstensen}{2019}]{jewett_topology_2019}
+\begin{barticle}
+\bauthor{\bsnm{Jewett}, \binits{J.L.}},
+\bauthor{\bsnm{Carstensen}, \binits{J.V.}}:
+\batitle{Topology-optimized design, construction and experimental evaluation of
+  concrete beams}.
+\bjtitle{Automation in Construction}
+\bvolume{102},
+\bfpage{59}--\blpage{67}
+(\byear{2019})
+\doiurl{10.1016/j.autcon.2019.02.001}
+\end{barticle}
+\endbibitem
+
+%%% 37
+\bibitem[\protect\citeauthoryear{Wu et~al.}{2021}]{wu_pathdependent_2021}
+\begin{barticle}
+\bauthor{\bsnm{Wu}, \binits{C.}},
+\bauthor{\bsnm{Fang}, \binits{J.}},
+\bauthor{\bsnm{Zhou}, \binits{S.}},
+\bauthor{\bsnm{Zhang}, \binits{Z.}},
+\bauthor{\bsnm{Sun}, \binits{G.}},
+\bauthor{\bsnm{Steven}, \binits{G.P.}},
+\bauthor{\bsnm{Li}, \binits{Q.}}:
+\batitle{A path-dependent level set topology optimization with fracture
+  criterion}.
+\bjtitle{Computers \& Structures}
+\bvolume{249},
+\bfpage{106515}
+(\byear{2021})
+\doiurl{10.1016/j.compstruc.2021.106515}
+\end{barticle}
+\endbibitem
+
+%%% 38
+\bibitem[\protect\citeauthoryear{Jia et~al.}{2023}]{jia_controlling_2023}
+\begin{barticle}
+\bauthor{\bsnm{Jia}, \binits{Y.}},
+\bauthor{\bsnm{Lopez-Pamies}, \binits{O.}},
+\bauthor{\bsnm{Zhang}, \binits{X.S.}}:
+\batitle{Controlling the fracture response of structures via topology
+  optimization: From delaying fracture nucleation to maximizing toughness}.
+\bjtitle{Journal of the Mechanics and Physics of Solids}
+\bvolume{173},
+\bfpage{105227}
+(\byear{2023})
+\doiurl{10.1016/j.jmps.2023.105227}
+\end{barticle}
+\endbibitem
+
+%%% 39
+\bibitem[\protect\citeauthoryear{Jia et~al.}{2025}]{jia_stress_2025}
+\begin{barticle}
+\bauthor{\bsnm{Jia}, \binits{Y.}},
+\bauthor{\bsnm{Kundu}, \binits{R.D.}},
+\bauthor{\bsnm{Zhang}, \binits{X.S.}}:
+\batitle{Stress-constrained versus fracture-based topology optimization: A
+  comparative study}.
+\bjtitle{Computer Methods in Applied Mechanics and Engineering}
+\bvolume{441},
+\bfpage{117949}
+(\byear{2025})
+\doiurl{10.1016/j.cma.2025.117949}
+\end{barticle}
+\endbibitem
+
+%%% 40
+\bibitem[\protect\citeauthoryear{Xu et~al.}{2026}]{xu_topology_2026}
+\begin{barticle}
+\bauthor{\bsnm{Xu}, \binits{Y.}},
+\bauthor{\bsnm{Wang}, \binits{H.}},
+\bauthor{\bsnm{Chang}, \binits{L.}},
+\bauthor{\bsnm{Wan}, \binits{B.}},
+\bauthor{\bsnm{Wu}, \binits{C.}},
+\bauthor{\bsnm{Fang}, \binits{J.}},
+\bauthor{\bsnm{Steven}, \binits{G.P.}},
+\bauthor{\bsnm{Li}, \binits{Q.}}:
+\batitle{Topology optimization for additive manufacturing of carbon
+  fiber-reinforced composite structures with failure criteria}.
+\bjtitle{Structural and Multidisciplinary Optimization}
+\bvolume{69},
+\bfpage{109}
+(\byear{2026})
+\doiurl{10.1007/s00158-026-04305-x}
+\end{barticle}
+\endbibitem
+
+%%% 41
+\bibitem[\protect\citeauthoryear{Jantos et~al.}{}]{jantos_evolutionary_2016}
+\begin{botherref}
+\oauthor{\bsnm{Jantos}, \binits{D.R.}},
+\oauthor{\bsnm{Junker}, \binits{P.}},
+\oauthor{\bsnm{Hackl}, \binits{K.}}:
+An evolutionary topology optimization approach with variationally controlled
+  growth
+\textbf{310},
+780--801
+\doiurl{10.1016/j.cma.2016.07.022} .
+Accessed 2024-06-06
+\end{botherref}
+\endbibitem
+
+%%% 42
+\bibitem[\protect\citeauthoryear{Jantos et~al.}{}]{jantos_accurate_2019}
+\begin{botherref}
+\oauthor{\bsnm{Jantos}, \binits{D.R.}},
+\oauthor{\bsnm{Hackl}, \binits{K.}},
+\oauthor{\bsnm{Junker}, \binits{P.}}:
+An accurate and fast regularization approach to thermodynamic topology
+  optimization
+\textbf{117}(9),
+991--1017
+\doiurl{10.1002/nme.5988} .
+Accessed 2024-06-06
+\end{botherref}
+\endbibitem
+
+%%% 43
+\bibitem[\protect\citeauthoryear{Junker and Balzani}{}]{junker_new_2021}
+\begin{botherref}
+\oauthor{\bsnm{Junker}, \binits{P.}},
+\oauthor{\bsnm{Balzani}, \binits{D.}}:
+A new variational approach for the thermodynamic topology optimization of
+  hyperelastic structures
+\textbf{67}(2),
+455--480
+\doiurl{10.1007/s00466-020-01949-4} .
+Accessed 2024-06-06
+\end{botherref}
+\endbibitem
+
+%%% 44
+\bibitem[\protect\citeauthoryear{Junker and Balzani}{}]{junker_extended_2021}
+\begin{botherref}
+\oauthor{\bsnm{Junker}, \binits{P.}},
+\oauthor{\bsnm{Balzani}, \binits{D.}}:
+An extended hamilton principle as unifying theory for coupled problems and
+  dissipative microstructure evolution
+\textbf{33}(4),
+1931--1956
+\doiurl{10.1007/s00161-021-01017-z} .
+Accessed 2024-06-06
+\end{botherref}
+\endbibitem
+
+%%% 45
+\bibitem[\protect\citeauthoryear{Pravda et~al.}{2026}]{pravda_macroscopic_2026}
+\begin{botherref}
+\oauthor{\bsnm{Pravda}, \binits{J.}},
+\oauthor{\bsnm{Jantos}, \binits{D.R.}},
+\oauthor{\bsnm{Junker}, \binits{P.}}:
+Macroscopic {Porosity} {Optimization} using {Thermodynamic} {Topology}
+  {Optimization}.
+Research Square.
+ISSN: 2693-5015
+(2026).
+\doiurl{10.21203/rs.3.rs-9901068/v1} .
+\url{https://www.researchsquare.com/article/rs-9901068/v1}
+Accessed 2026-06-05
+\end{botherref}
+\endbibitem
+
+%%% 46
+\bibitem[\protect\citeauthoryear{Bezanson et~al.}{2017}]{Julia-2017}
+\begin{barticle}
+\bauthor{\bsnm{Bezanson}, \binits{J.}},
+\bauthor{\bsnm{Edelman}, \binits{A.}},
+\bauthor{\bsnm{Karpinski}, \binits{S.}},
+\bauthor{\bsnm{Shah}, \binits{V.B.}}:
+\batitle{Julia: A fresh approach to numerical computing}.
+\bjtitle{SIAM {R}eview}
+\bvolume{59}(\bissue{1}),
+\bfpage{65}--\blpage{98}
+(\byear{2017})
+\doiurl{10.1137/141000671}
+\end{barticle}
+\endbibitem
+
+%%% 47
+\bibitem[\protect\citeauthoryear{Carlsson et~al.}{}]{Carlsson_Ferrite_jl}
+\begin{botherref}
+\oauthor{\bsnm{Carlsson}, \binits{K.}},
+\oauthor{\bsnm{Ekre}, \binits{F.}},
+\oauthor{\bsnm{{Ferrite.jl contributors}}}:
+{Ferrite.jl}.
+\url{https://github.com/Ferrite-FEM/Ferrite.jl}
+\end{botherref}
+\endbibitem
+
+%%% 48
+\bibitem[\protect\citeauthoryear{Kuhn}{2013}]{kuhn_numerical_2013}
+\begin{botherref}
+\oauthor{\bsnm{Kuhn}, \binits{C.}}:
+Numerical and {{Analytical Investigation}} of a {{Phase Field Model}} for
+  {{Fracture}}.
+PhD thesis,
+Technische Universit{\"a}t Kaiserslautern
+(March 2013)
+\end{botherref}
+\endbibitem
+
+\end{thebibliography}

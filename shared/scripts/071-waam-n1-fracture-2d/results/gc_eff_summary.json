@@ -1,0 +1,47 @@
+{
+  "long_s1": {
+    "direction": "in Aufbaurichtung",
+    "sfun": "1.0",
+    "Gc_input_GPa_um": 10.0,
+    "Gc_eff_GPa_um": 12.727722660098523,
+    "Gc_eff_over_Gc": 1.2727722660098524,
+    "K_eff_MPa_sqrt_m": 50.453389698014384,
+    "Gc_eff_scatter_rel": 0.09391422551183402,
+    "crack_propagated": true,
+    "crack_growth_um": 1887.95,
+    "warning": null,
+    "Gc_eff_over_runin": 1.160541864873806,
+    "runin": {
+      "n": 58,
+      "mean": 10.967051724137932,
+      "median": 11.001999999999999,
+      "std": 0.24052358256292672,
+      "min": 10.495,
+      "max": 11.258,
+      "x_range_um": [
+        -56.12715,
+        0.0
+      ],
+      "Gc_eff_GPa_um": 10.967051724137932,
+      "scatter_rel": 0.021931471521516248
+    },
+    "patch_fraction_traversed": 0.951388171388955,
+    "per_zone": {
+      "17-4PH": {
+        "Gc_eff_GPa_um": 11.392875,
+        "K_eff_MPa_sqrt_m": 47.7344215425305,
+        "n": 8
+      },
+      "transition": {
+        "Gc_eff_GPa_um": 12.224532587228442,
+        "K_eff_MPa_sqrt_m": 49.445995969802134,
+        "n": 1519
+      },
+      "316L": {
+        "Gc_eff_GPa_um": 14.268526838966201,
+        "K_eff_MPa_sqrt_m": 53.4200839365986,
+        "n": 503
+      }
+    }
+  }
+}

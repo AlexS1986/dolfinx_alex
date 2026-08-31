@@ -1,0 +1,111 @@
+You need to make revisions to your submission
+Your reviewers have provided feedback on your submission. There are revisions you need to make before your submission can progress. We’ve also emailed alexander.schlueter@tu-darmstadt.de with more details.
+
+We recommend submitting your revisions by 15 Sep 2026.
+
+Feedback from the Editor
+Read editor’s comments
+Dear Dr Schlüter,
+
+Your manuscript, "Brittle fracture in topology-optimized structures", has now been assessed.
+
+We invite you to revise your paper, carefully addressing the comments from the reviewers and the editor. Please ensure the results are accurately reported, any overstated conclusions are rewritten and the limitations of the work fully explained. When your revision is ready, please submit the updated manuscript and a point-by-point response. This will help us move to a swift decision.
+
+We recommend submitting all revisions within the mentioned deadline.
+
+If you need more time, please contact us and include your submission ID.
+
+Kind regards,
+
+Jörg Schröder
+Editor
+Archive of Applied Mechanics
+
+Support contact: manishasree.v@springernature.com
+
+Submission ID: cc51f1c5-c888-45a4-8fae-ebefd5a3c8f7
+
+Feedback from the Reviewer
+Read reviewer's comment
+Reviewer 1
+
+The manuscript presents a computational study combining topology and stiffness optimization with subsequent brittle fracture analysis. The approach employs two design fields: a density field to define topology and a porosity field to modulate local stiffness. After optimization, the fracture behavior of the resulting structures is assessed using a phase-field model, where the porosity field is mapped to both local Young’s modulus and fracture toughness. The study investigates the influence of the porosity-gradient length scale and compares variable-porosity structures to constant-porosity benchmarks. The phase-field fracture model is based on established formulations, but several known drawbacks are not adequately addressed.
+The present manuscript would benefit from a clearer articulation of its distinction from these prior studies, e.g. 10.1016/j.cma.2018.10.010, 10.1016/j.compstruc.2020.106205.
+Furthermore, the mapping of porosity to fracture toughness appears to be based solely on numerical investigations, without experimental validation or detailed microstructural justification.
+The title suggests a primary focus on brittle fracture, but the paper devotes equal attention to topology optimization and fracture analysis. This may mislead readers regarding the manuscript’s main contribution.
+
+
+
+regarding the phase-field fracture model:
+
+- The total energy functional in Eq. (21) includes external work, which is inconsistent with the original Griffith/Francfort-Marigo variational setting for fracture. In those frameworks, external work is excluded from the minimization, as its inclusion can preclude the existence of minimizers under Neumann loading. Larsen’s two-potential approach resolves this only in a staggered scheme, which is not clearly implemented or discussed here.
+(10.1016/S0022-5096(98)00034-9, 10.1016/j.aml.2021.107437 and 10.1016/j.jmps.2024.105625)
+
+- The manuscript’s statement that
+"In phase field models for fracture, crack growth is driven by the minimization of the sum of elastic energy and fracture energy."
+contradicting Eq. (21).
+It adopts a statement from Griffith, but it was originally given for systems with no change in external energy.
+
+- The spectral decomposition (Miehe 2010, etc.) is known to fail in predicting traction-free crack surfaces under shear deformations, leading to unphysical predictions at all stages of the crack, i.e., nucleation, propagation, and post-fracture behavior. Even though these formulations are widely used, they have been replaced by more accurate splits and physically derived decompositions, such as representative crack elements (10.1002/nme.6244). When proposing a phase-field model with spectral decomposition in Eq. (11), the known drawbacks should be acknowledged.
+
+> When using the spectral energy split, the first principal stress and principal direction is of more interest than the volumetric and deviatoric stresses.
+
+- What is the portion of the dissipated energy (fracture + mobility), which is contributed from the mobility approach? Can this portion being physical motivated? Why is the artificial damping of the driving force is preferred over the staggered solution approach?
+
+- Fig. 18a demonstrates the the phase-field approach have issues to predict the component failure (vanishing reaction forces). The phase-field evolution fails in bending dominated regions, see Fig. 14-top at lower left support, or Fig. 15-bottom at the main strut in the middle.
+
+- The reviewer is not convinced by the following conclusion:
+"Overall, the Evar patterns show a more widespread damage pattern, hinting towards a more efficient use of the material even with regard to failure"
+The thick crack zone could be also could from the drawbacks of the spectral energy decomposition and the mobility approach for the phase-field driving force, which both can cause residual stresses/forces bridging the crack, and, thus, the crack to grow fat.
+
+- The irreversibly is based on the condition s==0. Is there any threshold used in the implementation? Due to the properties of the degradation function and due to numerical precision in floating point operations, several points maybe never reach a perfect s=0.
+
+- The manuscript claims that “κs controls the residual stiffness in broken material,” but this is the role of the undegraded compressive energy ψe⁻ in Eq. (23). The authors may want to refer to a residual portion with respect to the degraded energy portion.
+
+- The mapping from porosity to fracture toughness (Gc) is based solely on numerical studies. Experimental evidence and micro-structural mechanisms—such as transitions from tension/compression-dominated to bending-dominated ligament behavior—are not referenced. The chosen porosity range may cross such transitions, depending on the micro-structure topology under investigation.
+
+- The explicit resolution of cracks is not achieved at the given examples due to fat phase-field regions. It seems that similar results and same solutions could be achieved by means of a (non-local) damage model as well, which comes the significantly computational costs.
+
+
+
+regarding topology optimization:
+
+- Fig. 4: The schematic does not adequately represent the staggered solution scheme for topology optimization.
+
+- Comparison with Literature: There is no comparison of constant-porosity optimization results with established literature, which would help contextualize the findings.
+
+- Mesh Details: The manuscript lacks information on mesh homogeneity, element size, and number of elements—critical for assessing the accuracy of results, especially for thin structures (Fig. 7).
+
+- Intermediate-Density Regions: Weak (less stiff) regions in Figs. 5 and 7, caused by the density field, contradict the intended separation of topology and stiffness optimization.
+
+- Porosity Field Variation: The results show clear clusters of different porosity without larger transitions. The potential of the method does not seems to be well represented, when it simplifies to the distribution of two different materials.
+> Moreover, the interaction of porosity length-scale and phase-field length-scale relies can not be sufficiently studied, when the porosity only contains sharp transitions.
+Affects this statement: "This internal length scale needs to be small compared to the geometrical features of
+the body in order to properly resolve them – and their effect on crack propagation – in
+the fracture simulation."
+
+- Stress Measures: For the spectral split, principal tensile stress and direction are more relevant than volumetric or deviatoric stresses.
+
+Reviewer 2
+
+The topic of this investigation is very interesting and timely.
+The structure of the paper is clear and it is very well written.
+The abstract is clean and reflects perfectly the impact of the paper.
+However, the title is too broad and should be specified.
+The literature overview is comprehensive and reasonable and the structure of the introduction is appreciated. The separation into paragraphs starting with meaningful expressions like “A specific gap…” and “The purpose of the present contribution…” make the information very easy to grasp.
+I have the following comments and questions:
+• The introduction and literature review is well suited in particular for the more specific part starting with “A more directly related line of comparison…”. The more general part before that could be condensed more.
+• The restriction of the chosen approach is clearly stated “Neither global resistance to failure nor the local fracture toughness is an objective or constraint in this optimization problem.” However, it would be interesting to know about why you have chosen this strategy. Why is it even more challenging to incorporate the fracture resistance directly into the optimization problem?
+• Interestingly, the contour for E_min with rho=0.3 and E_max with rho=0.6 are the same, whereas E_max with rho=0.3 is significantly different. Can you explain why in more detail?
+• For the damage patterns with E_var, which are more widespread in the structure (e.g. Fig. 17), it would be interesting to see how the pattern evolves. Where is the first crack onset – I assume still in the fixed boundaries – and how is the propagation within the structure?
+• In the conclusions, you might consider to highlight the most important quantitative results as well for the different cases considered (e.g. 36–64% increase).
+Further, the following minor corrections should be mentioned:
+• In some of the references, the journals are not given, but an access date is given. Kindly add the journal information and remove the date.
+• In equations (5-7), it seems that the upper and lower indices are mixed up.
+• In equations (5), (8) and (9), brackets seem to be missing.
+• It seems inconsistent to denote p as a penalization factor, as it is an exponent rather than a factor.
+• For the parameters mentioned before equation (14), it does not make sense to give decimal places for large numbers such as mu_1 and lambda_1.
+• In equation (24), why is the summation until n, but not until 3? If it is indeed not 3, kindly use another symbol, because n denotes the number of finite elements in x-direction.
+• There must not be a subsection 2.2.1 without a following subsection 2.2.2.
+• On page 23, the sentence “Recall that in all cases the same mass of material is employed,” should conclude with a . instead of ,
+Concluding, this is an interesting investigation with promising results. The paper should be published if the above points are considered.
