@@ -559,6 +559,54 @@ def print_total_dofs(w, comm, rank):
 #             t.value = trestart.value+dtt    
 #     after_last_timestep_hook()
 
+# ---------------------------------------------------------------------------
+# Defaults fuer den linearen Loeser des dolfinx-NewtonSolver (Default-Solver
+# in get_solver: KSP preonly + PC lu -> parallele LU ueber MUMPS).
+#
+# Hintergrund (Studie 015, 31.08.2026): MUMPS legt per Default nur 20 %
+# Workspace-Reserve an (ICNTL(14) = 20). Je nach Partitionierung/Ordering des
+# einzelnen Jobs reicht das nicht - die Faktorisierung scheitert dann mit
+# "KSPSolve ... PETSc error code 76" schon im ersten (elastischen) Schritt,
+# der Zeitschrittregler halbiert dt bis dt_min und der Lauf endet stumm mit
+# Exit 0. Betroffen waren ~16 % der Punkt-Jobs bei identischer Matrix.
+#
+# Die Defaults hier gelten fuer JEDES Skript, das get_solver benutzt (d. h.
+# solve_with_newton_adaptive_time_stepping ohne eigenen `solver`). Sie werden
+# nur gesetzt, wenn die Option nicht schon in PETSc.Options() steht - ein
+# Skript kann sie also vorher ueberschreiben (Prefix des NewtonSolver, in
+# dolfinx "nls_solve_"). Abschalten: sol.DEFAULT_KSP_OPTIONS.clear().
+# Ergebnisse aendern sich nicht (gleiche LU, nur mehr Reserve; icntl_4 = 1
+# druckt MUMPS-Fehlercodes INFOG(1)/INFO(2) auf stdout, sonst nichts).
+# ---------------------------------------------------------------------------
+DEFAULT_KSP_OPTIONS = {
+    "pc_factor_mat_solver_type": "mumps",
+    "mat_mumps_icntl_14": 200,   # Workspace-Zuschlag in % (PETSc/MUMPS-Default 20)
+    "mat_mumps_icntl_4": 1,      # MUMPS: nur Fehlermeldungen ausgeben
+}
+_ksp_defaults_reported = False
+
+
+def apply_default_ksp_options(ksp, comm=MPI.COMM_WORLD):
+    """DEFAULT_KSP_OPTIONS unter dem Prefix des KSP setzen (nur fehlende) und
+    setFromOptions() aufrufen. Gibt die tatsaechlich gesetzten Optionen zurueck."""
+    global _ksp_defaults_reported
+    opts = PETSc.Options()
+    prefix = ksp.getOptionsPrefix() or ""
+    applied = {}
+    for key, value in DEFAULT_KSP_OPTIONS.items():
+        name = f"{prefix}{key}"
+        if not opts.hasName(name):
+            opts[name] = value
+            applied[key] = value
+    ksp.setFromOptions()
+    if comm.Get_rank() == 0 and not _ksp_defaults_reported:
+        print(f"KSP options (prefix '{prefix}'): defaults applied = {applied}, "
+              f"already set by script = {[k for k in DEFAULT_KSP_OPTIONS if k not in applied]}",
+              flush=True)
+        _ksp_defaults_reported = True
+    return applied
+
+
 def get_solver(w, comm, max_iters, Res, dResdw, bcs):
     if dResdw is not None:
         problem = NonlinearProblem(Res, w, bcs, dResdw)
@@ -569,11 +617,9 @@ def get_solver(w, comm, max_iters, Res, dResdw, bcs):
     solver = NewtonSolver(comm, problem)
     solver.report = True
     solver.max_it = max_iters
-    # Globale PETSc-Optionen mit dem Prefix des NewtonSolver ("nls_solve_")
-    # sicher uebernehmen, z. B. MUMPS-Workspace (mat_mumps_icntl_14), die ein
-    # Skript vor dem Aufruf in PETSc.Options() gesetzt hat. Ohne gesetzte
-    # Optionen ist der Aufruf ein No-op.
-    solver.krylov_solver.setFromOptions()
+    # MUMPS-Workspace-Defaults (siehe DEFAULT_KSP_OPTIONS oben) + globale
+    # PETSc-Optionen mit dem Prefix des NewtonSolver sicher uebernehmen.
+    apply_default_ksp_options(solver.krylov_solver, comm)
 
     # ksp = solver.krylov_solver
     # opts = PETSc.Options()

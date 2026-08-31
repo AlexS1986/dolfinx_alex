@@ -226,7 +226,7 @@ def fig_microstructure(neper_dir, materials, out):
         pad = 6
         return img[max(r.min() - pad, 0):r.max() + pad, max(c.min() - pad, 0):c.max() + pad]
     items = []
-    label = {"316L": "316L RVE — orthotrop\n(Körner entlang Aufbau/Schweiß gestreckt)",
+    label = {"316L": "316L RVE — kolumnar\n(Körner entlang der Aufbaurichtung gestreckt)",
              "17-4PH": "17-4PH RVE — equiaxed\n(gleichachsige Körner)"}
     for m in materials:
         pj = os.path.join(neper_dir, f"params_{m}.json")
@@ -253,7 +253,7 @@ def fig_microstructure(neper_dir, materials, out):
 
 def fig_rve_frame(out):
     """Sketch of the RVE coordinate frame: x = weld, y = wall-normal, z = build,
-    with one orthotropic grain (long in z, medium in x, thin in y)."""
+    with one columnar grain (long in z, equiaxed in the x-y plane)."""
     from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
     fig = plt.figure(figsize=(6.2, 5.2))
     ax = fig.add_subplot(111, projection="3d")
@@ -263,9 +263,10 @@ def fig_rve_frame(out):
         for b in c[i + 1:]:
             if np.isclose(np.linalg.norm(a - b), 1.0):
                 ax.plot(*zip(a, b), color="0.7", lw=1)
-    # one orthotropic grain (ellipsoid): rz long (build), rx medium (weld), ry thin
+    # one columnar grain (prolate spheroid): rz long (build), rx = ry (equiaxed
+    # in the weld / wall-normal plane), aspect ~3.7 as measured for 316L
     u = np.linspace(0, 2 * np.pi, 40); v = np.linspace(0, np.pi, 20)
-    rx, ry, rz = 0.17, 0.07, 0.40
+    rx, ry, rz = 0.11, 0.11, 0.40
     gx = 0.5 + rx * np.outer(np.cos(u), np.sin(v))
     gy = 0.5 + ry * np.outer(np.sin(u), np.sin(v))
     gz = 0.5 + rz * np.outer(np.ones_like(u), np.cos(v))
@@ -277,7 +278,7 @@ def fig_rve_frame(out):
                           ((0, 0, L), "#000000", "z  Aufbaurichtung")]:
         ax.quiver(0, 0, 0, *vec, color=col, lw=2.5, arrow_length_ratio=0.08)
         ax.text(vec[0] * 1.02, vec[1] * 1.02, vec[2] * 1.02, lab, color=col, fontsize=9)
-    ax.text(0.5, 0.5, 0.95, "orthotropes\nKorn", ha="center", fontsize=8, color="#2c6fbb")
+    ax.text(0.5, 0.5, 0.95, "kolumnares Korn\n(k ≈ 3.7 entlang z)", ha="center", fontsize=8, color="#2c6fbb")
     ax.set_xlim(0, 1.3); ax.set_ylim(0, 1.3); ax.set_zlim(0, 1.3)
     ax.set_box_aspect((1, 1, 1)); ax.set_axis_off(); ax.view_init(elev=16, azim=-60)
     ax.set_title("RVE-Rahmen: Aufbaurichtung → z-Achse\n(Textur wird dorthin rotiert)", fontsize=10)
