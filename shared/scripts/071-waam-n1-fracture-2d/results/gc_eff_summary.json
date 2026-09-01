@@ -1,47 +1,31 @@
 {
-  "long_s1": {
-    "direction": "in Aufbaurichtung",
+  "trans_s1": {
+    "direction": "quer zur Aufbaurichtung",
     "sfun": "1.0",
     "Gc_input_GPa_um": 10.0,
-    "Gc_eff_GPa_um": 12.727722660098523,
-    "Gc_eff_over_Gc": 1.2727722660098524,
-    "K_eff_MPa_sqrt_m": 50.453389698014384,
-    "Gc_eff_scatter_rel": 0.09391422551183402,
+    "Gc_eff_GPa_um": 12.984853211009174,
+    "Gc_eff_over_Gc": 1.2984853211009173,
+    "K_eff_MPa_sqrt_m": 50.96048118102727,
+    "Gc_eff_scatter_rel": 0.05223807511020939,
     "crack_propagated": true,
-    "crack_growth_um": 1887.95,
+    "crack_growth_um": 2100.37,
     "warning": null,
-    "Gc_eff_over_runin": 1.160541864873806,
+    "Gc_eff_over_runin": 1.1542115060523426,
     "runin": {
-      "n": 58,
-      "mean": 10.967051724137932,
-      "median": 11.001999999999999,
-      "std": 0.24052358256292672,
-      "min": 10.495,
-      "max": 11.258,
+      "n": 44,
+      "mean": 11.249977272727275,
+      "median": 11.209,
+      "std": 0.12735073134373576,
+      "min": 11.078,
+      "max": 11.473,
       "x_range_um": [
-        -56.12715,
+        -57.037319999999994,
         0.0
       ],
-      "Gc_eff_GPa_um": 10.967051724137932,
-      "scatter_rel": 0.021931471521516248
+      "Gc_eff_GPa_um": 11.249977272727275,
+      "scatter_rel": 0.011320087877196464
     },
-    "patch_fraction_traversed": 0.951388171388955,
-    "per_zone": {
-      "17-4PH": {
-        "Gc_eff_GPa_um": 11.392875,
-        "K_eff_MPa_sqrt_m": 47.7344215425305,
-        "n": 8
-      },
-      "transition": {
-        "Gc_eff_GPa_um": 12.224532587228442,
-        "K_eff_MPa_sqrt_m": 49.445995969802134,
-        "n": 1519
-      },
-      "316L": {
-        "Gc_eff_GPa_um": 14.268526838966201,
-        "K_eff_MPa_sqrt_m": 53.4200839365986,
-        "n": 503
-      }
-    }
+    "patch_fraction_traversed": 1.0414108212684423,
+    "per_zone": {}
   }
 }

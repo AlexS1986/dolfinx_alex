@@ -580,7 +580,7 @@ def print_total_dofs(w, comm, rank):
 # ---------------------------------------------------------------------------
 DEFAULT_KSP_OPTIONS = {
     "pc_factor_mat_solver_type": "mumps",
-    "mat_mumps_icntl_14": 200,   # Workspace-Zuschlag in % (PETSc/MUMPS-Default 20)
+    "mat_mumps_icntl_14": 100,   # Workspace-Zuschlag in % (PETSc/MUMPS-Default 20); 200 = bis 3x Schaetzung, OOM-Risiko nahe Knotenlimit
     "mat_mumps_icntl_4": 1,      # MUMPS: nur Fehlermeldungen ausgeben
 }
 _ksp_defaults_reported = False

@@ -10,12 +10,17 @@ Experimental values (E in GPa, mean +/- std) as provided:
   17-4PH (specimens D8): V 186.4+/-1,  45deg 192.0+/-2,  H 169.1+/-2
                           nu: V 0.303, 45deg 0.239, H 0.301
 
-Numerical values are read from the FE uniaxial results Emodul_<mat>_<orient>.json.
+Numerical values: FE uniaxial bars (Emodul_<mat>_<orient>.json) AND the
+directional modulus evaluated from the homogenised tensor (Chom_<mat>.json,
+1/E(n) = n n n n : S) in the same three load directions.
 
-Output:
-  report/fig_exp_vs_num.png            grouped bar chart (exp vs num), per steel
-  report/experimental_comparison.md    markdown table for the report
+Output (in --out, default ./report):
+  fig_exp_vs_num.png            grouped bars: Experiment / FE-Zugstab / RVE, per steel
+  experimental_comparison.md    markdown table for the report
+
+Usage:  python3 experimental_comparison.py [--out DIR]
 """
+import argparse
 import json
 import os
 
@@ -44,37 +49,69 @@ def num_E(mat, orient):
     return json.load(open(p))["E_apparent_GPa"]
 
 
+_VOIGT = {(0, 0): 0, (1, 1): 1, (2, 2): 2, (1, 2): 3, (2, 1): 3,
+          (0, 2): 4, (2, 0): 4, (0, 1): 5, (1, 0): 5}
+# load direction per specimen orientation in the RVE frame (x=weld, y=wall-normal, z=build)
+_DIR = {"V": (0, 0, 1.0), "H": (1.0, 0, 0), "45deg": (1.0, 0, 1.0)}
+
+
+def rve_E(mat, orient):
+    """Directional modulus from Chom (Voigt, engineering shear) along the
+    specimen load axis: 1/E(n) = n_i n_j n_k n_l S_ijkl."""
+    C = np.array(json.load(open(os.path.join(HERE, f"Chom_{mat}.json")))["Chom_sym"])
+    S = np.linalg.inv(C)
+    n = np.array(_DIR[orient]); n = n / np.linalg.norm(n)
+    inv_e = 0.0
+    for i in range(3):
+        for j in range(3):
+            for k in range(3):
+                for l in range(3):
+                    a, b = _VOIGT[(i, j)], _VOIGT[(k, l)]
+                    f = (0.5 if a > 2 else 1.0) * (0.5 if b > 2 else 1.0)
+                    inv_e += n[i] * n[j] * n[k] * n[l] * S[a, b] * f
+    return 1.0 / inv_e
+
+
 def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--out", default=os.path.join(HERE, "report"))
+    args = ap.parse_args()
+    os.makedirs(args.out, exist_ok=True)
     num = {m: {o: num_E(m, o) for o in ORIENTS} for m in EXP}
+    rve = {m: {o: rve_E(m, o) for o in ORIENTS} for m in EXP}
 
     # ---- figure: grouped bars exp vs num, one panel per steel -------------
     fig, axs = plt.subplots(1, 2, figsize=(12, 4.6))
-    x = np.arange(len(ORIENTS)); w = 0.38
+    x = np.arange(len(ORIENTS)); w = 0.27
     for ax, mat in zip(axs, ["316L", "17-4PH"]):
         e = [EXP[mat][o][0] for o in ORIENTS]; es = [EXP[mat][o][1] for o in ORIENTS]
-        n = [num[mat][o] for o in ORIENTS]
-        ax.bar(x - w/2, e, w, yerr=es, capsize=4, color="#4c72b0", label="Experiment")
-        ax.bar(x + w/2, n, w, color="#c44e52", label="Numerisch (FE)")
-        for i, v in enumerate(e): ax.text(i - w/2, v + 4, f"{v:.0f}", ha="center", fontsize=8)
-        for i, v in enumerate(n): ax.text(i + w/2, v + 4, f"{v:.0f}", ha="center", fontsize=8)
+        n = [num[mat][o] for o in ORIENTS]; r = [rve[mat][o] for o in ORIENTS]
+        ax.bar(x - w, e, w, yerr=es, capsize=4, color="#4c72b0", label="Experiment (RPTU/WKK)")
+        ax.bar(x, n, w, color="#c44e52", label="FE-Zugstab")
+        ax.bar(x + w, r, w, color="#dd8452", label="RVE (KUBC)")
+        for i, v in enumerate(e): ax.text(i - w, v + 4, f"{v:.0f}", ha="center", fontsize=8)
+        for i, v in enumerate(n): ax.text(i, v + 4, f"{v:.0f}", ha="center", fontsize=8)
+        for i, v in enumerate(r): ax.text(i + w, v + 4, f"{v:.0f}", ha="center", fontsize=8)
         ax.set_xticks(x); ax.set_xticklabels([OLAB[o] for o in ORIENTS])
         ax.set_ylabel("E [GPa]"); ax.set_title(mat); ax.set_ylim(0, 260)
-        ax.legend(fontsize=9); ax.grid(axis="y", alpha=0.3)
+        ax.legend(fontsize=8, loc="upper left"); ax.grid(axis="y", alpha=0.3)
+    fig.suptitle("Richtungsabhängiger E-Modul: Experiment vs. Modell", fontsize=11)
     fig.tight_layout()
-    fig.savefig(os.path.join(HERE, "report", "fig_exp_vs_num.png"), dpi=150, bbox_inches="tight")
-    print("wrote report/fig_exp_vs_num.png")
+    fig.savefig(os.path.join(args.out, "fig_exp_vs_num.png"), dpi=150, bbox_inches="tight")
+    print("wrote", os.path.join(args.out, "fig_exp_vs_num.png"))
 
     # ---- markdown table ---------------------------------------------------
-    lines = ["| Werkstoff | Orientierung | E Experiment [GPa] | E Numerisch [GPa] | Abw. |",
-             "|---|---|---|---|---|"]
+    lines = ["| Werkstoff | Orientierung | E Experiment | RVE (KUBC) | Abw. | FE-Zugstab | Abw. |",
+             "|---|---|---|---|---|---|---|"]
     for mat in ["316L", "17-4PH"]:
         for o in ORIENTS:
-            e = EXP[mat][o][0]; s = EXP[mat][o][1]; n = num[mat][o]
-            d = (n - e) / e * 100
-            lines.append(f"| {mat} | {OLAB[o]} | {e:.0f} ± {s:.0f} | {n:.0f} | {d:+.0f} % |")
+            e = EXP[mat][o][0]; s = EXP[mat][o][1]; n = num[mat][o]; r = rve[mat][o]
+            dn = (n - e) / e * 100; dr = (r - e) / e * 100
+            lines.append(f"| {mat} | {OLAB[o]} | {e:.0f} ± {s:.0f} | {r:.0f} | {dr:+.0f} % "
+                         f"| {n:.0f} | {dn:+.0f} % |")
     md = "\n".join(lines)
-    open(os.path.join(HERE, "report", "experimental_comparison.md"), "w").write(md + "\n")
-    print("wrote report/experimental_comparison.md\n")
+    open(os.path.join(args.out, "experimental_comparison.md"), "w").write(md + "\n")
+    print("wrote", os.path.join(args.out, "experimental_comparison.md"), "\n")
     print(md)
 
     # ---- console summary --------------------------------------------------

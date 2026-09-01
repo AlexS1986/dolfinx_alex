@@ -30,7 +30,7 @@
   "max_iters": 8,
   "max_steps": 0,
   "postprocessing_interval": 50,
-  "stop_reason": "laeuft noch / abgebrochen",
+  "stop_reason": "time step dt=7.286e-15 below 1.0e-14",
   "v_crack": 123.58086,
   "a0_um": 171.11196,
   "crack_tip_x0_um": -114.07463999999999,
@@ -144,5 +144,9 @@
   "zones_um": [
     450.0,
     1000.0
-  ]
+  ],
+  "finished": "2026-08-31T18:01:57",
+  "t_reached": 18.959374380592752,
+  "successful_steps": 2863,
+  "dt_final": 7.285915915742931e-15
 }
