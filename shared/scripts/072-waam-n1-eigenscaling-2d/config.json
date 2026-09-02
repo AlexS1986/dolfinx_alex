@@ -1,0 +1,25 @@
+{
+  "_comment": "Single-crystal CUBIC stiffness constants [GPa]. THIS IS THE ONLY PLACE TO EDIT THEM. Assignment: region (zone tag in micro_<tag>.npz) -> material -> constants indexed by the grain's own crystal system (fcc/bcc, from the EBSD phase id). Each GRAIN then gets its own tensor because its Bunge orientation rotates these constants individually. Values below are LITERATURE PLACEHOLDERS (identical to 069/070/config.json) - every result scales with them. Project 072: in the transition zone the three irreducible parts (K, C'=(C11-C12)/2, C44) are scaled by the separate spatially varying factors aK(x)/aCp(x)/aC44(x) (--aK/--aCp/--aC44); those factors are the knob, NOT these constants.",
+
+  "region_material": {
+    "0": "17-4PH",
+    "1": "trans",
+    "2": "316L"
+  },
+
+  "single_crystal_cubic_GPa": {
+    "17-4PH": {
+      "bcc": { "C11": 231.4, "C12": 134.7, "C44": 116.4, "_ref": "alpha-Fe / martensite, ~Rayne-Chandrasekhar" },
+      "fcc": { "C11": 204.6, "C12": 137.7, "C44": 126.2, "_ref": "retained austenite in 17-4PH" }
+    },
+    "316L": {
+      "fcc": { "C11": 204.6, "C12": 137.7, "C44": 126.2, "_ref": "316L austenite, ~Ledbetter" },
+      "bcc": { "C11": 231.4, "C12": 134.7, "C44": 116.4, "_ref": "stray delta-ferrite" }
+    },
+    "trans": {
+      "_comment": "Transition zone (Uebergangsbereich): composition unknown. Default = parent-phase constants; edit here to give the transition its OWN crystal constants. The spatially varying eigen-part factors aK(x)/aCp(x)/aC44(x) (--aK/--aCp/--aC44; --sfun sets all three = 070) are the separate knob.",
+      "fcc": { "C11": 204.6, "C12": 137.7, "C44": 126.2, "_ref": "default: as 316L austenite" },
+      "bcc": { "C11": 231.4, "C12": 134.7, "C44": 116.4, "_ref": "default: as 17-4PH martensite" }
+    }
+  }
+}
