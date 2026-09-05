@@ -358,7 +358,7 @@ Zusätzlich Stufe 3 von `run_local_test.sh`: homogener Lauf, `J_x` muss gegen
 Der adaptive Stepper in `alex.solution.solve_with_newton_adaptive_time_stepping`
 verhält sich asymmetrisch:
 
-* `dt` wird **halbiert**, wenn Newton nicht konvergiert (`max_iters`, Default 8),
+* `dt` wird **halbiert**, wenn Newton nicht konvergiert (`max_iters`, Default 12 seit 2026-09-02, vorher 8),
 * `dt` wird **verdoppelt**, wenn Newton **weniger** als `min_iters` Iterationen
   braucht — sonst bleibt es, wo es ist.
 
@@ -444,6 +444,74 @@ sondern der ganze gemischte Vektor. `w.sub(1).x.array[:] = 1.0` setzt also auch
 mit überall gebrochenem Material — dann heilt der Löser erst mühsam das ganze
 Gebiet zurück, `A_surf` **fällt** dabei, und `J` fällt monoton gegen
 `J_reference`, ohne dass der Riss wächst.
+
+### Newton-Toleranzen und dt-Kollaps (2026-09-02)
+
+Alle vier Produktionsläufe (`*_s1` und `*_sgauss`) sind auf dieselbe Art
+gestorben, **bevor** die Probe getrennt war (long_sgauss bei x_ct = 1339 µm,
+trans_sgauss bei 1643 µm, long_s1 bei 1775 µm, trans_s1 bei 1985 µm; Trennung
+wäre bei ≈ 2030 µm): die Spitze bleibt kurz hängen (Stick-Slip an einer
+Korngrenze bzw. beim Verlassen des steifen Gauß-Patches), Newton scheitert
+einmal bei dt ≈ 5e-4, und danach scheitert **jedes** kleinere dt bis 1e-14.
+
+Das ist keine Physik, sondern die Konvergenzbedingung: der dolfinx-NewtonSolver
+wurde von `alex` in jedem Schritt neu mit seinen Defaults gebaut — `rtol = 1e-9`
+**relativ zum Anfangsresiduum des Schritts**, `atol = 1e-10`. Das
+Anfangsresiduum eines Schritts ist im Wesentlichen das Randinkrement
+`v_crack·dt`, es schrumpft also mit dt. Für kleines dt liegt `1e-9·r0` unter dem
+Rundungsboden der LU-Lösung (600k DOF, gemischtes, schlecht konditioniertes
+System) — kein Iterationslimit der Welt erreicht das. Je kleiner dt, desto
+sicherer der Fehlschlag: eine sich selbst erhaltende Kaskade.
+
+Abhilfe in `run_fracture_simulation.py`:
+
+* **Ein** `NonlinearProblem`/`NewtonSolver` für den ganzen Lauf (wird an
+  `solve_with_newton_adaptive_time_stepping(solver=…)` übergeben; die
+  Randbedingungsliste wird von `get_bcs` **in place** aktualisiert).
+* **Absolute Toleranz** `atol = newton_atol_rel · R_ref` (`--newton_atol_rel`,
+  Default 1e-8), wobei `R_ref` das größte Anfangsresiduum ist, das der Lauf
+  bisher gesehen hat (ein Schritt bei dt_max). Ein winziger Schritt konvergiert
+  damit auf dieselbe absolute Gleichgewichtsgenauigkeit wie ein normaler.
+  Fest vorgeben: `--newton_atol`. `--newton_rtol` bleibt 1e-9.
+* `--max_iters` Default 8 → 12 (mehr Iterationen sind billiger als ein
+  verworfener Schritt), `--newton_relax` (Dämpfung, Default 1).
+* Jeder Schritt druckt `|R| r0 -> r_end (atol …, R_ref …)`; damit sieht man,
+  ob die relative oder die absolute Bedingung gegriffen hat.
+* Konvergiert ein Schritt mit **0 Iterationen** (r0 schon unter atol), wird dt
+  im nächsten Schritt verdoppelt (alex würde es sonst nie mehr anheben) und
+  `t = trestart + dt` mitgezogen.
+
+* Nach einem verworfenen Schritt bleibt dt für `--dt_regrow_steps` (Default 5)
+  konvergierte Schritte gedeckelt, erst dann darf es sich wieder verdoppeln.
+  Ohne den Deckel entsteht das im Smoke-Test beobachtete Ping-Pong
+  „scheitert bei 2·dt, konvergiert bei dt in 3 Iterationen, alex verdoppelt,
+  scheitert bei 2·dt …“, bei dem jeder zweite LU-Aufbau verloren geht.
+* `--solver snes`: PETSc SNES `newtonls` mit Backtracking-Line-Search statt
+  des reinen Newton der dolfinx-Klasse (gleiche Formen, Toleranzen, MUMPS).
+  Beim Risssprung ist die Energie nichtkonvex, der volle Newton-Schritt
+  überschießt — genau die Schritte, die im Smoke-Test bei doppeltem dt
+  scheitern. Erst im Smoke-Test vergleichen (`EXTRA="--solver snes"`), dann
+  produktiv setzen.
+
+**Checkpoint/Restart** (neu): alle `--checkpoint_interval` (Default 50)
+erfolgreichen Schritte und am Laufende landet der Zustand (w, wm1, t, dt, W,
+Zähler, R_ref, Partitions-Fingerabdruck) als `results/ckpt_<tag>/state_rankNNNN.npz`.
+`--restart` setzt dort fort: gleiches Netz, **gleiche Rankzahl**, gleiche
+Parameter; `*_graphs.txt`/`*_log.txt` werden auf die Checkpoint-Zeit gekürzt und
+weitergeschrieben, die Felder gehen in ein neues `<tag>_restartN.xdmf`.
+`run_cases.sh`: `RESTART=1 CASES="long_sgauss" bash run_cases.sh`.
+
+Die vier vorhandenen Läufe haben keinen Checkpoint, aber ihr `.h5` enthält
+u und s am letzten **konvergierten** Zustand (`after_last_timestep` schreibt
+`wrestart`). `--restart_from_xdmf results/run_fracture_simulation_<tag>.h5`
+liest diesen Zustand (Knoten werden über Koordinaten zugeordnet, Rankzahl
+darf abweichen), holt W, A und Schrittzahl aus der graphs-Datei und setzt mit
+`dt_start` fort; `R_ref` wird mit dem Residuum eines virtuellen dt_max-Schritts
+gesetzt. **Selbstkontrolle:** die erste gedruckte Zeile muss die alte
+graphs-Datei nahtlos fortsetzen (long_sgauss: x_tip ≈ 1339.4, J ≈ 10.47;
+trans_sgauss: x_tip ≈ 1642.6, J ≈ 13.79). Weicht das ab, stimmt die
+Knotenzuordnung nicht — dann von vorn. Die alten `.h5` vorher sichern
+(`results_v1_dtcollapse/`), da der Lauf graphs/log kürzt und fortschreibt.
 
 ### Wenn ein Lauf nicht vorankommt
 

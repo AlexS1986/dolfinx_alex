@@ -1,0 +1,95 @@
+{
+  "model": "C",
+  "engine": "numpy",
+  "micro": "/home/claude/072-waam-n1-eigenscaling-2d/micro_roi.npz",
+  "target_trans_GPa": 232.4,
+  "baseline": {
+    "label": "baseline (A)",
+    "aK": 1.0,
+    "aCp": 1.0,
+    "aC44": 1.0,
+    "E_trans_GPa": 175.19388681678757,
+    "E_apparent_GPa": 182.86520023604814,
+    "E_17-4PH_GPa": 187.0370226447328,
+    "E_316L_GPa": 185.9625210291446
+  },
+  "sensitivities_GPa_per_unit": {
+    "dE/daK": 22.278018786895473,
+    "dE/daCp": 88.01209949184909,
+    "dE/daC44": 59.02805161943661
+  },
+  "fitted": {
+    "aK": 1.109131633602869,
+    "aCp": 1.4311381674574035,
+    "aC44": 1.289156220005203,
+    "label": "C GN 1",
+    "E_trans_GPa": 232.39370227124672,
+    "E_apparent_GPa": 198.13808379203687,
+    "E_17-4PH_GPa": 187.6467955109191,
+    "E_316L_GPa": 185.9862449406212,
+    "n_solves": 6
+  },
+  "non_uniqueness": "UNTERBESTIMMT: 3 Parameter, 1 informatives Ziel. Jede Wahl mit g.(a-1) = 57.21 GPa trifft das Ziel in 1. Ordnung (2-parametrige Familie). Die angegebene Loesung minimiert ||a-1||. Eindeutigkeit erfordert zusaetzliche Daten (EDS-Komposition, Phasenanteile, weitere Lastrichtungen).",
+  "history": [
+    {
+      "label": "baseline (A)",
+      "aK": 1.0,
+      "aCp": 1.0,
+      "aC44": 1.0,
+      "E_trans_GPa": 175.19388681678757,
+      "E_apparent_GPa": 182.86520023604814,
+      "E_17-4PH_GPa": 187.0370226447328,
+      "E_316L_GPa": 185.9625210291446
+    },
+    {
+      "label": "FD aK",
+      "aK": 1.05,
+      "aCp": 1.0,
+      "aC44": 1.0,
+      "E_trans_GPa": 176.30778775613234,
+      "E_apparent_GPa": 183.22060985450904,
+      "E_17-4PH_GPa": 187.00958466302728,
+      "E_316L_GPa": 185.96821220962016
+    },
+    {
+      "label": "FD aCp",
+      "aK": 1.0,
+      "aCp": 1.05,
+      "aC44": 1.0,
+      "E_trans_GPa": 179.59449179138002,
+      "E_apparent_GPa": 184.28557094024933,
+      "E_17-4PH_GPa": 187.10769425469263,
+      "E_316L_GPa": 185.9735218696609
+    },
+    {
+      "label": "FD aC44",
+      "aK": 1.0,
+      "aCp": 1.0,
+      "aC44": 1.05,
+      "E_trans_GPa": 178.1452893977594,
+      "E_apparent_GPa": 183.80980495147926,
+      "E_17-4PH_GPa": 187.0673392548324,
+      "E_316L_GPa": 185.94946836255053
+    },
+    {
+      "label": "C min-norm",
+      "aK": 1.1086779195366205,
+      "aCp": 1.4293457132934364,
+      "aC44": 1.287954054876465,
+      "E_trans_GPa": 232.16117303002036,
+      "E_apparent_GPa": 198.0872762671776,
+      "E_17-4PH_GPa": 187.6447092629454,
+      "E_316L_GPa": 185.98616965787656
+    },
+    {
+      "label": "C GN 1",
+      "aK": 1.109131633602869,
+      "aCp": 1.4311381674574035,
+      "aC44": 1.289156220005203,
+      "E_trans_GPa": 232.39370227124672,
+      "E_apparent_GPa": 198.13808379203687,
+      "E_17-4PH_GPa": 187.6467955109191,
+      "E_316L_GPa": 185.9862449406212
+    }
+  ]
+}

@@ -1,8 +1,8 @@
 {
-  "tag": "trans_sgauss",
+  "tag": "trans_s1",
   "mesh_file": "/home/scripts/071-waam-n1-fracture-2d/results/mesh_micro_trans_resolved.xdmf",
   "micro": "micro_trans.npz",
-  "sfun": "1 + 0.50*np.exp(-((x-1050.)/350.)**2)",
+  "sfun": "1.0",
   "rotate_ccw90": true,
   "Gc_GPa_um": 10.0,
   "epsilon_um": 12.0,
@@ -27,20 +27,10 @@
   "s_degree": 1,
   "quad_degree": null,
   "min_iters": 5,
-  "max_iters": 12,
-  "newton_rtol": 1e-09,
-  "newton_atol": null,
-  "newton_atol_rel": 1e-08,
-  "newton_relax": 1.0,
-  "solver": "newton",
-  "dt_regrow_steps": 5,
-  "checkpoint_interval": 50,
-  "restart": false,
-  "restart_from_xdmf": "/home/scripts/071-waam-n1-fracture-2d/results/run_fracture_simulation_trans_sgauss.h5",
-  "xdmf_file": "run_fracture_simulation_trans_sgauss_restart1.xdmf",
+  "max_iters": 8,
   "max_steps": 0,
   "postprocessing_interval": 50,
-  "stop_reason": "specimen separated completely",
+  "stop_reason": "time step dt=7.286e-15 below 1.0e-14",
   "v_crack": 123.58086,
   "a0_um": 171.11196,
   "crack_tip_x0_um": -114.07463999999999,
@@ -76,7 +66,7 @@
     "s_min"
   ],
   "mpi_ranks": 10,
-  "started": "2026-09-03T11:29:53",
+  "started": "2026-08-31T10:04:25",
   "microstructure": {
     "n_distinct_grain_tensors": 5553,
     "grains_per_material_crystal": {
@@ -134,8 +124,8 @@
     },
     "plane_state": "stress",
     "E_x_range_GPa": [
-      97.39233278141218,
-      419.02296285098805
+      94.01778086074425,
+      299.7723140039604
     ],
     "patch_grid_ny_nx": [
       163,
@@ -155,8 +145,8 @@
     450.0,
     1000.0
   ],
-  "finished": "2026-09-03T13:28:01",
-  "t_reached": 20.178660886610007,
-  "successful_steps": 3785,
-  "dt_final": 0.0320437970734303
+  "finished": "2026-08-31T18:01:57",
+  "t_reached": 18.959374380592752,
+  "successful_steps": 2863,
+  "dt_final": 7.285915915742931e-15
 }

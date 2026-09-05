@@ -1,0 +1,31 @@
+{
+  "Lx_um": 1870.905,
+  "Ly_um": 886.573,
+  "margin_x_um": 280.63575,
+  "margin_y_um": 443.2865,
+  "domain_um": [
+    -280.63575,
+    -886.573,
+    2151.54075,
+    886.573
+  ],
+  "patch_um": [
+    0.0,
+    -443.2865,
+    1870.905,
+    443.2865
+  ],
+  "e_fine": 2.0,
+  "e_patch": 4.0,
+  "e_far": 40.0,
+  "corridor_um": 60.0,
+  "epsilon_um": 12.0,
+  "micro": "micro_long.npz",
+  "rotated": false,
+  "n_nodes": 197266,
+  "n_cells": 394246,
+  "cell_tag": {
+    "0": "embedding (isotropic)",
+    "1": "microstructure patch"
+  }
+}

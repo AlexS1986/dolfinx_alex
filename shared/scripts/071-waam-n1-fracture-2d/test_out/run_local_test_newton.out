@@ -1,0 +1,4859 @@
+
+=== 1/5  numpy material selftest ===
+071 material selftest
+  ok  cubic with A=1 equals isotropic  [E=192.86 nu=0.2857]
+  ok  Bond rotation is invertible
+  ok  rotated C stays symmetric
+  ok  rotated C stays positive definite
+  ok  bulk modulus invariant under rotation  [1502.400000 vs 1502.400000]
+  ok  E<100> from condensed tensor matches analytic  [93.8124 vs 93.8124]
+  ok  E<110> at 45 deg matches analytic  [193.5469 vs 193.5469]
+  ok  cubic anisotropy ordering E<100> < E<110> < E<111>  [93.8 < 193.5 < 299.8]
+  ok  in-plane E(theta) spans [E<100>, E<110>] for a cube orientation
+  ok  plane-stress condensation of isotropic C
+  ok  plane stress recovers E and nu  [E=200.000000 nu=0.300000]
+  ok  plane-strain reduction equals the Lame form (engineering shear)
+  ok  ROT_Z90: E_x(rotated) == E_y(original) for random orientations
+  ok  four 90 deg rotations return the original tensor
+  ok  rotated patch has swapped shape
+  ok  rotate_grid_ccw90 realises (x,y) -> (Ly-y, x)
+  ok  unrotated patch size
+  ok  rotated patch size is swapped
+  ok  point query hits the right cell (unrotated)
+  ok  outside the patch -> isotropic embedding
+  ok  grain ids follow the grid rotation
+  ok  E_x(rotated grid) == E_y(original grid) cell by cell
+  ok  s(x)=2 doubles every tensor in the transition zone
+  ok  gauss s(x) stays within [1, 1.5]  [1.0000..1.4529]
+  ok  Voigt energy == 0.5 sigma:eps (engineering shear bookkeeping)
+  ok  condensed 2D tensor is positive definite
+  ok  crystal2d reproduces 070/plane_stress_crystal exactly
+
+ALL PASS (27 checks)
+
+=== 2/5  dolfinx selftest of StaticPhaseFieldProblem2D_anisotropic ===
+071 phase-field selftest (dolfinx 0.7.3)
+  ok  patch test: sigma = C . eps for anisotropic C  [max rel dev 2.33e-15]
+  ok  psi_el = 1/2 eps.C.eps = 1/2 sigma:eps  [3.333948209531e-04 vs 3.333948209531e-04]
+  ok  psi_el_degraded == g(s, eta) * psi_el for s in {1, .7, .25, 0}
+  ok  isotropic limit: residual identical to alex.StaticPhaseFieldProblem2D  [||dR||/||R|| = 2.439e-20]
+  ok  isotropic limit: elastic energy identical  [1.605987997595361e-05 vs 1.605987997595361e-05]
+  ok  isotropic limit: Eshelby tensor identical  [||dSigma||^2 = 9.635e-41]
+  ok  homogeneous body, uniform strain: contour integral of Eshelby = 0  [|J| = 3.286e-19, scale = 3.334e-04]
+  ok  heterogeneous body: contour integral picks up the material force  [Jx = -1.5266e-04, scale = 3.3339e-04]
+
+ALL PASS (8 checks)
+
+=== 3/5  homogeneous verification run (J should approach K^2/E') ===
+Info    : Meshing 1D...
+Info    : [  0%] Meshing curve 1 (Line)
+Info    : [ 10%] Meshing curve 2 (Line)
+Info    : [ 20%] Meshing curve 3 (Line)
+Info    : [ 20%] Meshing curve 4 (Line)
+Info    : [ 30%] Meshing curve 5 (Line)
+Info    : [ 40%] Meshing curve 6 (Line)
+Info    : [ 40%] Meshing curve 7 (Line)
+Info    : [ 50%] Meshing curve 8 (Line)
+Info    : [ 60%] Meshing curve 9 (Line)
+Info    : [ 60%] Meshing curve 10 (Line)
+Info    : [ 70%] Meshing curve 11 (Line)
+Info    : [ 80%] Meshing curve 12 (Line)
+Info    : [ 80%] Meshing curve 13 (Line)
+Info    : [ 90%] Meshing curve 14 (Line)
+Info    : [100%] Meshing curve 15 (Line)
+Info    : Done meshing 1D (Wall 0.00902625s, CPU 0.008934s)
+Info    : Meshing 2D...
+Info    : [  0%] Meshing surface 1 (Plane, Frontal-Delaunay)
+Info    : [ 30%] Meshing surface 2 (Plane, Frontal-Delaunay)
+Info    : [ 50%] Meshing surface 3 (Plane, Frontal-Delaunay)
+Info    : [ 80%] Meshing surface 4 (Plane, Frontal-Delaunay)
+Info    : Done meshing 2D (Wall 0.740803s, CPU 0.72963s)
+Info    : 35953 nodes 72601 elements
+Info    : Writing '/home/scripts/071-waam-n1-fracture-2d/test_out/mesh_test.msh'...
+Info    : Done writing '/home/scripts/071-waam-n1-fracture-2d/test_out/mesh_test.msh'
+Patch  400.0 x 200.0 um
+Gebiet [-200.0, 600.0] x [-300.0, 300.0] um
+Netz   e_fine=2.000  e_patch=5.000  e_far=30.000  Korridor +-80.0 um  (epsilon=8.000 -> eps/h=4.0)
+
+35953 Knoten, 71712 Dreiecke (41118 im Patch, 30594 Einbettung)
+  -> 107859 DOF im gemischten (u, s)-Raum bei P1
+geschrieben: /home/scripts/071-waam-n1-fracture-2d/test_out/mesh_test.xdmf
+MPI-STATUS: Process: 0 of 4 processes.
+MPI-STATUS: Process: 2 of 4 processes.
+MPI-STATUS: Process: 3 of 4 processes.
+MPI-STATUS: Process: 1 of 4 processes.
+Einkristall-Konstanten [GPa] (config.json, LITERATUR-PLATZHALTER wie 069/070):
+  region 0 = 17-4PH   bcc: C11=231.4 C12=134.7 C44=116.4
+  region 0 = 17-4PH   fcc: C11=204.6 C12=137.7 C44=126.2
+  region 1 = trans    fcc: C11=204.6 C12=137.7 C44=126.2
+  region 1 = trans    bcc: C11=231.4 C12=134.7 C44=116.4
+  region 2 = 316L     fcc: C11=204.6 C12=137.7 C44=126.2
+  region 2 = 316L     bcc: C11=231.4 C12=134.7 C44=116.4
+Einbettung (ANGENOMMEN, nicht homogenisiert): isotropic steel (assumed), E=200.0 GPa, nu=0.300
+Bruch: Gc=10 GPa*um (= kJ/m^2) KONSTANT ueberall, epsilon=8 um, eta=1.0e-04, Degradation=quadratic, Zustand=plane stress
+  -> sig_c = 3.185 GPa, K_eq = sqrt(E*Gc) = 44.7 MPa*sqrt(m) (homogen-isotrope Abschaetzung)
+spatial dimensions: 2
+x_min, x_max: -200.0, 600.0
+y_min, y_max: -300.0, 300.0
+z_min, z_max: 0.0, 0.0
+kein --micro: homogen-isotroper Verifikationslauf
+Surfing-K: K = 1.0 * sqrt(Gc*E') = 44.7214 GPa*sqrt(um) = 44.72 MPa*sqrt(m);  J_ref = K^2/E' = 10.0000 GPa*um
+Anfangsriss: y=0, x < 0.00 um  (101 Facetten), v_crack=40 um/t, Tend=60
+Ansatz: u = P1, s = P1, Quadratur = UFL-Schaetzung
+K-Feld-Zentrum startet bei x = -200 um (linker Gebietsrand), Rissspitze bei 0 um
+  -> Vorlaufzeit bis das Feld die Spitze erreicht: t = 5.00 (solange ist der Riss unterbelastet und bewegt sich nicht)
+Trennung bei x_ct >= 560 um -> 560 um Risswachstum, ~19.0 Zeiteinheiten bei v_crack=40 um/t. Tend=60 (Reserve x3.2)
+Zeitschritt: dt_start=3.300e-04, dt_max=6.600e-02, Tend=60  (dt waechst nur bei iters < 5)
+  bei dt_max wandert das K-Feld 2.64 um je Schritt = 0.33 * epsilon
+Viskositaet: iMob/dt_max = 0.01515 gegen Gc/(4eps) = 0.3125 -> Verhaeltnis 0.0485 (klein = quasistatisch)
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: tag=homog
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: mesh_file=/home/scripts/071-waam-n1-fracture-2d/test_out/mesh_test.xdmf
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: micro=None
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: sfun=1.0
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: rotate_ccw90=False
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: Gc_GPa_um=10.0
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: epsilon_um=8.0
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: eta=0.0001
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: mobility=1000.0
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: degradation=quadratic
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: degradation_beta=0.1
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: plane_state=stress
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: embedding_E_GPa=200.0
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: embedding_nu=0.3
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: E_prime_GPa=200.0
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: kappa=2.076923076923077
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: K_scale=1.0
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: K1_GPa_sqrt_um=44.721359549995796
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: K1_MPa_sqrt_m=44.721359549995796
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: J_reference_GPa_um=10.000000000000002
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: init_profile=True
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: init_u=True
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: stiffness_average=hill
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: crack_width_um=0.0
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: u_degree=1
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: s_degree=1
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: quad_degree=None
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: min_iters=5
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: max_iters=12
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: newton_rtol=1e-09
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: newton_atol=None
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: newton_atol_rel=1e-08
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: newton_relax=1.0
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: checkpoint_interval=50
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: restart=False
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: xdmf_file=run_fracture_simulation_homog.xdmf
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: max_steps=250
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: postprocessing_interval=10
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: stop_reason=laeuft noch / abgebrochen
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: v_crack=40.0
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: a0_um=200.0
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: crack_tip_x0_um=0.0
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: separation_frac=0.95
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: k_start_x_um=-200.0
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: tip_setback_um=0.0
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: patch_x0_um=None
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: Tend=60.0
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: dt_start=0.00033
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: dt_max=0.066
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: mpi_ranks=4
+Appended to /home/scripts/071-waam-n1-fracture-2d/test_out/parameters_homog.txt: started=2026-09-02T20:53:21
+solving fem problem with 111021 dofs ...
+Startzustand: elastischer Vorabsolve fuer u durchgefuehrt (71906 DOF)
+Startzustand (s: analytisches Profil, u: K-Feld): A = 212.7, Risslaenge = 200.0 um, Rissbreite W = 0.0 um -> A/L = 1.063 (Soll 1.063: Flanken 1.000 + Spitzenkappe 0.063)
+Rissspitze startet bei x = 0.0 um
+ 
+==================================================
+Computing solution at time = 0.0000e+00
+==================================================
+Current time step dt = 3.3000e-04
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.000165
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.6500e-04
+==================================================
+Current time step dt = 1.6500e-04
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  8.25e-05
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.2500e-05
+==================================================
+Current time step dt = 8.2500e-05
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  4.125e-05
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 4.1250e-05
+==================================================
+Current time step dt = 4.1250e-05
+==================================================
+ 
+x_tip =    -0.000  Jx =    1.45784 (Gc = 10)  A =    213.52  s_min = 0.0000  iters = 10  |R| 1.23e+02 -> 8.95e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  10
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.2500e-05
+==================================================
+Current time step dt = 4.1250e-05
+==================================================
+ 
+x_tip =    -0.000  Jx =    1.48784 (Gc = 10)  A =    214.02  s_min = 0.0000  iters = 6  |R| 5.56e+01 -> 1.01e-06 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  6
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.2375e-04
+==================================================
+Current time step dt = 4.1250e-05
+==================================================
+ 
+x_tip =    -0.000  Jx =    1.50796 (Gc = 10)  A =    214.09  s_min = 0.0000  iters = 5  |R| 4.72e+01 -> 1.65e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.6500e-04
+==================================================
+Current time step dt = 4.1250e-05
+==================================================
+ 
+x_tip =    -0.000  Jx =    1.52398 (Gc = 10)  A =    214.02  s_min = 0.0000  iters = 4  |R| 4.38e+01 -> 1.67e-11 (atol 1.3e-06, R_ref 1.33e+02)   <-- A faellt (Relaxation!)
+-----------------------------
+!!! Increasing dt to:  8.25e-05
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 2.4750e-04
+==================================================
+Current time step dt = 8.2500e-05
+==================================================
+ 
+x_tip =    -0.000  Jx =    1.54871 (Gc = 10)  A =    213.82  s_min = 0.0000  iters = 4  |R| 4.18e+01 -> 3.09e-09 (atol 1.3e-06, R_ref 1.33e+02)   <-- A faellt (Relaxation!)
+-----------------------------
+!!! Increasing dt to:  0.000165
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 4.1250e-04
+==================================================
+Current time step dt = 1.6500e-04
+==================================================
+ 
+x_tip =    -0.000  Jx =    1.58477 (Gc = 10)  A =    213.53  s_min = 0.0000  iters = 5  |R| 3.89e+01 -> 1.36e-10 (atol 1.3e-06, R_ref 1.33e+02)   <-- A faellt (Relaxation!)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 5.7750e-04
+==================================================
+Current time step dt = 1.6500e-04
+==================================================
+ 
+x_tip =    -0.000  Jx =    1.61330 (Gc = 10)  A =    213.36  s_min = 0.0000  iters = 5  |R| 3.47e+01 -> 9.07e-08 (atol 1.3e-06, R_ref 1.33e+02)   <-- A faellt (Relaxation!)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 7.4250e-04
+==================================================
+Current time step dt = 1.6500e-04
+==================================================
+ 
+x_tip =    -0.000  Jx =    1.63355 (Gc = 10)  A =    213.35  s_min = 0.0000  iters = 8  |R| 3.13e+01 -> 1.38e-11 (atol 1.3e-06, R_ref 1.33e+02)   <-- A faellt (Relaxation!)
+-----------------------------
+ No. of iterations:  8
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.0750e-04
+==================================================
+Current time step dt = 1.6500e-04
+==================================================
+ 
+x_tip =    -0.000  Jx =    1.64987 (Gc = 10)  A =    213.37  s_min = 0.0000  iters = 5  |R| 2.83e+01 -> 1.96e-11 (atol 1.3e-06, R_ref 1.33e+02)   <-- A faellt (Relaxation!)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0725e-03
+==================================================
+Current time step dt = 1.6500e-04
+==================================================
+ 
+x_tip =    -0.000  Jx =    1.66375 (Gc = 10)  A =    213.37  s_min = 0.0000  iters = 3  |R| 2.55e+01 -> 7.62e-08 (atol 1.3e-06, R_ref 1.33e+02)   <-- A faellt (Relaxation!)
+-----------------------------
+!!! Increasing dt to:  0.00033
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.4025e-03
+==================================================
+Current time step dt = 3.3000e-04
+==================================================
+ 
+x_tip =    -0.000  Jx =    1.68350 (Gc = 10)  A =    213.39  s_min = 0.0000  iters = 3  |R| 2.30e+01 -> 1.58e-08 (atol 1.3e-06, R_ref 1.33e+02)   <-- A faellt (Relaxation!)
+-----------------------------
+!!! Increasing dt to:  0.00066
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 2.0625e-03
+==================================================
+Current time step dt = 6.6000e-04
+==================================================
+ 
+x_tip =    -0.000  Jx =    1.70625 (Gc = 10)  A =    213.46  s_min = 0.0000  iters = 3  |R| 1.90e+01 -> 8.62e-10 (atol 1.3e-06, R_ref 1.33e+02)   <-- A faellt (Relaxation!)
+-----------------------------
+!!! Increasing dt to:  0.00132
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 3.3825e-03
+==================================================
+Current time step dt = 1.3200e-03
+==================================================
+ 
+x_tip =    -0.000  Jx =    1.72650 (Gc = 10)  A =    213.60  s_min = 0.0000  iters = 3  |R| 1.35e+01 -> 1.53e-11 (atol 1.3e-06, R_ref 1.33e+02)   <-- A faellt (Relaxation!)
+-----------------------------
+!!! Increasing dt to:  0.00264
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 6.0225e-03
+==================================================
+Current time step dt = 2.6400e-03
+==================================================
+ 
+x_tip =    -0.000  Jx =    1.74116 (Gc = 10)  A =    213.74  s_min = 0.0000  iters = 2  |R| 7.60e+00 -> 4.71e-07 (atol 1.3e-06, R_ref 1.33e+02)   <-- A faellt (Relaxation!)
+-----------------------------
+!!! Increasing dt to:  0.00528
+-----------------------------
+-----------------------------
+ No. of iterations:  2
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.1303e-02
+==================================================
+Current time step dt = 5.2800e-03
+==================================================
+ 
+x_tip =    -0.000  Jx =    1.75411 (Gc = 10)  A =    213.82  s_min = 0.0000  iters = 2  |R| 4.74e+00 -> 9.35e-07 (atol 1.3e-06, R_ref 1.33e+02)   <-- A faellt (Relaxation!)
+-----------------------------
+!!! Increasing dt to:  0.01056
+-----------------------------
+-----------------------------
+ No. of iterations:  2
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 2.1862e-02
+==================================================
+Current time step dt = 1.0560e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    1.77419 (Gc = 10)  A =    213.87  s_min = 0.0000  iters = 3  |R| 7.66e+00 -> 3.35e-11 (atol 1.3e-06, R_ref 1.33e+02)   <-- A faellt (Relaxation!)
+-----------------------------
+!!! Increasing dt to:  0.02112
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 4.2982e-02
+==================================================
+Current time step dt = 2.1120e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    1.81356 (Gc = 10)  A =    213.94  s_min = 0.0000  iters = 3  |R| 1.53e+01 -> 5.42e-09 (atol 1.3e-06, R_ref 1.33e+02)   <-- A faellt (Relaxation!)
+-----------------------------
+!!! Increasing dt to:  0.04224
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.5223e-02
+==================================================
+Current time step dt = 4.2240e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    1.89320 (Gc = 10)  A =    214.06  s_min = 0.0000  iters = 3  |R| 3.11e+01 -> 6.70e-07 (atol 1.3e-06, R_ref 1.33e+02)   <-- A faellt (Relaxation!)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.5122e-01
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    2.01861 (Gc = 10)  A =    214.23  s_min = 0.0000  iters = 4  |R| 4.99e+01 -> 1.41e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 2.1722e-01
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    2.14280 (Gc = 10)  A =    214.40  s_min = 0.0000  iters = 4  |R| 5.13e+01 -> 1.34e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 2.8322e-01
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    2.26364 (Gc = 10)  A =    214.57  s_min = 0.0000  iters = 3  |R| 5.26e+01 -> 5.62e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 3.4922e-01
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    2.37971 (Gc = 10)  A =    214.72  s_min = 0.0000  iters = 3  |R| 5.38e+01 -> 1.87e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 4.1522e-01
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    2.49028 (Gc = 10)  A =    214.88  s_min = 0.0000  iters = 3  |R| 5.48e+01 -> 6.66e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 4.8122e-01
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    2.59518 (Gc = 10)  A =    215.03  s_min = 0.0000  iters = 3  |R| 5.57e+01 -> 2.46e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 5.4722e-01
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    2.69470 (Gc = 10)  A =    215.18  s_min = 0.0000  iters = 3  |R| 5.64e+01 -> 9.56e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 6.1322e-01
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    2.78940 (Gc = 10)  A =    215.33  s_min = 0.0000  iters = 3  |R| 5.71e+01 -> 8.32e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 6.7922e-01
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    2.87996 (Gc = 10)  A =    215.48  s_min = 0.0000  iters = 3  |R| 5.76e+01 -> 1.73e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 7.4522e-01
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    2.96708 (Gc = 10)  A =    215.62  s_min = 0.0000  iters = 3  |R| 5.79e+01 -> 1.93e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.1122e-01
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    3.05144 (Gc = 10)  A =    215.76  s_min = 0.0000  iters = 3  |R| 5.82e+01 -> 1.58e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.7722e-01
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    3.13366 (Gc = 10)  A =    215.90  s_min = 0.0000  iters = 3  |R| 5.84e+01 -> 1.11e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.4322e-01
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    3.21424 (Gc = 10)  A =    216.04  s_min = 0.0000  iters = 3  |R| 5.85e+01 -> 7.20e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0092e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    3.29363 (Gc = 10)  A =    216.18  s_min = 0.0000  iters = 3  |R| 5.85e+01 -> 4.46e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0752e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    3.37220 (Gc = 10)  A =    216.31  s_min = 0.0000  iters = 3  |R| 5.85e+01 -> 2.72e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.1412e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    3.45025 (Gc = 10)  A =    216.44  s_min = 0.0000  iters = 3  |R| 5.84e+01 -> 1.67e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.2072e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    3.52802 (Gc = 10)  A =    216.57  s_min = 0.0000  iters = 3  |R| 5.83e+01 -> 1.04e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.2732e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    3.60573 (Gc = 10)  A =    216.70  s_min = 0.0000  iters = 3  |R| 5.81e+01 -> 6.68e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.3392e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    3.68353 (Gc = 10)  A =    216.83  s_min = 0.0000  iters = 3  |R| 5.79e+01 -> 4.36e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.4052e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    3.76156 (Gc = 10)  A =    216.95  s_min = 0.0000  iters = 3  |R| 5.77e+01 -> 2.88e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.4712e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    3.83992 (Gc = 10)  A =    217.07  s_min = 0.0000  iters = 3  |R| 5.75e+01 -> 1.94e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.5372e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    3.91871 (Gc = 10)  A =    217.20  s_min = 0.0000  iters = 3  |R| 5.72e+01 -> 1.32e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.6032e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    3.99800 (Gc = 10)  A =    217.32  s_min = 0.0000  iters = 3  |R| 5.70e+01 -> 9.21e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.6692e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    4.07784 (Gc = 10)  A =    217.44  s_min = 0.0000  iters = 3  |R| 5.67e+01 -> 6.56e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.7352e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    4.15829 (Gc = 10)  A =    217.56  s_min = 0.0000  iters = 3  |R| 5.64e+01 -> 4.78e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.8012e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    4.23938 (Gc = 10)  A =    217.68  s_min = 0.0000  iters = 3  |R| 5.61e+01 -> 3.59e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.8672e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    4.32114 (Gc = 10)  A =    217.80  s_min = 0.0000  iters = 3  |R| 5.58e+01 -> 2.79e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.9332e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    4.40361 (Gc = 10)  A =    217.92  s_min = 0.0000  iters = 3  |R| 5.55e+01 -> 2.26e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.9992e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    4.48680 (Gc = 10)  A =    218.04  s_min = 0.0000  iters = 3  |R| 5.52e+01 -> 1.92e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 2.0652e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    4.57073 (Gc = 10)  A =    218.16  s_min = 0.0000  iters = 3  |R| 5.49e+01 -> 1.69e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 2.1312e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    4.65541 (Gc = 10)  A =    218.28  s_min = 0.0000  iters = 3  |R| 5.46e+01 -> 1.55e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 2.1972e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    4.74086 (Gc = 10)  A =    218.40  s_min = 0.0000  iters = 3  |R| 5.43e+01 -> 1.46e-11 (atol 1.3e-06, R_ref 1.33e+02)
+Checkpoint geschrieben: /home/scripts/071-waam-n1-fracture-2d/test_out/ckpt_homog (t = 2.19722, 50 Schritte, dt = 0.066)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 2.2632e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    4.82709 (Gc = 10)  A =    218.53  s_min = 0.0000  iters = 3  |R| 5.40e+01 -> 1.40e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 2.3292e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    4.91410 (Gc = 10)  A =    218.65  s_min = 0.0000  iters = 3  |R| 5.37e+01 -> 1.36e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 2.3952e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    5.00189 (Gc = 10)  A =    218.77  s_min = 0.0000  iters = 3  |R| 5.35e+01 -> 1.34e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 2.4612e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    5.09048 (Gc = 10)  A =    218.90  s_min = 0.0000  iters = 3  |R| 5.32e+01 -> 1.32e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 2.5272e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    5.17986 (Gc = 10)  A =    219.02  s_min = 0.0000  iters = 3  |R| 5.29e+01 -> 1.32e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 2.5932e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    5.27004 (Gc = 10)  A =    219.15  s_min = 0.0000  iters = 3  |R| 5.27e+01 -> 1.30e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 2.6592e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    5.36102 (Gc = 10)  A =    219.28  s_min = 0.0000  iters = 3  |R| 5.24e+01 -> 1.30e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 2.7252e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    5.45280 (Gc = 10)  A =    219.41  s_min = 0.0000  iters = 3  |R| 5.22e+01 -> 1.30e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 2.7912e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    5.54538 (Gc = 10)  A =    219.54  s_min = 0.0000  iters = 3  |R| 5.19e+01 -> 1.31e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 2.8572e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    5.63876 (Gc = 10)  A =    219.68  s_min = 0.0000  iters = 3  |R| 5.17e+01 -> 1.30e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 2.9232e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    5.73294 (Gc = 10)  A =    219.81  s_min = 0.0000  iters = 3  |R| 5.14e+01 -> 1.31e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 2.9892e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    5.82794 (Gc = 10)  A =    219.95  s_min = 0.0000  iters = 3  |R| 5.12e+01 -> 1.32e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 3.0552e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    5.92373 (Gc = 10)  A =    220.10  s_min = 0.0000  iters = 3  |R| 5.10e+01 -> 1.36e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 3.1212e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    6.02034 (Gc = 10)  A =    220.24  s_min = 0.0000  iters = 3  |R| 5.08e+01 -> 1.42e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 3.1872e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    6.11777 (Gc = 10)  A =    220.38  s_min = 0.0000  iters = 3  |R| 5.06e+01 -> 1.52e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 3.2532e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    6.21601 (Gc = 10)  A =    220.53  s_min = 0.0000  iters = 3  |R| 5.04e+01 -> 1.67e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 3.3192e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    6.31506 (Gc = 10)  A =    220.68  s_min = 0.0000  iters = 3  |R| 5.02e+01 -> 1.80e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 3.3852e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    6.41493 (Gc = 10)  A =    220.84  s_min = 0.0000  iters = 3  |R| 5.00e+01 -> 1.88e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 3.4512e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    6.51562 (Gc = 10)  A =    220.99  s_min = 0.0000  iters = 3  |R| 4.99e+01 -> 1.89e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 3.5172e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    6.61712 (Gc = 10)  A =    221.15  s_min = 0.0000  iters = 3  |R| 4.97e+01 -> 1.85e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 3.5832e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    6.71943 (Gc = 10)  A =    221.32  s_min = 0.0000  iters = 3  |R| 4.95e+01 -> 1.75e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 3.6492e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    6.82255 (Gc = 10)  A =    221.48  s_min = 0.0000  iters = 3  |R| 4.94e+01 -> 1.68e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 3.7152e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    6.92647 (Gc = 10)  A =    221.65  s_min = 0.0000  iters = 3  |R| 4.92e+01 -> 1.57e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 3.7812e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    7.03120 (Gc = 10)  A =    221.83  s_min = 0.0000  iters = 3  |R| 4.91e+01 -> 1.52e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 3.8472e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    7.13672 (Gc = 10)  A =    222.00  s_min = 0.0000  iters = 3  |R| 4.89e+01 -> 1.46e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 3.9132e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    7.24303 (Gc = 10)  A =    222.18  s_min = 0.0000  iters = 3  |R| 4.88e+01 -> 1.41e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 3.9792e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    7.35013 (Gc = 10)  A =    222.37  s_min = 0.0000  iters = 3  |R| 4.87e+01 -> 1.39e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 4.0452e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    7.45800 (Gc = 10)  A =    222.56  s_min = 0.0000  iters = 3  |R| 4.85e+01 -> 1.37e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 4.1112e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    7.56663 (Gc = 10)  A =    222.75  s_min = 0.0000  iters = 3  |R| 4.84e+01 -> 1.36e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 4.1772e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    7.67602 (Gc = 10)  A =    222.95  s_min = 0.0000  iters = 3  |R| 4.83e+01 -> 1.36e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 4.2432e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    7.78616 (Gc = 10)  A =    223.15  s_min = 0.0000  iters = 3  |R| 4.82e+01 -> 1.35e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 4.3092e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    7.89704 (Gc = 10)  A =    223.36  s_min = 0.0000  iters = 3  |R| 4.81e+01 -> 1.35e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 4.3752e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    8.00864 (Gc = 10)  A =    223.58  s_min = 0.0000  iters = 3  |R| 4.80e+01 -> 1.36e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 4.4412e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    8.12095 (Gc = 10)  A =    223.80  s_min = 0.0000  iters = 3  |R| 4.79e+01 -> 1.34e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 4.5072e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    8.23395 (Gc = 10)  A =    224.02  s_min = 0.0000  iters = 3  |R| 4.78e+01 -> 1.36e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 4.5732e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    8.34763 (Gc = 10)  A =    224.26  s_min = 0.0000  iters = 3  |R| 4.77e+01 -> 1.36e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 4.6392e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    8.46196 (Gc = 10)  A =    224.50  s_min = 0.0000  iters = 3  |R| 4.76e+01 -> 1.36e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 4.7052e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    8.57694 (Gc = 10)  A =    224.74  s_min = 0.0000  iters = 3  |R| 4.75e+01 -> 1.37e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 4.7712e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    8.69253 (Gc = 10)  A =    225.00  s_min = 0.0000  iters = 3  |R| 4.75e+01 -> 1.37e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 4.8372e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    8.80872 (Gc = 10)  A =    225.26  s_min = 0.0000  iters = 3  |R| 4.74e+01 -> 1.37e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 4.9032e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    8.92547 (Gc = 10)  A =    225.53  s_min = 0.0000  iters = 3  |R| 4.73e+01 -> 1.39e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 4.9692e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    9.04275 (Gc = 10)  A =    225.81  s_min = 0.0000  iters = 3  |R| 4.73e+01 -> 1.40e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 5.0352e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    9.16053 (Gc = 10)  A =    226.11  s_min = 0.0000  iters = 3  |R| 4.72e+01 -> 1.42e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 5.1012e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    9.27877 (Gc = 10)  A =    226.41  s_min = 0.0000  iters = 3  |R| 4.71e+01 -> 1.48e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 5.1672e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    9.39741 (Gc = 10)  A =    226.72  s_min = 0.0000  iters = 3  |R| 4.71e+01 -> 1.60e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 5.2332e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    9.51644 (Gc = 10)  A =    227.04  s_min = 0.0000  iters = 3  |R| 4.70e+01 -> 1.91e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 5.2992e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    9.63572 (Gc = 10)  A =    227.38  s_min = 0.0000  iters = 3  |R| 4.70e+01 -> 3.29e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 5.3652e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    9.75531 (Gc = 10)  A =    227.73  s_min = 0.0000  iters = 3  |R| 4.69e+01 -> 4.08e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 5.4312e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    9.87505 (Gc = 10)  A =    228.10  s_min = 0.0000  iters = 3  |R| 4.69e+01 -> 7.06e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 5.4972e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =    9.99489 (Gc = 10)  A =    228.48  s_min = 0.0000  iters = 3  |R| 4.69e+01 -> 1.31e-10 (atol 1.3e-06, R_ref 1.33e+02)
+Checkpoint geschrieben: /home/scripts/071-waam-n1-fracture-2d/test_out/ckpt_homog (t = 5.49722, 100 Schritte, dt = 0.066)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 5.5632e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =   10.11471 (Gc = 10)  A =    228.88  s_min = 0.0000  iters = 3  |R| 4.68e+01 -> 2.60e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 5.6292e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =   10.23438 (Gc = 10)  A =    229.30  s_min = 0.0000  iters = 3  |R| 4.68e+01 -> 5.53e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 5.6952e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =   10.35371 (Gc = 10)  A =    229.75  s_min = 0.0000  iters = 3  |R| 4.67e+01 -> 1.27e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 5.7612e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =   10.47252 (Gc = 10)  A =    230.22  s_min = 0.0000  iters = 3  |R| 4.67e+01 -> 3.19e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 5.8272e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =   10.59052 (Gc = 10)  A =    230.73  s_min = 0.0000  iters = 3  |R| 4.67e+01 -> 8.89e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 5.8932e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =   10.70733 (Gc = 10)  A =    231.27  s_min = 0.0000  iters = 3  |R| 4.67e+01 -> 2.81e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 5.9592e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =   10.82246 (Gc = 10)  A =    231.86  s_min = 0.0000  iters = 3  |R| 4.66e+01 -> 1.02e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 6.0252e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =   10.93515 (Gc = 10)  A =    232.51  s_min = 0.0000  iters = 3  |R| 4.66e+01 -> 4.43e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 6.0912e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =   11.04435 (Gc = 10)  A =    233.24  s_min = 0.0000  iters = 4  |R| 4.66e+01 -> 1.39e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 6.1572e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    -0.000  Jx =   11.14841 (Gc = 10)  A =    234.08  s_min = 0.0000  iters = 4  |R| 4.66e+01 -> 1.78e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 6.2232e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =     1.449  Jx =   11.24454 (Gc = 10)  A =    235.08  s_min = 0.0000  iters = 4  |R| 4.65e+01 -> 8.37e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 6.2892e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =     2.000  Jx =   11.32675 (Gc = 10)  A =    236.34  s_min = 0.0000  iters = 4  |R| 4.65e+01 -> 1.92e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 6.3552e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =     4.000  Jx =   11.38110 (Gc = 10)  A =    238.12  s_min = 0.0000  iters = 5  |R| 4.65e+01 -> 1.31e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 6.4212e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =     6.000  Jx =   11.39856 (Gc = 10)  A =    240.58  s_min = 0.0000  iters = 6  |R| 4.65e+01 -> 5.38e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  6
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 6.4872e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =     9.228  Jx =   11.40750 (Gc = 10)  A =    243.20  s_min = 0.0000  iters = 8  |R| 4.65e+01 -> 1.42e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  8
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 6.5532e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    11.000  Jx =   11.42070 (Gc = 10)  A =    245.74  s_min = 0.0000  iters = 8  |R| 4.65e+01 -> 4.94e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  8
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 6.6192e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    14.000  Jx =   11.42532 (Gc = 10)  A =    248.44  s_min = 0.0000  iters = 6  |R| 4.65e+01 -> 3.04e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  6
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 6.6852e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.033
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 6.6522e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =    14.997  Jx =   11.42822 (Gc = 10)  A =    249.78  s_min = 0.0000  iters = 5  |R| 2.32e+01 -> 1.78e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 6.6852e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =    16.000  Jx =   11.43511 (Gc = 10)  A =    251.05  s_min = 0.0000  iters = 5  |R| 2.32e+01 -> 2.24e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 6.7182e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =    17.054  Jx =   11.44680 (Gc = 10)  A =    252.23  s_min = 0.0000  iters = 4  |R| 2.32e+01 -> 8.19e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.066
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 6.7842e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    19.000  Jx =   11.46830 (Gc = 10)  A =    254.62  s_min = 0.0000  iters = 5  |R| 4.65e+01 -> 4.00e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 6.8502e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    22.000  Jx =   11.47591 (Gc = 10)  A =    257.28  s_min = 0.0000  iters = 6  |R| 4.65e+01 -> 2.48e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  6
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 6.9162e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    24.000  Jx =   11.48015 (Gc = 10)  A =    260.01  s_min = 0.0000  iters = 7  |R| 4.65e+01 -> 1.88e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  7
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 6.9822e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    27.050  Jx =   11.48672 (Gc = 10)  A =    262.69  s_min = 0.0000  iters = 8  |R| 4.65e+01 -> 4.12e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  8
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 7.0482e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.033
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 7.0152e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =    28.000  Jx =   11.48744 (Gc = 10)  A =    264.08  s_min = 0.0000  iters = 4  |R| 2.32e+01 -> 7.38e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.066
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 7.0812e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    30.973  Jx =   11.48274 (Gc = 10)  A =    266.98  s_min = 0.0000  iters = 9  |R| 4.65e+01 -> 4.35e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  9
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 7.1472e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    34.000  Jx =   11.50042 (Gc = 10)  A =    269.45  s_min = 0.0000  iters = 8  |R| 4.65e+01 -> 1.48e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  8
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 7.2132e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.033
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 7.1802e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =    34.000  Jx =   11.50806 (Gc = 10)  A =    270.72  s_min = 0.0000  iters = 11  |R| 2.32e+01 -> 2.54e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  11
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 7.2132e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =    36.000  Jx =   11.50114 (Gc = 10)  A =    272.26  s_min = 0.0000  iters = 5  |R| 2.32e+01 -> 7.79e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 7.2462e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =    38.000  Jx =   11.49068 (Gc = 10)  A =    273.86  s_min = 0.0000  iters = 6  |R| 2.32e+01 -> 1.47e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  6
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 7.2792e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =    38.969  Jx =   11.49516 (Gc = 10)  A =    275.18  s_min = 0.0000  iters = 5  |R| 2.32e+01 -> 2.11e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 7.3122e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =    40.000  Jx =   11.49698 (Gc = 10)  A =    276.56  s_min = 0.0000  iters = 5  |R| 2.32e+01 -> 3.83e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 7.3452e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =    42.000  Jx =   11.49848 (Gc = 10)  A =    277.93  s_min = 0.0000  iters = 5  |R| 2.32e+01 -> 5.31e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 7.3782e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =    43.031  Jx =   11.50663 (Gc = 10)  A =    279.19  s_min = 0.0000  iters = 5  |R| 2.32e+01 -> 1.63e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 7.4112e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =    44.000  Jx =   11.51575 (Gc = 10)  A =    280.42  s_min = 0.0000  iters = 4  |R| 2.32e+01 -> 4.94e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.066
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 7.4772e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    46.000  Jx =   11.52730 (Gc = 10)  A =    283.03  s_min = 0.0000  iters = 6  |R| 4.65e+01 -> 4.17e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  6
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 7.5432e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    49.008  Jx =   11.53672 (Gc = 10)  A =    285.67  s_min = 0.0000  iters = 7  |R| 4.65e+01 -> 1.06e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  7
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 7.6092e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    52.000  Jx =   11.52868 (Gc = 10)  A =    288.65  s_min = 0.0000  iters = 6  |R| 4.65e+01 -> 1.48e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  6
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 7.6752e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    55.061  Jx =   11.52960 (Gc = 10)  A =    291.45  s_min = 0.0000  iters = 9  |R| 4.65e+01 -> 1.50e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  9
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 7.7412e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    56.813  Jx =   11.53540 (Gc = 10)  A =    294.17  s_min = 0.0000  iters = 8  |R| 4.65e+01 -> 2.39e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  8
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 7.8072e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    58.994  Jx =   11.54733 (Gc = 10)  A =    296.77  s_min = 0.0000  iters = 8  |R| 4.65e+01 -> 1.61e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  8
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 7.8732e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    62.000  Jx =   11.56055 (Gc = 10)  A =    299.35  s_min = 0.0000  iters = 6  |R| 4.65e+01 -> 3.15e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  6
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 7.9392e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.033
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 7.9062e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =    62.981  Jx =   11.55802 (Gc = 10)  A =    300.81  s_min = 0.0000  iters = 5  |R| 2.33e+01 -> 4.65e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 7.9392e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =    64.884  Jx =   11.55607 (Gc = 10)  A =    302.26  s_min = 0.0000  iters = 5  |R| 2.33e+01 -> 3.18e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 7.9722e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =    66.000  Jx =   11.56178 (Gc = 10)  A =    303.57  s_min = 0.0000  iters = 5  |R| 2.33e+01 -> 2.15e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.0052e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =    67.069  Jx =   11.56717 (Gc = 10)  A =    304.89  s_min = 0.0000  iters = 4  |R| 2.33e+01 -> 3.81e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.066
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.0712e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    70.000  Jx =   11.57074 (Gc = 10)  A =    307.65  s_min = 0.0000  iters = 7  |R| 4.66e+01 -> 6.49e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  7
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.1372e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    72.000  Jx =   11.57100 (Gc = 10)  A =    310.48  s_min = 0.0000  iters = 8  |R| 4.66e+01 -> 2.21e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  8
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.2032e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    75.000  Jx =   11.56692 (Gc = 10)  A =    313.40  s_min = 0.0000  iters = 9  |R| 4.66e+01 -> 3.49e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  9
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.2692e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.033
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.2362e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =    77.000  Jx =   11.57045 (Gc = 10)  A =    314.75  s_min = 0.0000  iters = 5  |R| 2.33e+01 -> 2.95e-11 (atol 1.3e-06, R_ref 1.33e+02)
+Checkpoint geschrieben: /home/scripts/071-waam-n1-fracture-2d/test_out/ckpt_homog (t = 8.23622, 150 Schritte, dt = 0.033)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.2692e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =    78.000  Jx =   11.57480 (Gc = 10)  A =    316.08  s_min = 0.0000  iters = 4  |R| 2.33e+01 -> 3.05e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.066
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.3352e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.033
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.3022e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =    79.000  Jx =   11.57508 (Gc = 10)  A =    317.50  s_min = 0.0000  iters = 5  |R| 2.33e+01 -> 1.52e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.3352e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =    80.938  Jx =   11.57212 (Gc = 10)  A =    318.98  s_min = 0.0000  iters = 5  |R| 2.33e+01 -> 1.54e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.3682e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.0165
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.3517e+00
+==================================================
+Current time step dt = 1.6500e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.00825
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.3435e+00
+==================================================
+Current time step dt = 8.2500e-03
+==================================================
+ 
+x_tip =    80.938  Jx =   11.57174 (Gc = 10)  A =    319.34  s_min = 0.0000  iters = 4  |R| 5.83e+00 -> 2.38e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.0165
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.3600e+00
+==================================================
+Current time step dt = 1.6500e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.00825
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.3517e+00
+==================================================
+Current time step dt = 8.2500e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.004125
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.3476e+00
+==================================================
+Current time step dt = 4.1250e-03
+==================================================
+ 
+x_tip =    80.938  Jx =   11.57158 (Gc = 10)  A =    319.52  s_min = 0.0000  iters = 4  |R| 3.01e+00 -> 3.20e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.00825
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.3558e+00
+==================================================
+Current time step dt = 8.2500e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.004125
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.3517e+00
+==================================================
+Current time step dt = 4.1250e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.0020625
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.3497e+00
+==================================================
+Current time step dt = 2.0625e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.00103125
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.3486e+00
+==================================================
+Current time step dt = 1.0313e-03
+==================================================
+ 
+x_tip =    80.938  Jx =   11.57154 (Gc = 10)  A =    319.56  s_min = 0.0000  iters = 4  |R| 7.30e-01 -> 2.78e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.0020625
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.3507e+00
+==================================================
+Current time step dt = 2.0625e-03
+==================================================
+ 
+x_tip =    80.938  Jx =   11.57077 (Gc = 10)  A =    319.67  s_min = 0.0000  iters = 10  |R| 1.46e+00 -> 5.23e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  10
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.3528e+00
+==================================================
+Current time step dt = 2.0625e-03
+==================================================
+ 
+x_tip =    80.938  Jx =   11.57077 (Gc = 10)  A =    319.76  s_min = 0.0000  iters = 3  |R| 1.46e+00 -> 6.11e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.004125
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.3569e+00
+==================================================
+Current time step dt = 4.1250e-03
+==================================================
+ 
+x_tip =    82.000  Jx =   11.57099 (Gc = 10)  A =    319.94  s_min = 0.0000  iters = 3  |R| 2.92e+00 -> 6.52e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.00825
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.3651e+00
+==================================================
+Current time step dt = 8.2500e-03
+==================================================
+ 
+x_tip =    82.000  Jx =   11.57178 (Gc = 10)  A =    320.28  s_min = 0.0000  iters = 3  |R| 5.83e+00 -> 1.98e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.0165
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.3816e+00
+==================================================
+Current time step dt = 1.6500e-02
+==================================================
+ 
+x_tip =    82.839  Jx =   11.57417 (Gc = 10)  A =    320.94  s_min = 0.0000  iters = 4  |R| 1.17e+01 -> 5.06e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.033
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.4146e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =    84.000  Jx =   11.58006 (Gc = 10)  A =    322.25  s_min = 0.0000  iters = 4  |R| 2.33e+01 -> 1.18e-06 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.066
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.4806e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.033
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.4476e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.0165
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.4311e+00
+==================================================
+Current time step dt = 1.6500e-02
+==================================================
+ 
+x_tip =    84.000  Jx =   11.58349 (Gc = 10)  A =    322.89  s_min = 0.0000  iters = 4  |R| 1.17e+01 -> 2.52e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.033
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.4641e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.0165
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.4476e+00
+==================================================
+Current time step dt = 1.6500e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.00825
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.4394e+00
+==================================================
+Current time step dt = 8.2500e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.004125
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.4353e+00
+==================================================
+Current time step dt = 4.1250e-03
+==================================================
+ 
+x_tip =    84.000  Jx =   11.58441 (Gc = 10)  A =    323.05  s_min = 0.0000  iters = 4  |R| 2.92e+00 -> 7.78e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.00825
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.4435e+00
+==================================================
+Current time step dt = 8.2500e-03
+==================================================
+ 
+x_tip =    84.000  Jx =   11.58517 (Gc = 10)  A =    323.41  s_min = 0.0000  iters = 8  |R| 5.83e+00 -> 1.89e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  8
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.4518e+00
+==================================================
+Current time step dt = 8.2500e-03
+==================================================
+ 
+x_tip =    84.984  Jx =   11.58757 (Gc = 10)  A =    323.72  s_min = 0.0000  iters = 3  |R| 5.87e+00 -> 8.68e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.0165
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.4683e+00
+==================================================
+Current time step dt = 1.6500e-02
+==================================================
+ 
+x_tip =    86.000  Jx =   11.59342 (Gc = 10)  A =    324.31  s_min = 0.0000  iters = 4  |R| 1.17e+01 -> 1.57e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.033
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.5013e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =    86.765  Jx =   11.60701 (Gc = 10)  A =    325.47  s_min = 0.0000  iters = 4  |R| 2.33e+01 -> 8.06e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.066
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.5673e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    89.548  Jx =   11.62634 (Gc = 10)  A =    327.95  s_min = 0.0000  iters = 5  |R| 4.67e+01 -> 4.95e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.6333e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    92.000  Jx =   11.60259 (Gc = 10)  A =    331.26  s_min = 0.0000  iters = 8  |R| 4.67e+01 -> 2.54e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  8
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.6993e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    95.000  Jx =   11.60327 (Gc = 10)  A =    334.09  s_min = 0.0000  iters = 9  |R| 4.67e+01 -> 1.49e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  9
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.7653e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =    98.000  Jx =   11.59657 (Gc = 10)  A =    337.07  s_min = 0.0000  iters = 9  |R| 4.67e+01 -> 4.08e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  9
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.8313e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.033
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.7983e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =    98.988  Jx =   11.60560 (Gc = 10)  A =    338.31  s_min = 0.0000  iters = 5  |R| 2.34e+01 -> 2.95e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.8313e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =   100.000  Jx =   11.61279 (Gc = 10)  A =    339.60  s_min = 0.0000  iters = 9  |R| 2.34e+01 -> 3.55e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  9
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.8643e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =   100.854  Jx =   11.61616 (Gc = 10)  A =    340.96  s_min = 0.0000  iters = 8  |R| 2.34e+01 -> 1.33e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  8
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.8973e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =   103.063  Jx =   11.62204 (Gc = 10)  A =    342.28  s_min = 0.0000  iters = 5  |R| 2.34e+01 -> 1.61e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.9303e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =   104.000  Jx =   11.62646 (Gc = 10)  A =    343.62  s_min = 0.0000  iters = 4  |R| 2.34e+01 -> 1.78e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.066
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 8.9963e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =   106.961  Jx =   11.62173 (Gc = 10)  A =    346.56  s_min = 0.0000  iters = 8  |R| 4.68e+01 -> 4.77e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  8
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.0623e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =   108.889  Jx =   11.62395 (Gc = 10)  A =    349.36  s_min = 0.0000  iters = 9  |R| 4.68e+01 -> 4.20e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  9
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.1283e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =   112.000  Jx =   11.64733 (Gc = 10)  A =    351.76  s_min = 0.0000  iters = 7  |R| 4.68e+01 -> 1.20e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  7
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.1943e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =   114.000  Jx =   11.66948 (Gc = 10)  A =    354.19  s_min = 0.0000  iters = 5  |R| 4.69e+01 -> 3.03e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.2603e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =   116.000  Jx =   11.65837 (Gc = 10)  A =    357.27  s_min = 0.0000  iters = 6  |R| 4.69e+01 -> 1.48e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  6
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.3263e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =   120.000  Jx =   11.65417 (Gc = 10)  A =    360.20  s_min = 0.0000  iters = 9  |R| 4.69e+01 -> 1.91e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  9
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.3923e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.033
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.3593e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =   121.002  Jx =   11.65870 (Gc = 10)  A =    361.54  s_min = 0.0000  iters = 5  |R| 2.35e+01 -> 2.53e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.3923e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =   122.000  Jx =   11.66168 (Gc = 10)  A =    362.92  s_min = 0.0000  iters = 5  |R| 2.35e+01 -> 1.59e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.4253e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =   124.000  Jx =   11.65443 (Gc = 10)  A =    364.49  s_min = 0.0000  iters = 5  |R| 2.36e+01 -> 2.37e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.4583e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =   124.882  Jx =   11.64971 (Gc = 10)  A =    366.01  s_min = 0.0000  iters = 5  |R| 2.35e+01 -> 1.61e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.4913e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =   126.902  Jx =   11.65307 (Gc = 10)  A =    367.37  s_min = 0.0000  iters = 5  |R| 2.35e+01 -> 2.71e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.5243e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =   128.000  Jx =   11.65255 (Gc = 10)  A =    368.80  s_min = 0.0000  iters = 5  |R| 2.35e+01 -> 4.42e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.5573e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =   129.000  Jx =   11.65037 (Gc = 10)  A =    370.27  s_min = 0.0000  iters = 5  |R| 2.35e+01 -> 5.26e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.5903e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =   130.938  Jx =   11.65645 (Gc = 10)  A =    371.58  s_min = 0.0000  iters = 5  |R| 2.35e+01 -> 8.51e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.6233e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =   132.000  Jx =   11.66271 (Gc = 10)  A =    372.89  s_min = 0.0000  iters = 4  |R| 2.35e+01 -> 3.16e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.066
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.6893e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =   134.000  Jx =   11.66194 (Gc = 10)  A =    375.76  s_min = 0.0000  iters = 8  |R| 4.70e+01 -> 4.17e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  8
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.7553e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.033
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.7223e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.0165
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.7058e+00
+==================================================
+Current time step dt = 1.6500e-02
+==================================================
+ 
+x_tip =   135.042  Jx =   11.66266 (Gc = 10)  A =    376.46  s_min = 0.0000  iters = 4  |R| 1.18e+01 -> 1.37e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.033
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.7388e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.0165
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.7223e+00
+==================================================
+Current time step dt = 1.6500e-02
+==================================================
+ 
+x_tip =   136.000  Jx =   11.65991 (Gc = 10)  A =    377.25  s_min = 0.0000  iters = 9  |R| 1.18e+01 -> 1.85e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  9
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.7388e+00
+==================================================
+Current time step dt = 1.6500e-02
+==================================================
+ 
+x_tip =   136.000  Jx =   11.66243 (Gc = 10)  A =    377.92  s_min = 0.0000  iters = 4  |R| 1.18e+01 -> 7.27e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.033
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.7718e+00
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =   138.000  Jx =   11.66795 (Gc = 10)  A =    379.24  s_min = 0.0000  iters = 4  |R| 2.35e+01 -> 3.85e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.066
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.8378e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =   141.000  Jx =   11.65336 (Gc = 10)  A =    382.38  s_min = 0.0000  iters = 7  |R| 4.71e+01 -> 2.44e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  7
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.9038e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =   142.908  Jx =   11.65700 (Gc = 10)  A =    385.16  s_min = 0.0000  iters = 9  |R| 4.71e+01 -> 1.65e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  9
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 9.9698e+00
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =   146.000  Jx =   11.67141 (Gc = 10)  A =    387.74  s_min = 0.0000  iters = 6  |R| 4.71e+01 -> 4.82e-09 (atol 1.3e-06, R_ref 1.33e+02)
+Checkpoint geschrieben: /home/scripts/071-waam-n1-fracture-2d/test_out/ckpt_homog (t = 9.96975, 200 Schritte, dt = 0.066)
+-----------------------------
+ No. of iterations:  6
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0036e+01
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.033
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0003e+01
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =   147.223  Jx =   11.68013 (Gc = 10)  A =    389.00  s_min = 0.0000  iters = 4  |R| 2.36e+01 -> 7.61e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.066
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0069e+01
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.033
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0036e+01
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.0165
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0019e+01
+==================================================
+Current time step dt = 1.6500e-02
+==================================================
+ 
+x_tip =   147.223  Jx =   11.68459 (Gc = 10)  A =    389.63  s_min = 0.0000  iters = 4  |R| 1.18e+01 -> 9.55e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.033
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0052e+01
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.0165
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0036e+01
+==================================================
+Current time step dt = 1.6500e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.00825
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0028e+01
+==================================================
+Current time step dt = 8.2500e-03
+==================================================
+ 
+x_tip =   148.000  Jx =   11.68680 (Gc = 10)  A =    389.94  s_min = 0.0000  iters = 4  |R| 5.89e+00 -> 4.51e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.0165
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0044e+01
+==================================================
+Current time step dt = 1.6500e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.00825
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0036e+01
+==================================================
+Current time step dt = 8.2500e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.004125
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0032e+01
+==================================================
+Current time step dt = 4.1250e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.0020625
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0030e+01
+==================================================
+Current time step dt = 2.0625e-03
+==================================================
+ 
+x_tip =   148.000  Jx =   11.68733 (Gc = 10)  A =    390.02  s_min = 0.0000  iters = 4  |R| 1.47e+00 -> 4.42e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.004125
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0034e+01
+==================================================
+Current time step dt = 4.1250e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.0020625
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0032e+01
+==================================================
+Current time step dt = 2.0625e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.00103125
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0031e+01
+==================================================
+Current time step dt = 1.0313e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.000515625
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0030e+01
+==================================================
+Current time step dt = 5.1563e-04
+==================================================
+ 
+x_tip =   148.000  Jx =   11.68746 (Gc = 10)  A =    390.04  s_min = 0.0000  iters = 3  |R| 3.70e-01 -> 1.38e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.00103125
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0031e+01
+==================================================
+Current time step dt = 1.0313e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.000515625
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0031e+01
+==================================================
+Current time step dt = 5.1563e-04
+==================================================
+ 
+x_tip =   148.000  Jx =   11.68759 (Gc = 10)  A =    390.06  s_min = 0.0000  iters = 3  |R| 3.70e-01 -> 1.53e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.00103125
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0032e+01
+==================================================
+Current time step dt = 1.0313e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.000515625
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0031e+01
+==================================================
+Current time step dt = 5.1563e-04
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.0002578125
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0031e+01
+==================================================
+Current time step dt = 2.5781e-04
+==================================================
+ 
+x_tip =   148.000  Jx =   11.68764 (Gc = 10)  A =    390.07  s_min = 0.0000  iters = 3  |R| 1.88e-01 -> 3.69e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.000515625
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0031e+01
+==================================================
+Current time step dt = 5.1563e-04
+==================================================
+ 
+x_tip =   148.000  Jx =   11.68600 (Gc = 10)  A =    390.14  s_min = 0.0000  iters = 12  |R| 3.70e-01 -> 1.62e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  12
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0032e+01
+==================================================
+Current time step dt = 5.1563e-04
+==================================================
+ 
+x_tip =   148.000  Jx =   11.68422 (Gc = 10)  A =    390.22  s_min = 0.0000  iters = 6  |R| 4.34e-01 -> 2.53e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  6
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0032e+01
+==================================================
+Current time step dt = 5.1563e-04
+==================================================
+ 
+x_tip =   148.000  Jx =   11.68413 (Gc = 10)  A =    390.24  s_min = 0.0000  iters = 4  |R| 4.43e-01 -> 7.57e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.00103125
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0033e+01
+==================================================
+Current time step dt = 1.0313e-03
+==================================================
+ 
+x_tip =   148.000  Jx =   11.68434 (Gc = 10)  A =    390.29  s_min = 0.0000  iters = 3  |R| 7.41e-01 -> 2.52e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.0020625
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0035e+01
+==================================================
+Current time step dt = 2.0625e-03
+==================================================
+ 
+x_tip =   148.000  Jx =   11.68485 (Gc = 10)  A =    390.36  s_min = 0.0000  iters = 3  |R| 1.47e+00 -> 1.64e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.004125
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0040e+01
+==================================================
+Current time step dt = 4.1250e-03
+==================================================
+ 
+x_tip =   149.000  Jx =   11.68594 (Gc = 10)  A =    390.52  s_min = 0.0000  iters = 3  |R| 2.95e+00 -> 2.92e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.00825
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0048e+01
+==================================================
+Current time step dt = 8.2500e-03
+==================================================
+ 
+x_tip =   149.000  Jx =   11.68815 (Gc = 10)  A =    390.84  s_min = 0.0000  iters = 3  |R| 5.89e+00 -> 5.97e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.0165
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0064e+01
+==================================================
+Current time step dt = 1.6500e-02
+==================================================
+ 
+x_tip =   149.000  Jx =   11.69212 (Gc = 10)  A =    391.48  s_min = 0.0000  iters = 4  |R| 1.18e+01 -> 1.97e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.033
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0097e+01
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =   150.000  Jx =   11.69640 (Gc = 10)  A =    392.82  s_min = 0.0000  iters = 4  |R| 2.36e+01 -> 4.99e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.066
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0163e+01
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =   152.535  Jx =   11.71743 (Gc = 10)  A =    395.28  s_min = 0.0000  iters = 8  |R| 4.72e+01 -> 1.64e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  8
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0229e+01
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =   154.000  Jx =   11.74045 (Gc = 10)  A =    397.70  s_min = 0.0000  iters = 5  |R| 4.72e+01 -> 1.22e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0295e+01
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+x_tip =   158.000  Jx =   11.73186 (Gc = 10)  A =    400.74  s_min = 0.0000  iters = 6  |R| 4.72e+01 -> 1.06e-06 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  6
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0361e+01
+==================================================
+Current time step dt = 6.6000e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.033
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0328e+01
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =   158.925  Jx =   11.72871 (Gc = 10)  A =    402.24  s_min = 0.0000  iters = 5  |R| 2.36e+01 -> 1.67e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0361e+01
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =   160.000  Jx =   11.71983 (Gc = 10)  A =    403.86  s_min = 0.0000  iters = 7  |R| 2.36e+01 -> 4.48e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  7
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0394e+01
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =   162.000  Jx =   11.71220 (Gc = 10)  A =    405.44  s_min = 0.0000  iters = 5  |R| 2.36e+01 -> 3.96e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0427e+01
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =   164.000  Jx =   11.70997 (Gc = 10)  A =    406.92  s_min = 0.0000  iters = 5  |R| 2.36e+01 -> 6.17e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0460e+01
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =   164.854  Jx =   11.71486 (Gc = 10)  A =    408.26  s_min = 0.0000  iters = 5  |R| 2.37e+01 -> 4.92e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0493e+01
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+x_tip =   166.000  Jx =   11.72346 (Gc = 10)  A =    409.53  s_min = 0.0000  iters = 5  |R| 2.36e+01 -> 5.16e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  5
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0526e+01
+==================================================
+Current time step dt = 3.3000e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.0165
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0510e+01
+==================================================
+Current time step dt = 1.6500e-02
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.00825
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0502e+01
+==================================================
+Current time step dt = 8.2500e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.004125
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0497e+01
+==================================================
+Current time step dt = 4.1250e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.0020625
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0495e+01
+==================================================
+Current time step dt = 2.0625e-03
+==================================================
+ 
+x_tip =   166.000  Jx =   11.72398 (Gc = 10)  A =    409.61  s_min = 0.0000  iters = 3  |R| 1.48e+00 -> 6.44e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.004125
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0500e+01
+==================================================
+Current time step dt = 4.1250e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.0020625
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0497e+01
+==================================================
+Current time step dt = 2.0625e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.00103125
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0496e+01
+==================================================
+Current time step dt = 1.0313e-03
+==================================================
+ 
+x_tip =   166.000  Jx =   11.72423 (Gc = 10)  A =    409.65  s_min = 0.0000  iters = 3  |R| 7.40e-01 -> 1.36e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.0020625
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0499e+01
+==================================================
+Current time step dt = 2.0625e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.00103125
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0497e+01
+==================================================
+Current time step dt = 1.0313e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.000515625
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0497e+01
+==================================================
+Current time step dt = 5.1563e-04
+==================================================
+ 
+x_tip =   166.000  Jx =   11.72435 (Gc = 10)  A =    409.67  s_min = 0.0000  iters = 3  |R| 3.71e-01 -> 1.86e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.00103125
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0498e+01
+==================================================
+Current time step dt = 1.0313e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.000515625
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0497e+01
+==================================================
+Current time step dt = 5.1563e-04
+==================================================
+ 
+x_tip =   166.000  Jx =   11.72446 (Gc = 10)  A =    409.69  s_min = 0.0000  iters = 3  |R| 3.71e-01 -> 3.00e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.00103125
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0499e+01
+==================================================
+Current time step dt = 1.0313e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.000515625
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0498e+01
+==================================================
+Current time step dt = 5.1563e-04
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.0002578125
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0498e+01
+==================================================
+Current time step dt = 2.5781e-04
+==================================================
+ 
+x_tip =   166.000  Jx =   11.72452 (Gc = 10)  A =    409.70  s_min = 0.0000  iters = 3  |R| 1.88e-01 -> 1.22e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.000515625
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0498e+01
+==================================================
+Current time step dt = 5.1563e-04
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.0002578125
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0498e+01
+==================================================
+Current time step dt = 2.5781e-04
+==================================================
+ 
+x_tip =   166.000  Jx =   11.72456 (Gc = 10)  A =    409.71  s_min = 0.0000  iters = 3  |R| 1.88e-01 -> 2.43e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.000515625
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0499e+01
+==================================================
+Current time step dt = 5.1563e-04
+==================================================
+ 
+x_tip =   166.000  Jx =   11.72029 (Gc = 10)  A =    409.86  s_min = 0.0000  iters = 10  |R| 3.71e-01 -> 1.18e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  10
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0499e+01
+==================================================
+Current time step dt = 5.1563e-04
+==================================================
+ 
+x_tip =   166.000  Jx =   11.71785 (Gc = 10)  A =    409.96  s_min = 0.0000  iters = 6  |R| 7.09e-01 -> 5.15e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  6
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0500e+01
+==================================================
+Current time step dt = 5.1563e-04
+==================================================
+ 
+x_tip =   166.000  Jx =   11.71764 (Gc = 10)  A =    409.98  s_min = 0.0000  iters = 3  |R| 5.18e-01 -> 4.00e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.00103125
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0501e+01
+==================================================
+Current time step dt = 1.0313e-03
+==================================================
+ 
+x_tip =   166.000  Jx =   11.71776 (Gc = 10)  A =    410.03  s_min = 0.0000  iters = 3  |R| 7.49e-01 -> 7.94e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.0020625
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0503e+01
+==================================================
+Current time step dt = 2.0625e-03
+==================================================
+ 
+x_tip =   166.000  Jx =   11.71816 (Gc = 10)  A =    410.11  s_min = 0.0000  iters = 3  |R| 1.48e+00 -> 1.71e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.004125
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0507e+01
+==================================================
+Current time step dt = 4.1250e-03
+==================================================
+ 
+x_tip =   166.000  Jx =   11.71904 (Gc = 10)  A =    410.27  s_min = 0.0000  iters = 3  |R| 2.96e+00 -> 2.21e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.00825
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0515e+01
+==================================================
+Current time step dt = 8.2500e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.004125
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0511e+01
+==================================================
+Current time step dt = 4.1250e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.0020625
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0509e+01
+==================================================
+Current time step dt = 2.0625e-03
+==================================================
+ 
+x_tip =   166.000  Jx =   11.71947 (Gc = 10)  A =    410.36  s_min = 0.0000  iters = 3  |R| 1.48e+00 -> 6.42e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.004125
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0513e+01
+==================================================
+Current time step dt = 4.1250e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.0020625
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0511e+01
+==================================================
+Current time step dt = 2.0625e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.00103125
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0510e+01
+==================================================
+Current time step dt = 1.0313e-03
+==================================================
+ 
+x_tip =   166.000  Jx =   11.71968 (Gc = 10)  A =    410.40  s_min = 0.0000  iters = 3  |R| 7.40e-01 -> 3.31e-10 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.0020625
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0512e+01
+==================================================
+Current time step dt = 2.0625e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.00103125
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0511e+01
+==================================================
+Current time step dt = 1.0313e-03
+==================================================
+ 
+x_tip =   167.533  Jx =   11.71988 (Gc = 10)  A =    410.44  s_min = 0.0000  iters = 3  |R| 7.40e-01 -> 1.09e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.0020625
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0513e+01
+==================================================
+Current time step dt = 2.0625e-03
+==================================================
+ 
+x_tip =   167.533  Jx =   11.71827 (Gc = 10)  A =    410.59  s_min = 0.0000  iters = 10  |R| 1.48e+00 -> 3.90e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+ No. of iterations:  10
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0515e+01
+==================================================
+Current time step dt = 2.0625e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.00103125
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0514e+01
+==================================================
+Current time step dt = 1.0313e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.000515625
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0513e+01
+==================================================
+Current time step dt = 5.1563e-04
+==================================================
+ 
+x_tip =   167.533  Jx =   11.71824 (Gc = 10)  A =    410.62  s_min = 0.0000  iters = 4  |R| 1.52e+00 -> 8.40e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.00103125
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0515e+01
+==================================================
+Current time step dt = 1.0313e-03
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.000515625
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0514e+01
+==================================================
+Current time step dt = 5.1563e-04
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.0002578125
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0514e+01
+==================================================
+Current time step dt = 2.5781e-04
+==================================================
+ 
+x_tip =   167.533  Jx =   11.71821 (Gc = 10)  A =    410.63  s_min = 0.0000  iters = 4  |R| 1.91e-01 -> 6.17e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.000515625
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0514e+01
+==================================================
+Current time step dt = 5.1563e-04
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.0002578125
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0514e+01
+==================================================
+Current time step dt = 2.5781e-04
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.00012890625
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0514e+01
+==================================================
+Current time step dt = 1.2891e-04
+==================================================
+ 
+x_tip =   167.533  Jx =   11.71815 (Gc = 10)  A =    410.64  s_min = 0.0000  iters = 4  |R| 1.06e-01 -> 4.03e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.0002578125
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0514e+01
+==================================================
+Current time step dt = 2.5781e-04
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  0.00012890625
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0514e+01
+==================================================
+Current time step dt = 1.2891e-04
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  6.4453125e-05
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0514e+01
+==================================================
+Current time step dt = 6.4453e-05
+==================================================
+ 
+x_tip =   167.533  Jx =   11.71807 (Gc = 10)  A =    410.64  s_min = 0.0000  iters = 4  |R| 8.26e-02 -> 5.37e-11 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  0.00012890625
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0514e+01
+==================================================
+Current time step dt = 1.2891e-04
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  6.4453125e-05
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0514e+01
+==================================================
+Current time step dt = 6.4453e-05
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  3.22265625e-05
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0514e+01
+==================================================
+Current time step dt = 3.2227e-05
+==================================================
+ 
+x_tip =   167.533  Jx =   11.71801 (Gc = 10)  A =    410.65  s_min = 0.0000  iters = 3  |R| 1.09e-01 -> 9.66e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  6.4453125e-05
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0514e+01
+==================================================
+Current time step dt = 6.4453e-05
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  3.22265625e-05
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0514e+01
+==================================================
+Current time step dt = 3.2227e-05
+==================================================
+ 
+x_tip =   167.533  Jx =   11.71786 (Gc = 10)  A =    410.65  s_min = 0.0000  iters = 4  |R| 1.54e-01 -> 1.57e-09 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  6.4453125e-05
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0514e+01
+==================================================
+Current time step dt = 6.4453e-05
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  3.22265625e-05
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0514e+01
+==================================================
+Current time step dt = 3.2227e-05
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  1.611328125e-05
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0514e+01
+==================================================
+Current time step dt = 1.6113e-05
+==================================================
+ 
+x_tip =   167.533  Jx =   11.71774 (Gc = 10)  A =    410.66  s_min = 0.0000  iters = 3  |R| 2.96e-01 -> 1.12e-07 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  3.22265625e-05
+-----------------------------
+-----------------------------
+ No. of iterations:  3
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0514e+01
+==================================================
+Current time step dt = 3.2227e-05
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  1.611328125e-05
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0514e+01
+==================================================
+Current time step dt = 1.6113e-05
+==================================================
+ 
+x_tip =   167.533  Jx =   11.71742 (Gc = 10)  A =    410.67  s_min = 0.0000  iters = 4  |R| 4.61e-01 -> 5.69e-08 (atol 1.3e-06, R_ref 1.33e+02)
+-----------------------------
+!!! Increasing dt to:  3.22265625e-05
+-----------------------------
+-----------------------------
+ No. of iterations:  4
+ Converged:          True
+ Restarting:         False
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0514e+01
+==================================================
+Current time step dt = 3.2227e-05
+==================================================
+ 
+Newton solver did not converge because maximum number of iterations reached
+-----------------------------
+!!! NO CONVERGENCE => dt:  1.611328125e-05
+-----------------------------
+-----------------------------
+ No. of iterations:  0
+ Converged:          False
+ Restarting:         True
+-----------------------------
+ 
+==================================================
+Computing solution at time = 1.0514e+01
+==================================================
+Current time step dt = 1.6113e-05
+==================================================
+ 
+x_tip =   167.533  Jx =   11.71590 (Gc = 10)  A =    410.72  s_min = 0.0000  iters = 5  |R| 9.90e-01 -> 5.48e-07 (atol 1.3e-06, R_ref 1.33e+02)
+Checkpoint geschrieben: /home/scripts/071-waam-n1-fracture-2d/test_out/ckpt_homog (t = 10.514, 250 Schritte, dt = 1.61e-05)
+Simulation stopped early: max_steps=250 reached (smoke test)
+Checkpoint geschrieben: /home/scripts/071-waam-n1-fracture-2d/test_out/ckpt_homog (t = 10.514, 250 Schritte, dt = 1.61e-05)
+
+-----------------------------
+elapsed time: [387.859845135, 376.5, 5.57]
+-----------------------------
+
+Abbruchgrund: max_steps=250 reached (smoke test)  (t = 10.514 von 60, 250 Schritte, dt zuletzt 1.61e-05)
+Ergebnisse: /home/scripts/071-waam-n1-fracture-2d/test_out/run_fracture_simulation_homog_graphs.txt
+            /home/scripts/071-waam-n1-fracture-2d/test_out/run_fracture_simulation_homog.xdmf
+
+=== 4/5  synthetic microstructure, both crack directions ===
+wrote /home/scripts/071-waam-n1-fracture-2d/test_out/micro_test.npz: 59 x 119 Zellen = 7021, 401 x 199 um, 273 Koerner, step 3.371 um
+wrote /home/scripts/071-waam-n1-fracture-2d/test_out/micro_test_tall.npz: 119 x 59 Zellen = 7021, 199 x 401 um, 278 Koerner, step 3.371 um
+Info    : Meshing 1D...
+Info    : [  0%] Meshing curve 1 (Line)
+Info    : [ 10%] Meshing curve 2 (Line)
+Info    : [ 20%] Meshing curve 3 (Line)
+Info    : [ 20%] Meshing curve 4 (Line)
+Info    : [ 30%] Meshing curve 5 (Line)
+Info    : [ 40%] Meshing curve 6 (Line)
+Info    : [ 40%] Meshing curve 7 (Line)
+Info    : [ 50%] Meshing curve 8 (Line)
+Info    : [ 60%] Meshing curve 9 (Line)
+Info    : [ 60%] Meshing curve 10 (Line)
+Info    : [ 70%] Meshing curve 11 (Line)
+Info    : [ 80%] Meshing curve 12 (Line)
+Info    : [ 80%] Meshing curve 13 (Line)
+Info    : [ 90%] Meshing curve 14 (Line)
+Info    : [100%] Meshing curve 15 (Line)
+Info    : Done meshing 1D (Wall 0.00723125s, CPU 0.007159s)
+Info    : Meshing 2D...
+Info    : [  0%] Meshing surface 1 (Plane, Frontal-Delaunay)
+Info    : [ 30%] Meshing surface 2 (Plane, Frontal-Delaunay)
+Info    : [ 50%] Meshing surface 3 (Plane, Frontal-Delaunay)
+Info    : [ 80%] Meshing surface 4 (Plane, Frontal-Delaunay)
+Info    : Done meshing 2D (Wall 0.705341s, CPU 0.693767s)
+Info    : 36134 nodes 72967 elements
+Info    : Writing '/home/scripts/071-waam-n1-fracture-2d/test_out/mesh_test_long.msh'...
+Info    : Done writing '/home/scripts/071-waam-n1-fracture-2d/test_out/mesh_test_long.msh'
+Patch  401.1 x 198.9 um (Zelle 3.371 um)
+Gebiet [-200.6, 601.7] x [-298.3, 298.3] um
+Netz   e_fine=2.000  e_patch=5.000  e_far=30.000  Korridor +-80.0 um  (epsilon=8.000 -> eps/h=4.0)
+
+36134 Knoten, 72074 Dreiecke (41196 im Patch, 30878 Einbettung)
+  -> 108402 DOF im gemischten (u, s)-Raum bei P1
+geschrieben: /home/scripts/071-waam-n1-fracture-2d/test_out/mesh_test_long.xdmf
+MPI-STATUS: Process: 0 of 4 processes.
+MPI-STATUS: Process: 3 of 4 processes.
+MPI-STATUS: Process: 2 of 4 processes.
+MPI-STATUS: Process: 1 of 4 processes.
+Einkristall-Konstanten [GPa] (config.json, LITERATUR-PLATZHALTER wie 069/070):
+  region 0 = 17-4PH   bcc: C11=231.4 C12=134.7 C44=116.4
+  region 0 = 17-4PH   fcc: C11=204.6 C12=137.7 C44=126.2
+  region 1 = trans    fcc: C11=204.6 C12=137.7 C44=126.2
+  region 1 = trans    bcc: C11=231.4 C12=134.7 C44=116.4
+  region 2 = 316L     fcc: C11=204.6 C12=137.7 C44=126.2
+  region 2 = 316L     bcc: C11=231.4 C12=134.7 C44=116.4
+Einbettung (ANGENOMMEN, nicht homogenisiert): isotropic steel (assumed), E=200.0 GPa, nu=0.300
+Bruch: Gc=10 GPa*um (= kJ/m^2) KONSTANT ueberall, epsilon=8 um, eta=1.0e-04, Degradation=quadratic, Zustand=plane stress
+  -> sig_c = 3.185 GPa, K_eq = sqrt(E*Gc) = 44.7 MPa*sqrt(m) (homogen-isotrope Abschaetzung)
+spatial dimensions: 2
+x_min, x_max: -200.5745, 601.7235000000001
+y_min, y_max: -298.3335, 298.3335
+z_min, z_max: 0.0, 0.0
+Materialzuordnung: {'17-4PH/bcc': 203, '17-4PH/fcc': 102, '316L/fcc': 6, 'trans/bcc': 29, 'trans/fcc': 34}
+  374 verschiedene Korn-Steifigkeitstensoren; E_x pro Zelle 94...300 GPa
+Patch 59x119 Zellen, 401 x 199 um, Zellgroesse 3.371 um, rotiert=False
+Traceback (most recent call last):
+  File "/home/scripts/071-waam-n1-fracture-2d/run_fracture_simulation.py", line 297, in <module>
+    f'Element, E_x {Ei.min():.0f}...{Ei.max():.0f} GPa '
+  File "/usr/local/lib/python3.10/dist-packages/numpy/core/_methods.py", line 44, in _amin
+    return umr_minimum(a, axis, None, out, keepdims, initial, where)
+ValueError: zero-size array to reduction operation minimum which has no identity

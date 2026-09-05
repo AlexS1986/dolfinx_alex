@@ -27,10 +27,20 @@
   "s_degree": 1,
   "quad_degree": null,
   "min_iters": 5,
-  "max_iters": 8,
+  "max_iters": 12,
+  "newton_rtol": 1e-09,
+  "newton_atol": null,
+  "newton_atol_rel": 1e-08,
+  "newton_relax": 1.0,
+  "solver": "newton",
+  "dt_regrow_steps": 5,
+  "checkpoint_interval": 50,
+  "restart": false,
+  "restart_from_xdmf": "/home/scripts/071-waam-n1-fracture-2d/results/run_fracture_simulation_long_sgauss.h5",
+  "xdmf_file": "run_fracture_simulation_long_sgauss_restart1.xdmf",
   "max_steps": 0,
   "postprocessing_interval": 50,
-  "stop_reason": "time step dt=7.404e-15 below 1.0e-14",
+  "stop_reason": "specimen separated completely",
   "v_crack": 121.608825,
   "a0_um": 168.38144999999997,
   "crack_tip_x0_um": -112.2543,
@@ -66,7 +76,7 @@
     "s_min"
   ],
   "mpi_ranks": 10,
-  "started": "2026-09-01T15:51:34",
+  "started": "2026-09-03T08:27:33",
   "microstructure": {
     "n_distinct_grain_tensors": 7641,
     "grains_per_material_crystal": {
@@ -148,8 +158,8 @@
     667.0,
     1495.0
   ],
-  "finished": "2026-09-02T01:38:44",
-  "t_reached": 13.239558966012558,
-  "successful_steps": 2476,
-  "dt_final": 7.404065903565789e-15
+  "finished": "2026-09-03T11:29:48",
+  "t_reached": 20.308844747698256,
+  "successful_steps": 3940,
+  "dt_final": 0.0325634262151616
 }

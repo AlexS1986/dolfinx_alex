@@ -41,6 +41,9 @@ from datetime import datetime
 import numpy as np
 import ufl
 import dolfinx as dlfx
+import dolfinx.fem.petsc
+from dolfinx.fem.petsc import NonlinearProblem
+from dolfinx.nls.petsc import NewtonSolver
 from mpi4py import MPI
 from petsc4py import PETSc as petsc
 
@@ -111,8 +114,77 @@ ap.add_argument('--min_iters', type=int, default=5,
                 help='dt is doubled when Newton needs FEWER iterations than '
                      'this. alex defaults to 4; with 4-5 iterations per step '
                      'dt then never grows again and the run stalls.')
-ap.add_argument('--max_iters', type=int, default=8,
-                help='more iterations than this -> the step is rejected and dt halved')
+ap.add_argument('--max_iters', type=int, default=12,
+                help='more iterations than this -> the step is rejected and dt '
+                     'halved. Was 8; with the absolute tolerance below a few '
+                     'more iterations are cheaper than a rejected step.')
+# --- Newton tolerances -------------------------------------------------------
+# WHY (2026-09-02): all four production runs (s1 AND sgauss, both directions)
+# died the same death: the crack tip stalls for a moment (stick-slip at a grain
+# boundary, or leaving the stiff Gaussian patch), Newton fails once at
+# dt ~ 5e-4, and from then on EVERY smaller dt fails too, down to 1e-14.
+# That cascade is not physics. The dolfinx NewtonSolver was rebuilt each step
+# with its defaults (rtol = 1e-9 RELATIVE to the initial residual of the step,
+# atol = 1e-10). The initial residual of a step is essentially the boundary
+# increment v_crack*dt, i.e. it shrinks WITH dt. Once dt is small, the target
+# 1e-9 * r0 lies below the round-off floor of the LU solve on a 600k-DOF
+# ill-conditioned mixed system, so no iteration count can ever reach it -
+# the smaller dt gets, the more certain the failure.
+# FIX: one solver, built once and reused, with an ABSOLUTE tolerance tied to
+# the problem scale: atol = newton_atol_rel * R_ref, where R_ref is the largest
+# initial step residual seen so far in the run (a step at dt_max). A tiny step
+# then converges to the same absolute equilibrium accuracy as a normal one,
+# instead of chasing an ever-smaller relative target.
+ap.add_argument('--newton_rtol', type=float, default=1.0e-9,
+                help='relative residual tolerance of Newton (dolfinx default)')
+ap.add_argument('--newton_atol', type=float, default=None,
+                help='ABSOLUTE residual tolerance [GPa*um]. Default: adaptive, '
+                     'newton_atol_rel * (largest initial step residual so far).')
+ap.add_argument('--newton_atol_rel', type=float, default=1.0e-8,
+                help='adaptive absolute tolerance = this * R_ref (see above). '
+                     '1e-8 of the largest step imbalance of the run is far below '
+                     'anything J or the reaction forces can resolve, but safely '
+                     'above the LU round-off floor.')
+ap.add_argument('--newton_relax', type=float, default=1.0,
+                help='Newton relaxation (damping) parameter, 1 = full step '
+                     '(--solver newton only)')
+ap.add_argument('--solver', default='newton', choices=('newton', 'snes'),
+                help='"newton": dolfinx NewtonSolver (plain Newton, optional '
+                     'constant relaxation). "snes": PETSc SNES newtonls with '
+                     'backtracking line search - the standard remedy when '
+                     'plain Newton diverges at a crack jump (the energy is '
+                     'non-convex there; a full Newton step overshoots, the '
+                     'line search does not). Same tolerances, same LU/MUMPS.')
+ap.add_argument('--snes_monitor', action='store_true',
+                help='print the SNES residual per iteration (rank 0)')
+ap.add_argument('--dt_regrow_steps', type=int, default=5,
+                help='after a rejected step, dt may not exceed the halved value '
+                     'until this many steps in a row have converged; then the '
+                     'ceiling doubles (up to dt_max). Stops the ping-pong '
+                     '"fail at 2dt, converge at dt in 3 iterations, alex doubles, '
+                     'fail at 2dt, ..." in which every second solve is wasted. '
+                     '0 = alex behaviour (double immediately).')
+ap.add_argument('--checkpoint_interval', type=int, default=50,
+                help='write a binary restart checkpoint (w, wm1, t, dt, work, '
+                     'counters; one .npz per rank) every N successful steps into '
+                     '<outdir>/ckpt_<tag>/. 0 = off. A checkpoint is also written '
+                     'when the run ends.')
+ap.add_argument('--restart', action='store_true',
+                help='continue from <outdir>/ckpt_<tag>/ instead of t = 0. Needs '
+                     'the SAME mesh, the same number of MPI ranks and the same '
+                     'model parameters (the partition fingerprint is checked). '
+                     'graphs/log files are truncated to the checkpoint time and '
+                     'continued; fields go to a new <tag>_restartN.xdmf.')
+ap.add_argument('--restart_from_xdmf', default=None, metavar='H5[:TIME]',
+                help='continue from the nodal u and s stored in the .h5 of an '
+                     'EARLIER run that has no checkpoint (the four 2026-09-01 '
+                     'production runs). Default TIME = last one in the file, '
+                     'which is the last CONVERGED state (after_last_timestep '
+                     'writes wrestart). Nodes are matched by coordinates, so '
+                     'the mesh must be the same but -np may differ. W, A and the '
+                     'step count are taken from the graphs file at that time; '
+                     'dt restarts at --dt_start. Self-check: the first printed '
+                     'x_tip/J must continue the old graphs seamlessly.')
 ap.add_argument('--Tend', type=float, default=None,
                 help='end time. Only ever cuts a run short - separation ends it '
                      'by itself. Default: 3*Lx_domain/v_crack.')
@@ -179,6 +251,14 @@ logfile_path = os.path.join(outdir, f'{script_name}_{args.tag}_log.txt')
 graph_path = os.path.join(outdir, f'{script_name}_{args.tag}_graphs.txt')
 xdmf_path = os.path.join(outdir, f'{script_name}_{args.tag}.xdmf')
 param_path = os.path.join(outdir, f'parameters_{args.tag}.txt')
+CKPT_DIR = os.path.join(outdir, f'ckpt_{args.tag}')
+if args.restart or args.restart_from_xdmf:
+    # never append to / overwrite the XDMF of the previous leg - a new file
+    # per restart leg, numbered
+    _k = 1
+    while os.path.exists(os.path.join(outdir, f'{script_name}_{args.tag}_restart{_k}.xdmf')):
+        _k += 1
+    xdmf_path = os.path.join(outdir, f'{script_name}_{args.tag}_restart{_k}.xdmf')
 
 cfg = MF.load_config(args.config, script_path)
 if args.Gc is not None:
@@ -237,12 +317,22 @@ if args.micro:
     h_cell = np.sqrt(2.0 * np.abs(cell_area(domain, cell_ids)))
     sample = micro.sample_averaged(mid[:, 0], mid[:, 1], h_cell, cfg,
                                    scheme=args.stiffness_average)
-    if rank == 0:
-        Ei = sample['Ex'][sample['inside'] > 0]
+    # statistics over ALL ranks - a single rank may own no patch cell at all
+    Ei = sample['Ex'][sample['inside'] > 0]
+    _n = comm.allreduce(int(Ei.size), MPI.SUM)
+    _mn = comm.allreduce(float(Ei.min()) if Ei.size else np.inf, MPI.MIN)
+    _mx = comm.allreduce(float(Ei.max()) if Ei.size else -np.inf, MPI.MAX)
+    _s1 = comm.allreduce(float(Ei.sum()), MPI.SUM)
+    _s2 = comm.allreduce(float((Ei ** 2).sum()), MPI.SUM)
+    _npx = comm.allreduce(float(sample['n_pixels_averaged'].sum()), MPI.SUM)
+    _nc = comm.allreduce(int(sample['n_pixels_averaged'].size), MPI.SUM)
+    if rank == 0 and _n > 0:
+        _mean = _s1 / _n
+        _std = math.sqrt(max(_s2 / _n - _mean ** 2, 0.0))
         print(f'Steifigkeit: Schema "{args.stiffness_average}", '
-              f'im Mittel {sample["n_pixels_averaged"].mean():.1f} EBSD-Pixel je '
-              f'Element, E_x {Ei.min():.0f}...{Ei.max():.0f} GPa '
-              f'(Streuung {Ei.std()/Ei.mean():.3f})')
+              f'im Mittel {_npx/max(_nc,1):.1f} EBSD-Pixel je '
+              f'Element, E_x {_mn:.0f}...{_mx:.0f} GPa '
+              f'(Streuung {_std/_mean:.3f})')
 else:
     Cemb = MF.embedding_C2D(cfg)
     n = ncells_all
@@ -566,6 +656,7 @@ def get_bcs(t):
     if abs(t) > sys.float_info.epsilon * 5:
         bcs.append(irreversibility_bc_local())
     bcs.append(bccrack)
+    newton_prepare_step(bcs)      # solver holds NEWTON_BCS, refreshed in place
     return bcs
 
 
@@ -604,6 +695,298 @@ def stop_if_dt_too_small(dt):
     v = dt_as_float(dt)
     if v < dt_min_stop:
         raise StopSimulation(f'time step dt={v:.3e} below {dt_min_stop:.1e}')
+
+
+# ------------------------------------------------ Newton solver (built once) --
+# One NonlinearProblem + NewtonSolver for the whole run instead of a fresh
+# default solver every step (see the --newton_* help text for the reason).
+# The residual/Jacobian forms depend on dt only through the Constant
+# `dt_global`, so they can be compiled once. The boundary conditions change
+# every step (surfing field, irreversibility set): NonlinearProblem keeps a
+# reference to the list object it was given, so `NEWTON_BCS` is refreshed IN
+# PLACE by get_bcs() right before each solve.
+NEWTON_BCS = []
+_Res_form, _Jac_form = get_residuum_and_gateaux(dt_global)
+nl_problem = NonlinearProblem(_Res_form, w, NEWTON_BCS, _Jac_form)
+
+
+class SNESNewton:
+    """PETSc SNES (newtonls + backtracking line search) behind the same
+    `solve(w) -> (iters, converged)` interface alex expects from a dolfinx
+    NewtonSolver; raises RuntimeError on non-convergence like it does.
+    Residual/Jacobian assembly is delegated to the dolfinx NonlinearProblem
+    (same forms, same in-place bc list, same Dirichlet lifting)."""
+
+    def __init__(self, comm, problem, w, max_it, rtol, atol, monitor=False):
+        self.problem, self.w = problem, w
+        self.max_it, self.rtol, self.atol = max_it, rtol, atol
+        self.A = dlfx.fem.petsc.create_matrix(problem.a)
+        self.b = dlfx.fem.petsc.create_vector(problem.L)
+        self.snes = petsc.SNES().create(comm)
+        self.snes.setOptionsPrefix('pf_')
+        self.snes.setFunction(self._F, self.b)
+        self.snes.setJacobian(self._J, self.A)
+        self.snes.setType('newtonls')
+        self.snes.getLineSearch().setType('bt')
+        ksp = self.snes.getKSP()
+        ksp.setType('preonly')
+        pc = ksp.getPC()
+        pc.setType('lu')
+        pc.setFactorSolverType('mumps')
+        if monitor and comm.Get_rank() == 0:
+            self.snes.setMonitor(lambda snes, it, r: print(f'    SNES {it:2d}: |R| = {r:.3e}'))
+        self.snes.setFromOptions()
+
+    def _sync(self, x):
+        x.ghostUpdate(addv=petsc.InsertMode.INSERT, mode=petsc.ScatterMode.FORWARD)
+        x.copy(_petsc_vec(self.w))
+        self.w.x.scatter_forward()
+
+    def _F(self, snes, x, F):
+        self._sync(x)
+        self.problem.F(x, F)
+
+    def _J(self, snes, x, J, P):
+        self._sync(x)
+        self.problem.J(x, J)
+
+    def solve(self, w):
+        self.snes.setTolerances(rtol=self.rtol, atol=self.atol, max_it=self.max_it)
+        x = _petsc_vec(w).copy()
+        self.snes.solve(None, x)
+        its = self.snes.getIterationNumber()
+        reason = self.snes.getConvergedReason()
+        if reason <= 0:
+            raise RuntimeError(f'SNES did not converge (reason {reason}) '
+                               f'after {its} iterations')
+        self._sync(x)
+        return its, True
+
+
+def _petsc_vec(fun):
+    return fun.x.petsc_vec if hasattr(fun.x, 'petsc_vec') else fun.vector
+
+
+if args.solver == 'snes':
+    newton = SNESNewton(comm, nl_problem, w, args.max_iters, args.newton_rtol,
+                        args.newton_atol if args.newton_atol is not None else 0.0,
+                        monitor=args.snes_monitor)
+else:
+    newton = NewtonSolver(comm, nl_problem)
+    newton.convergence_criterion = 'residual'
+    newton.max_it = args.max_iters
+    newton.rtol = args.newton_rtol
+    newton.atol = args.newton_atol if args.newton_atol is not None else 0.0
+    newton.relaxation_parameter = args.newton_relax
+    newton.error_on_nonconvergence = True     # alex catches the RuntimeError -> dt/2
+    newton.report = True
+res_vec = dlfx.fem.petsc.create_vector(nl_problem.L)
+NEWTON_STATE = {'R_ref': 0.0, 'r0': 0.0, 'atol': 0.0, 'last_iters': -1, 't_ok': None,
+                'dt_ceiling': None, 'ok_in_row': 0, 'steps_at_start': 0.0}
+
+
+def residual_norm():
+    """||R(w)|| with the CURRENT boundary conditions applied - exactly the
+    quantity the NewtonSolver tests against its tolerances."""
+    w.x.scatter_forward()
+    nl_problem.F(_petsc_vec(w), res_vec)
+    return float(res_vec.norm())
+
+
+def newton_prepare_step(bcs):
+    """Refresh the bc list the solver holds, measure the initial residual of
+    the step and set the absolute tolerance from the run's residual scale."""
+    NEWTON_BCS[:] = bcs
+    r0 = residual_norm()
+    NEWTON_STATE['r0'] = r0
+    NEWTON_STATE['R_ref'] = max(NEWTON_STATE['R_ref'], r0)
+    if args.newton_atol is None:
+        NEWTON_STATE['atol'] = args.newton_atol_rel * NEWTON_STATE['R_ref']
+        newton.atol = NEWTON_STATE['atol']
+    else:
+        NEWTON_STATE['atol'] = args.newton_atol
+
+
+# ---------------------------------------------------------- checkpointing --
+def _ckpt_signature():
+    """Partition fingerprint: a checkpoint may only be loaded onto the very
+    same dof layout (same mesh file, same number of ranks)."""
+    return np.array([size, rank, w.x.array.size, DOFS_S.size, DOFS_U.size,
+                     float(S_DOF_XY[:, 0].sum()), float(S_DOF_XY[:, 1].sum()),
+                     float(np.abs(S_DOF_XY).sum())])
+
+
+def _ckpt_file(r=None):
+    return os.path.join(CKPT_DIR, f'state_rank{(rank if r is None else r):04d}.npz')
+
+
+def write_checkpoint(t_now):
+    if rank == 0:
+        os.makedirs(CKPT_DIR, exist_ok=True)
+    comm.Barrier()
+    fn = _ckpt_file()
+    tmp = fn[:-4] + '_tmp.npz'
+    np.savez(tmp, w=w.x.array, wm1=wm1.x.array,
+             t=float(t_now), trestart=float(trestart_global.value),
+             dt=dt_as_float(dt_global), Work=float(Work.value),
+             A_hist=float(A_history[0]), steps=float(success_counter.value),
+             R_ref=float(NEWTON_STATE['R_ref']), sig=_ckpt_signature(),
+             xdmf=os.path.basename(xdmf_path))
+    os.replace(tmp, fn)
+    comm.Barrier()
+    if rank == 0:
+        print(f'Checkpoint geschrieben: {CKPT_DIR} (t = {t_now:.6g}, '
+              f'{int(success_counter.value)} Schritte, dt = {dt_as_float(dt_global):.3g})')
+
+
+def _truncate_table(path, t_max):
+    """Keep header/comment lines and rows with t <= t_max (first column)."""
+    if not os.path.exists(path):
+        return
+    keep = []
+    with open(path) as fh:
+        for line in fh:
+            st = line.strip()
+            if not st or st.startswith('#'):
+                keep.append(line)
+                continue
+            try:
+                tv = float(st.split()[0])
+            except ValueError:
+                keep.append(line)
+                continue
+            if tv <= t_max * (1.0 + 1e-12) + 1e-300:
+                keep.append(line)
+    with open(path, 'w') as fh:
+        fh.writelines(keep)
+        fh.write(f'# restart {datetime.now().isoformat(timespec="seconds")} '
+                 f'from checkpoint t = {t_max:.10g}\n')
+
+
+def _graphs_row_at(path, t_target):
+    """(W, A, n_rows) of the graphs file at the row closest to t_target."""
+    rows = []
+    with open(path) as fh:
+        for line in fh:
+            st = line.strip()
+            if not st or st.startswith('#'):
+                continue
+            rows.append([float(v) for v in st.split()])
+    a = np.asarray(rows)
+    k = int(np.argmin(np.abs(a[:, 0] - t_target)))
+    # columns: t Jx Jy x_ct x_K Rx Ry dW W A dt ...
+    return float(a[k, 8]), float(a[k, 9]), k + 1, float(a[k, 0])
+
+
+def load_from_xdmf(spec):
+    """Restart from nodal u, s of an earlier run's .h5 (see --restart_from_xdmf)."""
+    import h5py
+    if ':' in spec and not os.path.exists(spec):
+        h5path, t_spec = spec.rsplit(':', 1)
+        t_spec = float(t_spec)
+    else:
+        h5path, t_spec = spec, None
+    if not os.path.isabs(h5path):
+        h5path = os.path.join(outdir, h5path)
+    with h5py.File(h5path, 'r') as f:
+        keys = list(f['Function/s'].keys())
+        times = {k: float(k.replace('_', '.')) for k in keys}
+        if t_spec is None:
+            key = max(keys, key=lambda k: times[k])
+        else:
+            key = min(keys, key=lambda k: abs(times[k] - t_spec))
+        t_ck = times[key]
+        xyz = np.asarray(f['Mesh/Grid/geometry'])[:, :2]
+        s_h5 = np.asarray(f['Function/s'][key]).reshape(-1)
+        u_h5 = np.asarray(f['Function/u'][key])
+        u_h5 = u_h5.reshape(u_h5.shape[0], -1)[:, :2]
+    if xyz.shape[0] != s_h5.size or xyz.shape[0] != u_h5.shape[0]:
+        raise RuntimeError('--restart_from_xdmf: node count of geometry and '
+                           'fields differ - not a P1 nodal dataset?')
+    # match nodes by (rounded) coordinates - same mesh file, any partition
+    scale = 1e-6 * max(x_max - x_min, y_max - y_min)
+    def keyof(arr):
+        q = np.round(arr / scale).astype(np.int64)
+        return q[:, 0] * np.int64(1 << 31) + q[:, 1]
+    lut = dict(zip(keyof(xyz).tolist(), range(xyz.shape[0])))
+    def lookup(coords):
+        idx = np.empty(coords.shape[0], dtype=np.int64)
+        for i, k in enumerate(keyof(coords).tolist()):
+            j = lut.get(k)
+            if j is None:
+                raise RuntimeError(f'--restart_from_xdmf: node {coords[i]} not found in h5 geometry')
+            idx[i] = j
+        return idx
+    js = lookup(S_DOF_XY)
+    ju = lookup(SUB_U.tabulate_dof_coordinates()[:, :2])
+    w.x.array[DOFS_S] = s_h5[js]
+    uvals = u_h5[ju]                          # (n_nodes, 2) -> interleaved
+    w.x.array[DOFS_U] = uvals.reshape(-1)
+    w.x.scatter_forward()
+    wm1.x.array[:] = w.x.array[:]
+    wrestart.x.array[:] = w.x.array[:]
+    for f_ in (wm1, wrestart):
+        f_.x.scatter_forward()
+    W_old, A_old, n_rows, t_row = _graphs_row_at(graph_path, t_ck)
+    Work.value = W_old
+    A_history[0] = A_old
+    success_counter.value = float(n_rows)
+    NEWTON_STATE['steps_at_start'] = float(success_counter.value)
+    NEWTON_STATE['t_ok'] = t_ck
+    dt_global.value = dt_start
+    trestart_global.value = t_ck
+    # seed the residual scale with what a step at dt_max would see, so that
+    # the absolute tolerance is meaningful from the first (small) step on
+    t_global.value = t_ck + dt_max.value
+    get_bcs(t_global.value)
+    NEWTON_STATE['R_ref'] = NEWTON_STATE['r0']
+    t_global.value = t_ck + dt_start
+    if rank == 0:
+        print(f'RESTART aus {h5path} @ t = {t_ck:.6g} (Datensatz {key}): '
+              f'W = {W_old:.6g}, A = {A_old:.2f} (graphs-Zeile t = {t_row:.6g}, '
+              f'{n_rows} Schritte), dt = {dt_start:.3g}, R_ref = {NEWTON_STATE["R_ref"]:.4g}')
+        _truncate_table(graph_path, t_ck)
+        _truncate_table(logfile_path, t_ck)
+    comm.Barrier()
+    return t_ck
+
+
+def load_checkpoint():
+    fn = _ckpt_file()
+    if not os.path.exists(fn):
+        raise RuntimeError(f'--restart: no checkpoint {fn}')
+    d = np.load(fn)
+    sig_now, sig_ck = _ckpt_signature(), d['sig']
+    ok = (sig_now[:5] == sig_ck[:5]).all() and np.allclose(sig_now[5:], sig_ck[5:],
+                                                            rtol=1e-10, atol=1e-6)
+    ok = comm.allreduce(bool(ok), MPI.LAND)
+    if not ok:
+        raise RuntimeError('--restart: checkpoint does not match this mesh '
+                           'partition (same mesh file and same -np needed)')
+    w.x.array[:] = d['w']
+    wm1.x.array[:] = d['wm1']
+    wrestart.x.array[:] = d['wm1']
+    for f in (w, wm1, wrestart):
+        f.x.scatter_forward()
+    Work.value = float(d['Work'])
+    A_history[0] = float(d['A_hist'])
+    success_counter.value = float(d['steps'])
+    NEWTON_STATE['steps_at_start'] = float(success_counter.value)
+    NEWTON_STATE['R_ref'] = float(d['R_ref'])
+    t_ck = float(d['t'])
+    NEWTON_STATE['t_ok'] = t_ck
+    # the checkpoint is the converged state AT t_ck; the next solve is at t_ck+dt
+    dt_global.value = min(float(d['dt']), dt_max.value)
+    trestart_global.value = t_ck
+    t_global.value = t_ck + dt_as_float(dt_global)
+    if rank == 0:
+        print(f'RESTART aus {CKPT_DIR}: t = {t_ck:.6g}, dt = {dt_global.value:.3g}, '
+              f'{int(success_counter.value)} Schritte bisher, W = {Work.value:.6g}, '
+              f'R_ref = {NEWTON_STATE["R_ref"]:.4g}')
+        _truncate_table(graph_path, t_ck)
+        _truncate_table(logfile_path, t_ck)
+    comm.Barrier()
+    return t_ck
 
 
 def assemble_J(eshelby, measure):
@@ -650,6 +1033,12 @@ def write_solution_fields(t, sig_int=None):
 
 def before_first_time_step():
     timer.start()
+    if args.restart or args.restart_from_xdmf:
+        t_ck = load_checkpoint() if args.restart else load_from_xdmf(args.restart_from_xdmf)
+        pp.write_meshoutputfile(domain, xdmf_path, comm)
+        write_material_fields(t_ck)
+        write_solution_fields(t_ck)
+        return
     # Initial state in wm1 AND in w: the first Newton solve must start from
     # intact material, not from the default all-zero vector (s = 0 = fully
     # broken everywhere), which costs many iterations and shows up as a
@@ -719,6 +1108,30 @@ def before_first_time_step():
 
 def before_each_time_step(t, dt):
     stop_if_dt_too_small(dt)
+    # With an absolute tolerance a very small step can be accepted with ZERO
+    # Newton iterations (the initial residual is already below atol). alex
+    # only grows dt for 0 < iters < min_iters, so such a step would repeat
+    # forever at the same tiny dt. Grow it here instead - and move t along
+    # with it, so the surfing field, the viscous rate term and the recorded
+    # time all belong to the same dt.
+    if NEWTON_STATE['last_iters'] == 0:
+        new_dt = min(2.0 * dt_as_float(dt_global), dt_max.value)
+        dt_global.value = new_dt
+        t_global.value = trestart_global.value + new_dt
+        NEWTON_STATE['last_iters'] = -1
+        t, dt = t_global.value, new_dt
+        if rank == 0:
+            print(f'0-Iterationen-Schritt -> dt verdoppelt auf {new_dt:.3e}')
+    # dt ceiling after a rejected step (see --dt_regrow_steps): alex has
+    # possibly just doubled dt again - cap it and move t along consistently.
+    ceil = NEWTON_STATE['dt_ceiling']
+    if ceil is not None and dt_as_float(dt_global) > ceil * (1.0 + 1e-12):
+        dt_global.value = ceil
+        t_global.value = trestart_global.value + ceil
+        t, dt = t_global.value, ceil
+        if rank == 0:
+            print(f'dt auf Deckel {ceil:.3e} gehalten '
+                  f'({NEWTON_STATE["ok_in_row"]}/{args.dt_regrow_steps} Schritte konvergiert)')
     if rank == 0:
         sol.print_time_and_dt(t, dt)
 
@@ -745,6 +1158,16 @@ def after_timestep_success(t, dt, iters):
         sol.write_to_newton_logfile(logfile_path, t, dt, iters)
 
     x_ct = crack_tip_x()
+    NEWTON_STATE['last_iters'] = int(iters)
+    r_end = residual_norm()
+    if NEWTON_STATE['dt_ceiling'] is not None:
+        NEWTON_STATE['ok_in_row'] += 1
+        if NEWTON_STATE['ok_in_row'] >= max(args.dt_regrow_steps, 1):
+            NEWTON_STATE['ok_in_row'] = 0
+            NEWTON_STATE['dt_ceiling'] = min(2.0 * NEWTON_STATE['dt_ceiling'],
+                                             float(dt_max.value))
+            if NEWTON_STATE['dt_ceiling'] >= float(dt_max.value):
+                NEWTON_STATE['dt_ceiling'] = None
 
     s_min = comm.allreduce(float(np.min(w.x.array[DOFS_S])), MPI.MIN)
     if rank == 0:
@@ -754,7 +1177,9 @@ def after_timestep_success(t, dt, iters):
         flag = '' if A >= A_history[0] - 1e-9 else '   <-- A faellt (Relaxation!)'
         A_history[0] = max(A_history[0], A)
         print(f'x_tip = {x_ct:9.3f}  Jx = {Jx:10.5f} (Gc = {Gc_val:.4g})  '
-              f'A = {A:9.2f}  s_min = {s_min:6.4f}  iters = {iters}{flag}')
+              f'A = {A:9.2f}  s_min = {s_min:6.4f}  iters = {iters}  '
+              f'|R| {NEWTON_STATE["r0"]:.2e} -> {r_end:.2e} '
+              f'(atol {NEWTON_STATE["atol"]:.1e}, R_ref {NEWTON_STATE["R_ref"]:.2e}){flag}')
         pp.write_to_graphs_output_file(graph_path, t, Jx, Jy, x_ct,
                                        xxK1.value[0], Rx_top, Ry_top, dW,
                                        Work.value, A, dt, E_el, E_surf,
@@ -766,7 +1191,14 @@ def after_timestep_success(t, dt, iters):
     wm1.x.array[:] = w.x.array[:]
     wrestart.x.array[:] = w.x.array[:]
     success_counter.value = success_counter.value + 1.0
-    if args.max_steps and success_counter.value >= args.max_steps:
+    # checkpoint AFTER wm1 is updated: the state is the converged solution at
+    # time t (alex hands the hook the time the step was solved at)
+    NEWTON_STATE['t_ok'] = float(t)
+    if args.checkpoint_interval and \
+            int(success_counter.value) % int(args.checkpoint_interval) == 0:
+        write_checkpoint(t)
+    # max_steps counts the steps of THIS leg, not the restored total
+    if args.max_steps and success_counter.value - NEWTON_STATE['steps_at_start'] >= args.max_steps:
         raise StopSimulation(f'max_steps={args.max_steps} reached (smoke test)')
     if int(success_counter.value) % max(int(args.postprocessing_interval), 1) != 0:
         return
@@ -776,6 +1208,11 @@ def after_timestep_success(t, dt, iters):
 
 def after_timestep_restart(t, dt, iters):
     stop_if_dt_too_small(dt)
+    NEWTON_STATE['last_iters'] = -1
+    if args.dt_regrow_steps > 0:
+        # dt is already halved by alex; hold it there for a few steps
+        NEWTON_STATE['dt_ceiling'] = dt_as_float(dt_global)
+        NEWTON_STATE['ok_in_row'] = 0
     w.x.array[:] = wrestart.x.array[:]
 
 
@@ -787,6 +1224,11 @@ GRAPH_LABELS = ['Jx', 'Jy', 'x_crack_tip', 'x_K_field', 'Rx_top', 'Ry_top',
 def after_last_timestep():
     write_material_fields(t_global.value)
     write_solution_fields(t_global.value)
+    if args.checkpoint_interval and NEWTON_STATE.get('t_ok') is not None:
+        # wm1/wrestart hold the last CONVERGED state, at time t_ok - not w,
+        # which may be a half-finished attempt after a dt collapse
+        w.x.array[:] = wm1.x.array[:]
+        write_checkpoint(NEWTON_STATE['t_ok'])
     timer.stop()
     if rank == 0:
         runtime = timer.elapsed()
@@ -839,6 +1281,12 @@ run_meta = {
     'u_degree': args.u_degree, 's_degree': args.s_degree,
     'quad_degree': args.quad_degree,
     'min_iters': args.min_iters, 'max_iters': args.max_iters,
+    'newton_rtol': args.newton_rtol, 'newton_atol': args.newton_atol,
+    'newton_atol_rel': args.newton_atol_rel, 'newton_relax': args.newton_relax,
+    'solver': args.solver, 'dt_regrow_steps': args.dt_regrow_steps,
+    'checkpoint_interval': args.checkpoint_interval, 'restart': bool(args.restart),
+    'restart_from_xdmf': args.restart_from_xdmf,
+    'xdmf_file': os.path.basename(xdmf_path),
     'max_steps': args.max_steps, 'postprocessing_interval': args.postprocessing_interval,
     'stop_reason': 'laeuft noch / abgebrochen',
     'v_crack': v_crack, 'a0_um': a0, 'crack_tip_x0_um': crack_tip_x0,
@@ -872,7 +1320,7 @@ try:
         after_timestep_restart_hook=after_timestep_restart,
         after_timestep_success_hook=after_timestep_success,
         comm=comm, print_bool=True, t=t_global, dt_max=dt_max,
-        trestart=trestart_global,
+        trestart=trestart_global, solver=newton,
         min_iters=args.min_iters, max_iters=args.max_iters)
     run_meta['stop_reason'] = f'Tend = {Tend:.6g} erreicht'
 except StopSimulation as exc:

@@ -5,39 +5,39 @@
   "Gc_input_GPa_um": 10.0,
   "E_prime_GPa": 200.0,
   "J_reference_GPa_um": 11.025000000000002,
-  "n_steps": 3791,
+  "n_steps": 2924,
   "crack_tip_range_um": [
     -115.67,
-    2070.1
+    1642.6
   ],
   "steady_window_x_um": [
-    665.4354,
-    1901.244
+    574.91,
+    1642.6
   ],
-  "crack_growth_um": 2185.77,
+  "crack_growth_um": 1758.27,
   "crack_propagated": true,
-  "patch_fraction_traversed": 1.0837862542669678,
+  "patch_fraction_traversed": 0.8716609895495235,
   "Jx_steady": {
-    "n": 1930,
-    "mean": 12.77149378238342,
-    "median": 12.6475,
-    "std": 0.7805493454463451,
+    "n": 1597,
+    "mean": 12.585838447088292,
+    "median": 12.574,
+    "std": 0.6075771805090125,
     "min": 11.61,
-    "max": 14.817
+    "max": 14.39
   },
   "Jy_steady": {
-    "n": 1930,
-    "mean": 0.3965188911917098,
-    "median": 0.417775,
-    "std": 0.07501132879853485,
+    "n": 1597,
+    "mean": 0.41804340012523483,
+    "median": 0.43607,
+    "std": 0.08883573957147739,
     "min": 0.16138,
-    "max": 0.54344
+    "max": 0.64004
   },
-  "Jx_last": 7.1536,
-  "Gc_eff_GPa_um": 12.77149378238342,
-  "Gc_eff_over_Gc": 1.277149378238342,
-  "K_eff_MPa_sqrt_m": 50.540070800075895,
-  "Gc_eff_scatter_rel": 0.06111652706772714,
+  "Jx_last": 13.791,
+  "Gc_eff_GPa_um": 12.585838447088292,
+  "Gc_eff_over_Gc": 1.2585838447088293,
+  "K_eff_MPa_sqrt_m": 50.17138317225925,
+  "Gc_eff_scatter_rel": 0.0482746686335843,
   "runin": {
     "n": 51,
     "mean": 12.669549019607844,
@@ -52,5 +52,5 @@
     "Gc_eff_GPa_um": 12.669549019607844,
     "scatter_rel": 0.020281395116890023
   },
-  "Gc_eff_over_runin": 1.0080464397444457
+  "Gc_eff_over_runin": 0.9933927740924323
 }

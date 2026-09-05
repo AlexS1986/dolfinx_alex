@@ -3,14 +3,14 @@
     "direction": "in Aufbaurichtung",
     "sfun": "1 + 0.50*np.exp(-((x-1050.)/350.)**2)",
     "Gc_input_GPa_um": 10.0,
-    "Gc_eff_GPa_um": 12.561901673640167,
-    "Gc_eff_over_Gc": 1.2561901673640166,
-    "K_eff_MPa_sqrt_m": 50.123650452935216,
-    "Gc_eff_scatter_rel": 0.11896192963197852,
+    "Gc_eff_GPa_um": 11.943765131578948,
+    "Gc_eff_over_Gc": 1.1943765131578947,
+    "K_eff_MPa_sqrt_m": 48.87487111303507,
+    "Gc_eff_scatter_rel": 0.0804763982708197,
     "crack_propagated": true,
-    "crack_growth_um": 2152.15,
+    "crack_growth_um": 1452.8500000000001,
     "warning": null,
-    "Gc_eff_over_runin": 1.1270129071108874,
+    "Gc_eff_over_runin": 1.0715557096770205,
     "runin": {
       "n": 47,
       "mean": 11.146191489361705,
@@ -25,17 +25,17 @@
       "Gc_eff_GPa_um": 11.146191489361705,
       "scatter_rel": 0.021206517976454148
     },
-    "patch_fraction_traversed": 1.084609945353356,
+    "patch_fraction_traversed": 0.7319907684672634,
     "per_zone": {
-      "transition": {
-        "Gc_eff_GPa_um": 11.595869333333333,
-        "K_eff_MPa_sqrt_m": 48.15780172170099,
-        "n": 1500
+      "17-4PH": {
+        "Gc_eff_GPa_um": 12.625899581589959,
+        "K_eff_MPa_sqrt_m": 50.251168307990525,
+        "n": 478
       },
-      "316L": {
-        "Gc_eff_GPa_um": 14.189507311586052,
-        "K_eff_MPa_sqrt_m": 53.271957560401425,
-        "n": 889
+      "transition": {
+        "Gc_eff_GPa_um": 11.630847408829176,
+        "K_eff_MPa_sqrt_m": 48.23037924136441,
+        "n": 1042
       }
     }
   },
@@ -43,14 +43,14 @@
     "direction": "quer zur Aufbaurichtung",
     "sfun": "1 + 0.50*np.exp(-((x-1050.)/350.)**2)",
     "Gc_input_GPa_um": 10.0,
-    "Gc_eff_GPa_um": 12.77149378238342,
-    "Gc_eff_over_Gc": 1.277149378238342,
-    "K_eff_MPa_sqrt_m": 50.540070800075895,
-    "Gc_eff_scatter_rel": 0.06111652706772714,
+    "Gc_eff_GPa_um": 12.585838447088292,
+    "Gc_eff_over_Gc": 1.2585838447088293,
+    "K_eff_MPa_sqrt_m": 50.17138317225925,
+    "Gc_eff_scatter_rel": 0.0482746686335843,
     "crack_propagated": true,
-    "crack_growth_um": 2185.77,
+    "crack_growth_um": 1758.27,
     "warning": null,
-    "Gc_eff_over_runin": 1.0080464397444457,
+    "Gc_eff_over_runin": 0.9933927740924323,
     "runin": {
       "n": 51,
       "mean": 12.669549019607844,
@@ -65,10 +65,10 @@
       "Gc_eff_GPa_um": 12.669549019607844,
       "scatter_rel": 0.020281395116890023
     },
-    "patch_fraction_traversed": 1.0837862542669678,
+    "patch_fraction_traversed": 0.8716609895495235,
     "per_zone": {}
   },
   "_anisotropy": {
-    "trans_sgauss/long_sgauss": 1.0166847436151376
+    "trans_sgauss/long_sgauss": 1.0537580326166764
   }
 }

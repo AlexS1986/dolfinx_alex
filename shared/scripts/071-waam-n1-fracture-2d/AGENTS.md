@@ -137,3 +137,15 @@ Einkristallkonstanten (als **Kopie** in `config.json`).
   Materialkräfte der Mikrostruktur. Das ist die gesuchte effektive
   Energiefreisetzungsrate — nicht als „Fehler in der Wegunabhängigkeit“
   wegdiskutieren oder auf eine Spitzenkontur umbauen, ohne das zu benennen.
+* **Newton-Löser: einmal bauen, absolute Toleranz** (2026-09-02). Nie wieder
+  den alex-Default-Löser je Schritt (rtol relativ zum Schrittresiduum ⇒
+  dt-Kollaps-Kaskade bis 1e-14, so sind alle vier ersten Produktionsläufe vor
+  der Trennung gestorben). `run_fracture_simulation.py` übergibt seinen
+  eigenen `NewtonSolver` mit `atol = newton_atol_rel · R_ref`; `get_bcs`
+  aktualisiert `NEWTON_BCS` in place. Wer die Toleranzen ändert, muss den
+  homogenen Verifikationslauf (`run_local_test.sh`, Stage 3) wiederholen und
+  `Gc_eff/Gc ≈ 1.075` bestätigen. Details: README „Newton-Toleranzen".
+* **Läufe müssen bis zur Trennung laufen** (`stop_reason` =
+  „specimen separated completely"). Ein Lauf, der mit „time step dt=… below
+  1.0e-14" endet, ist kein Ergebnis — Checkpoint (`ckpt_<tag>/`) prüfen,
+  Ursache im `|R|`-Ausdruck suchen, ggf. `--restart`.

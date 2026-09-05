@@ -1,0 +1,126 @@
+=== long_sgauss   micro=micro_long.npz  s(x)=1 + 0.50*np.exp(-((x-1050.)/350.)**2)   --restart_from_xdmf /home/scripts/071-waam-n1-fracture-2d/results/run_fracture_simulation_long_sgauss.h5
+MPI-STATUS: Process: 5 of 10 processes.
+MPI-STATUS: Process: 6 of 10 processes.
+MPI-STATUS: Process: 0 of 10 processes.
+MPI-STATUS: Process: 2 of 10 processes.
+MPI-STATUS: Process: 8 of 10 processes.
+MPI-STATUS: Process: 4 of 10 processes.
+MPI-STATUS: Process: 9 of 10 processes.
+MPI-STATUS: Process: 7 of 10 processes.
+MPI-STATUS: Process: 3 of 10 processes.
+MPI-STATUS: Process: 1 of 10 processes.
+Einkristall-Konstanten [GPa] (config.json, LITERATUR-PLATZHALTER wie 069/070):
+  region 0 = 17-4PH   bcc: C11=231.4 C12=134.7 C44=116.4
+  region 0 = 17-4PH   fcc: C11=204.6 C12=137.7 C44=126.2
+  region 1 = trans    fcc: C11=204.6 C12=137.7 C44=126.2
+  region 1 = trans    bcc: C11=231.4 C12=134.7 C44=116.4
+  region 2 = 316L     fcc: C11=204.6 C12=137.7 C44=126.2
+  region 2 = 316L     bcc: C11=231.4 C12=134.7 C44=116.4
+Einbettung (ANGENOMMEN, nicht homogenisiert): isotropic steel (assumed), E=200.0 GPa, nu=0.300
+Bruch: Gc=10 GPa*um (= kJ/m^2) KONSTANT ueberall, epsilon=12 um, eta=1.0e-04, Degradation=quadratic, Zustand=plane stress
+  -> sig_c = 2.600 GPa, K_eq = sqrt(E*Gc) = 44.7 MPa*sqrt(m) (homogen-isotrope Abschaetzung)
+spatial dimensions: 2
+x_min, x_max: -280.63575, 2151.54075
+y_min, y_max: -886.573, 886.573
+z_min, z_max: 0.0, 0.0
+Materialzuordnung: {'17-4PH/bcc': 3620, '17-4PH/fcc': 2151, '316L/fcc': 7, 'trans/bcc': 957, 'trans/fcc': 906}
+  7641 verschiedene Korn-Steifigkeitstensoren; E_x pro Zelle 95...433 GPa
+Patch 263x555 Zellen, 1871 x 887 um, Zellgroesse 3.371 um, rotiert=False
+Steifigkeit: Schema "hill", im Mittel 1.0 EBSD-Pixel je Element, E_x 95...433 GPa (Streuung 0.267)
+Surfing-K: K = 1.05 * sqrt(Gc*E') = 46.9574 GPa*sqrt(um) = 46.96 MPa*sqrt(m);  J_ref = K^2/E' = 11.0250 GPa*um
+Anfangsriss: y=0, x < -112.25 um  (84 Facetten), v_crack=121.6 um/t, Tend=60
+Ansatz: u = P1, s = P1, Quadratur = UFL-Schaetzung
+K-Feld-Zentrum startet bei x = -281 um (linker Gebietsrand), Rissspitze bei -112 um
+  -> Vorlaufzeit bis das Feld die Spitze erreicht: t = 1.38 (solange ist der Riss unterbelastet und bewegt sich nicht)
+Trennung bei x_ct >= 2030 um -> 2142 um Risswachstum, ~19.0 Zeiteinheiten bei v_crack=122 um/t. Tend=60 (Reserve x3.2)
+Zeitschritt: dt_start=1.628e-04, dt_max=3.256e-02, Tend=60  (dt waechst nur bei iters < 5)
+  bei dt_max wandert das K-Feld 3.96 um je Schritt = 0.33 * epsilon
+Viskositaet: iMob/dt_max = 0.03071 gegen Gc/(4eps) = 0.2083 -> Verhaeltnis 0.147 (klein = quasistatisch)
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: tag=long_sgauss
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: mesh_file=/home/scripts/071-waam-n1-fracture-2d/results/mesh_micro_long_resolved.xdmf
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: micro=micro_long.npz
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: sfun=1 + 0.50*np.exp(-((x-1050.)/350.)**2)
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: rotate_ccw90=False
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: Gc_GPa_um=10.0
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: epsilon_um=12.0
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: eta=0.0001
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: mobility=1000.0
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: degradation=quadratic
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: degradation_beta=0.1
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: plane_state=stress
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: embedding_E_GPa=200.0
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: embedding_nu=0.3
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: E_prime_GPa=200.0
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: kappa=2.076923076923077
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: K_scale=1.05
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: K1_GPa_sqrt_um=46.95742752749559
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: K1_MPa_sqrt_m=46.95742752749559
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: J_reference_GPa_um=11.025000000000002
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: init_profile=True
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: init_u=True
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: stiffness_average=hill
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: crack_width_um=0.0
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: u_degree=1
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: s_degree=1
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: quad_degree=None
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: min_iters=5
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: max_iters=12
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: newton_rtol=1e-09
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: newton_atol=None
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: newton_atol_rel=1e-08
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: newton_relax=1.0
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: solver=newton
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: dt_regrow_steps=5
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: checkpoint_interval=50
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: restart=False
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: restart_from_xdmf=/home/scripts/071-waam-n1-fracture-2d/results/run_fracture_simulation_long_sgauss.h5
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: xdmf_file=run_fracture_simulation_long_sgauss_restart1.xdmf
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: max_steps=30
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: postprocessing_interval=50
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: stop_reason=laeuft noch / abgebrochen
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: v_crack=121.608825
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: a0_um=168.38144999999997
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: crack_tip_x0_um=-112.2543
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: separation_frac=0.95
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: k_start_x_um=-280.63575
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: tip_setback_um=112.2543
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: patch_x0_um=0.0
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: Tend=60.00000000000001
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: dt_start=0.00016281713107580803
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: dt_max=0.0325634262151616
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: mpi_ranks=10
+Appended to /home/scripts/071-waam-n1-fracture-2d/results/parameters_long_sgauss.txt: started=2026-09-03T08:25:30
+solving fem problem with 608805 dofs ...
+RESTART aus /home/scripts/071-waam-n1-fracture-2d/results/run_fracture_simulation_long_sgauss.h5 @ t = 13.2396 (Datensatz 13_239558966012558): W = 17349, A = 1808.60 (graphs-Zeile t = 13.24, 2476 Schritte), dt = 0.000163, R_ref = 66.05
+ 
+==================================================
+Computing solution at time = 1.3240e+01
+==================================================
+Current time step dt = 1.6282e-04
+==================================================
+ 
+x_tip =  1339.435  Jx =   10.47211 (Gc = 10)  A =   1808.59  s_min = -0.0010  iters = 3  |R| 3.34e-01 -> 1.90e-08 (atol 6.6e-07, R_ref 6.61e+01)   <-- A faellt (Relaxation!)
+Simulation stopped early: max_steps=30 reached (smoke test)
+Checkpoint geschrieben: /home/scripts/071-waam-n1-fracture-2d/results/ckpt_long_sgauss (t = 13.2397, 2477 Schritte, dt = 0.000163)
+
+-----------------------------
+elapsed time: [11.462098214000001, 9.8, 0.62]
+-----------------------------
+
+Abbruchgrund: max_steps=30 reached (smoke test)  (t = 13.2397 von 60, 2477 Schritte, dt zuletzt 0.000163)
+Ergebnisse: /home/scripts/071-waam-n1-fracture-2d/results/run_fracture_simulation_long_sgauss_graphs.txt
+            /home/scripts/071-waam-n1-fracture-2d/results/run_fracture_simulation_long_sgauss_restart1.xdmf
+
+=== Auswertung ===
+
+=== Gc_eff (Mittel von J_x im quasistationaeren Fenster) ===
+tag             Richtung                s(x)          Gc_eff    /Gc /Vorlauf   K_eff  Streu  Patch
+--------------------------------------------------------------------------------------------------
+long_sgauss     in Aufbaurichtung       1 + 0.50*np.exp(-((x-1050.)/350.)**2)  11.9438  1.194    1.072    48.9  0.080    73%
+  "/Vorlauf" = Gc_eff geteilt durch das J-Plateau im homogenen Vorlauf DESSELBEN Laufs
+  (systematischer Diskretisierungsfehler kuerzt sich heraus - das ist die belastbarste Zahl).
+  Gc_eff in GPa*um = kJ/m^2, K_eff in MPa*sqrt(m); "Patch" = von der Rissspitze durchlaufener
+  Anteil der Mikrostruktur, (!) = < 50 % und damit nicht repraesentativ. > 100 % heisst, der Riss
+  hat den Patch verlassen; in Gc_eff geht nur der Abschnitt INNERHALB des Patches ein.
+geschrieben: /home/scripts/071-waam-n1-fracture-2d/results/fig_J_vs_crack_tip.png
+geschrieben: /home/scripts/071-waam-n1-fracture-2d/results/gc_eff_summary.json

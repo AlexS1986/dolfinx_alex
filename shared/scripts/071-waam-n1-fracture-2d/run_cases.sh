@@ -9,7 +9,9 @@
 #     "cd /home/scripts/071-waam-n1-fracture-2d && NP=10 bash run_cases.sh"
 #
 # Subsets:  CASES="long_s1 trans_s1" bash run_cases.sh
-# Knobs:    NP, EPSILON, GC, K_SCALE, STEPS (0 = unlimited), OUT
+# Knobs:    NP, EPSILON, GC, K_SCALE, STEPS (0 = unlimited), OUT, CKPT (checkpoint
+#           interval in steps), RESTART=1 (continue from results/ckpt_<tag>/,
+#           same NP!), EXTRA (further run_fracture_simulation.py flags)
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -25,6 +27,10 @@ GC="${GC:-10.0}"
 K_SCALE="${K_SCALE:-1.05}"
 STEPS="${STEPS:-0}"
 PPI="${PPI:-50}"
+CKPT="${CKPT:-50}"
+RESTART="${RESTART:-0}"
+RESTART_H5="${RESTART_H5:-}"   # RESTART_H5=1: continue from results/run_fracture_simulation_<tag>.h5
+EXTRA="${EXTRA:-}"
 
 # --- Netzaufloesung -----------------------------------------------------------
 PRESET="${PRESET:-resolved}"
@@ -98,7 +104,15 @@ for case_name in ${CASES}; do
             --name "${MESH_NAME}" --outdir "${OUT}"
     fi
 
-    echo "=== ${case_name}   micro=${MICRO}  s(x)=${SFUN}  ${ROT}"
+    RESTARTFLAG=""
+    if [ "${RESTART_H5}" = "1" ]; then
+        [ -f "${OUT}/run_fracture_simulation_${case_name}.h5" ] || { echo "RESTART_H5=1 but no ${OUT}/run_fracture_simulation_${case_name}.h5"; exit 1; }
+        RESTARTFLAG="--restart_from_xdmf ${OUT}/run_fracture_simulation_${case_name}.h5"
+    elif [ "${RESTART}" = "1" ]; then
+        [ -d "${OUT}/ckpt_${case_name}" ] || { echo "RESTART=1 but no ${OUT}/ckpt_${case_name}"; exit 1; }
+        RESTARTFLAG="--restart"
+    fi
+    echo "=== ${case_name}   micro=${MICRO}  s(x)=${SFUN}  ${ROT} ${RESTARTFLAG}"
     "${MPIEXEC_BIN}" -np "${NP}" "${PYTHON_BIN}" run_fracture_simulation.py \
         --mesh_file "${OUT}/${MESH_NAME}.xdmf" \
         --micro "${MICRO}" ${ROT} \
@@ -106,6 +120,7 @@ for case_name in ${CASES}; do
         --tag "${case_name}" \
         --epsilon "${EPSILON}" --Gc "${GC}" --K_scale "${K_SCALE}" \
         --max_steps "${STEPS}" --postprocessing_interval "${PPI}" \
+        --checkpoint_interval "${CKPT}" ${RESTARTFLAG} ${EXTRA} \
         --outdir "${OUT}"
 done
 

@@ -607,9 +607,6 @@ def apply_default_ksp_options(ksp, comm=MPI.COMM_WORLD):
     return applied
 
 
-_NEWTON_SETTINGS_PRINTED = False
-
-
 def get_solver(w, comm, max_iters, Res, dResdw, bcs):
     if dResdw is not None:
         problem = NonlinearProblem(Res, w, bcs, dResdw)
@@ -620,34 +617,6 @@ def get_solver(w, comm, max_iters, Res, dResdw, bcs):
     solver = NewtonSolver(comm, problem)
     solver.report = True
     solver.max_it = max_iters
-    # 05.09.2026: Newton-Parameter per Umgebung ueberschreibbar (Studie 015:
-    # max_it 8 reichte im plastischen Bereich nicht - gesunde Schritte brauchen
-    # 5-6 Iterationen, "maximum number of iterations reached" fuehrte zu
-    # dt-Halbierungen bis dt_min, obwohl ein kleinerer Schritt nichts hilft).
-    # Ohne gesetzte Variablen bleibt alles beim bisherigen Verhalten.
-    #   NEWTON_MAX_IT       int    (Default: max_iters-Argument, i. d. R. 8)
-    #   NEWTON_RTOL         float  (dolfinx-Default 1e-9)
-    #   NEWTON_ATOL         float  (dolfinx-Default 1e-10)
-    #   NEWTON_CONVERGENCE  residual | incremental (dolfinx-Default residual)
-    #   NEWTON_RELAXATION   float in (0,1] (dolfinx-Default 1.0)
-    _env = os.environ
-    if _env.get("NEWTON_MAX_IT"):
-        solver.max_it = int(_env["NEWTON_MAX_IT"])
-    if _env.get("NEWTON_RTOL"):
-        solver.rtol = float(_env["NEWTON_RTOL"])
-    if _env.get("NEWTON_ATOL"):
-        solver.atol = float(_env["NEWTON_ATOL"])
-    if _env.get("NEWTON_CONVERGENCE"):
-        solver.convergence_criterion = _env["NEWTON_CONVERGENCE"]
-    if _env.get("NEWTON_RELAXATION"):
-        solver.relaxation_parameter = float(_env["NEWTON_RELAXATION"])
-    global _NEWTON_SETTINGS_PRINTED
-    if comm.Get_rank() == 0 and not _NEWTON_SETTINGS_PRINTED:
-        print(f"Newton settings: max_it={solver.max_it} rtol={solver.rtol:g} atol={solver.atol:g} "
-              f"criterion={solver.convergence_criterion} relaxation={solver.relaxation_parameter:g}"
-              + ("  (aus Umgebung: " + ", ".join(k for k in ("NEWTON_MAX_IT","NEWTON_RTOL","NEWTON_ATOL","NEWTON_CONVERGENCE","NEWTON_RELAXATION") if _env.get(k)) + ")"
-                 if any(_env.get(k) for k in ("NEWTON_MAX_IT","NEWTON_RTOL","NEWTON_ATOL","NEWTON_CONVERGENCE","NEWTON_RELAXATION")) else "  (Defaults)"))
-        _NEWTON_SETTINGS_PRINTED = True
     # MUMPS-Workspace-Defaults (siehe DEFAULT_KSP_OPTIONS oben) + globale
     # PETSc-Optionen mit dem Prefix des NewtonSolver sicher uebernehmen.
     apply_default_ksp_options(solver.krylov_solver, comm)

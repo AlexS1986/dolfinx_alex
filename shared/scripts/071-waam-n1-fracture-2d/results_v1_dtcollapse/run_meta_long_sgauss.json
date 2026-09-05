@@ -1,9 +1,9 @@
 {
-  "tag": "trans_sgauss",
-  "mesh_file": "/home/scripts/071-waam-n1-fracture-2d/results/mesh_micro_trans_resolved.xdmf",
-  "micro": "micro_trans.npz",
+  "tag": "long_sgauss",
+  "mesh_file": "/home/scripts/071-waam-n1-fracture-2d/results/mesh_micro_long_resolved.xdmf",
+  "micro": "micro_long.npz",
   "sfun": "1 + 0.50*np.exp(-((x-1050.)/350.)**2)",
-  "rotate_ccw90": true,
+  "rotate_ccw90": false,
   "Gc_GPa_um": 10.0,
   "epsilon_um": 12.0,
   "eta": 0.0001,
@@ -27,35 +27,25 @@
   "s_degree": 1,
   "quad_degree": null,
   "min_iters": 5,
-  "max_iters": 12,
-  "newton_rtol": 1e-09,
-  "newton_atol": null,
-  "newton_atol_rel": 1e-08,
-  "newton_relax": 1.0,
-  "solver": "newton",
-  "dt_regrow_steps": 5,
-  "checkpoint_interval": 50,
-  "restart": false,
-  "restart_from_xdmf": "/home/scripts/071-waam-n1-fracture-2d/results/run_fracture_simulation_trans_sgauss.h5",
-  "xdmf_file": "run_fracture_simulation_trans_sgauss_restart1.xdmf",
+  "max_iters": 8,
   "max_steps": 0,
   "postprocessing_interval": 50,
-  "stop_reason": "specimen separated completely",
-  "v_crack": 123.58086,
-  "a0_um": 171.11196,
-  "crack_tip_x0_um": -114.07463999999999,
+  "stop_reason": "time step dt=7.404e-15 below 1.0e-14",
+  "v_crack": 121.608825,
+  "a0_um": 168.38144999999997,
+  "crack_tip_x0_um": -112.2543,
   "separation_frac": 0.95,
-  "k_start_x_um": -285.1866,
-  "tip_setback_um": 114.07464,
+  "k_start_x_um": -280.63575,
+  "tip_setback_um": 112.2543,
   "patch_x0_um": 0.0,
-  "Tend": 60.0,
-  "dt_start": 0.0001602189853671515,
-  "dt_max": 0.0320437970734303,
+  "Tend": 60.00000000000001,
+  "dt_start": 0.00016281713107580803,
+  "dt_max": 0.0325634262151616,
   "domain_um": [
-    -285.1866,
-    -549.473,
-    2186.4306,
-    549.473
+    -280.63575,
+    -886.573,
+    2151.54075,
+    886.573
   ],
   "graph_columns": [
     "t",
@@ -76,12 +66,15 @@
     "s_min"
   ],
   "mpi_ranks": 10,
-  "started": "2026-09-03T11:29:53",
+  "started": "2026-09-01T15:51:34",
   "microstructure": {
-    "n_distinct_grain_tensors": 5553,
+    "n_distinct_grain_tensors": 7641,
     "grains_per_material_crystal": {
-      "trans/bcc": 3309,
-      "trans/fcc": 2244
+      "17-4PH/bcc": 3620,
+      "17-4PH/fcc": 2151,
+      "316L/fcc": 7,
+      "trans/bcc": 957,
+      "trans/fcc": 906
     },
     "region_material": {
       "0": "17-4PH",
@@ -134,29 +127,29 @@
     },
     "plane_state": "stress",
     "E_x_range_GPa": [
-      97.39233278141218,
-      419.02296285098805
+      94.67329775130628,
+      432.5262900782089
     ],
     "patch_grid_ny_nx": [
-      163,
-      564
+      263,
+      555
     ],
-    "patch_Lx_um": 1901.244,
-    "patch_Ly_um": 549.473,
-    "rotated_ccw90": true
+    "patch_Lx_um": 1870.905,
+    "patch_Ly_um": 886.573,
+    "rotated_ccw90": false
   },
   "roi_um": [
-    450.0,
-    700.0,
-    1000.0,
-    2600.0
+    30.0,
+    1339.0,
+    1900.0,
+    2225.0
   ],
   "zones_um": [
-    450.0,
-    1000.0
+    667.0,
+    1495.0
   ],
-  "finished": "2026-09-03T13:28:01",
-  "t_reached": 20.178660886610007,
-  "successful_steps": 3785,
-  "dt_final": 0.0320437970734303
+  "finished": "2026-09-02T01:38:44",
+  "t_reached": 13.239558966012558,
+  "successful_steps": 2476,
+  "dt_final": 7.404065903565789e-15
 }
