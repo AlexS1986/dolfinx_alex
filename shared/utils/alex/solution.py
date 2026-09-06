@@ -234,6 +234,15 @@ def solve_with_newton_adaptive_time_stepping(domain: dlfx.mesh.Mesh,
     # time stepping
     # max_iters = 8
     # min_iters = 4
+    # 05.09.2026: dt waechst nur, wenn ein Schritt mit weniger als min_iters
+    # Iterationen konvergiert. Im plastischen Bereich (5-6 Iterationen) wird dt
+    # daher nach jeder Verwerfung dauerhaft kleiner ("Kriecher"). Per Umgebung:
+    #   NEWTON_MIN_ITERS  (z. B. 8: dt darf wieder wachsen, solange < 8 Iterationen)
+    #   NEWTON_MAX_IT     wird in get_solver ausgewertet (Default max_iters)
+    if os.environ.get("NEWTON_MIN_ITERS"):
+        min_iters = int(os.environ["NEWTON_MIN_ITERS"])
+        if rank == 0 and print_bool:
+            print(f"Time stepping: dt scale-up when iterations < {min_iters} (NEWTON_MIN_ITERS)")
     dt_scale_down = 0.5
     dt_scale_up = 2.0
     
