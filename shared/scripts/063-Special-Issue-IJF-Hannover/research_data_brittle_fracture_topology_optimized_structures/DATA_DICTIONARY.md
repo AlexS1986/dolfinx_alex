@@ -44,6 +44,20 @@ Columns 1, 2, 4, 5, and 6 are the principal columns consumed by
 `09_evaluation_260504_parameter_space.py`. The remaining columns are retained
 for provenance and energy-balance diagnostics.
 
+Runs made with `000_template/01_phasefield_dcb_260504_folder.py` from 2026-09-30 on (not the archived
+publication campaigns) append four columns:
+
+| Column (0-based) | Quantity |
+|---:|---|
+| 14 | Vertical reaction force on the left strip from the assembled residual (nodal reaction forces) |
+| 15 | Same for the right strip |
+| 16 | Work increment of the residual-based total reaction, trapezoidal in `u_y` |
+| 17 | Accumulated work of the residual-based total reaction |
+
+Columns 2 and 7 are traction integrals over the strip facets (left and right strip). They are 24-35 % below
+the energy-consistent reaction of columns 14 and 15; column 4 (work from the strip tractions) is low by the
+same factor. See `MOBILITY_STUDY_FINDINGS.md`, section 8, and `13_test_reaction_force.py`.
+
 ## Volume metadata
 
 `vol_*.json` contains:
