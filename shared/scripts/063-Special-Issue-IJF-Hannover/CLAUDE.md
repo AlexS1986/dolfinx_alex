@@ -465,3 +465,14 @@ Not yet committed/pushed to Overleaf (Alex). German email draft to Ján given in
 - Fig. 18(c): vertical axis limited to 3 Nmm/mm (15_manuscript_figures_M1e5.py patched: `ax_e.set_ylim(0.0, 3.0)`); caption notes the limit. Figure regenerated in the container (device LaTeX lacks cm-super for matplotlib usetex). Do not copy the regenerated Mobility figure from a run without --reference-root/--mobility-root.
 - Table 2: arraystretch 1.3 and TODO (Hannover) for the unit of the compliance values.
 - Letter: summary point 2 and the Fig. 18a / mobility answers refer to Appendix A, Fig. A1; summary point 5 notes the restructuring and that minor wording changes are marked but not quoted.
+- Abstract shortened to 245 words (journal limit 150–250, 4–6 keywords; 5 keywords present). Cuts: first sentence, "In this work", benchmark/gradient-scale sentences merged, semicolon sentence rewritten, "peak reaction force, and work up to peak load" → "peak load". `\mycomment` on the word limit removed. Letter point 5 mentions the shortening.
+
+### 2026-10-07: third annotation round (annotated main_revised_clean.pdf in the Overleaf folder) + sequential-reading check
+- Intro: "unphysical crack growth", "predictions of crack nucleation", "crack surface density"; roadmap no longer mentions the mobility (undefined at that point).
+- Sec. 2.1 (Lamé paragraph, ours): "material design variable", "modulus of the cheapest grade". Rest of 2.1/3.1 still says "porosity" -> Hannover.
+- Sec. 2.2: "beta_s is varied in Section 3 to study its influence"; "spectral split introduced below" -> "spectral split"; G_c paragraph refers to Eq. (eq:E_phi), not eq:E_eff.
+- Sec. 3.2.1: exception sentence (E_min, 0.0284 mm) removed (not visible anywhere; the letter keeps the caveat); "mean" bracket removed; W: trapezoidal formula is back as Eq. (eq:total_boundary_work_trapezoidal), "over the time increments n"; strip equation ends with a period.
+- Sec. 3.2.2: "Figs. 13–16"; beta_s bold in the captions of Figs. 13–16 (\boldsymbol, marked with \changed); redundant Pi_tot sentence deleted.
+- Figure placement: Figs. 9–11 at 0.72\textwidth, Fig. 12 at 0.85\textwidth, Fig. 12 environment moved before the field discussion, \FloatBarrier before 3.2.2 -> Figs. 9–12 on the pages of their text.
+- Sec. 3.3 / conclusion: statements on the maximum load (24–40 % above E_max, "but not the maximum load") removed because the data are no longer reported; "(within 2.4 %)" bracket rewritten; "Figs. 21–24".
+- Letter: anchors updated (W equation, Fig. 18 caption, Lamé wording). 38 pages. Check PDFs: review_feedback/*_2026-10-07.pdf.
