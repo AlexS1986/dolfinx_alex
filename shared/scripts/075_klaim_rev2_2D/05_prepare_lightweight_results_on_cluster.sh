@@ -16,7 +16,7 @@ rm -rf "$TARGET_DIR"
 mkdir -p "$TARGET_DIR"
 cd "$SOURCE_DIR"
 
-find . -type d -exec mkdir -p "$TARGET_DIR/{}" \;
+find . -type d -not -path '*/.cache*' -exec mkdir -p "$TARGET_DIR/{}" \;
 find . -type f \( -name parameters.txt -o -name 'run_simulation_graphs*.txt' -o -name 'run_simulation_log.txt' \
     -o -name 'run_simulation_events.txt' -o -name 'effective_stiffness_matrix.txt' -o -name case.env -o -name job_script.sh \
     -o -name '*.out.*' -o -name '*.err.*' -o -name graphs.png -o -name 'run_simulation_events.xdmf' -o -name 'run_simulation_events.h5' \) \

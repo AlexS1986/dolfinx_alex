@@ -265,8 +265,10 @@ into the `_PAPER` folders. The `alex`/`ronny` packages live in `shared/utils/` (
   067 cluster scripts; adapt SBATCH paths; keep `run_simulation.py` physics identical to the paper runs unless the
   change is the point of the study; only *add* output columns/fields.
 * Revision-2 simulations: **only** in `075_klaim_rev2_2D` / `076_klaim_rev2_3D` (cases are added as lines in
-  `cases_*.txt`, never by editing the template per case). Results come back as `results/<case>/…` via scripts 05/06.
+  `cases_*.list`, never by editing the template per case). Results come back as `results/<case>/…` via scripts 05/06.
 * No dolfinx is available on the Mac sandbox or in the cloud container: scripts in 075/076 were desk-checked only —
   the first thing to do on the cluster is `00_scaling_test.sh` (smoke test + core-count scaling, see
   `075_klaim_rev2_2D/INSTRUCTIONS_cluster.md`), then `scaling_report.py` decides PROCESSOR_NUMBER/TIME in `02_create_jobs.sh`.
+* **JIT cache race on the cluster**: many jobs starting together → `Failed just-in-time compilation of form: Compilation failed on root node`
+  (shared `$HOME/.cache/fenics`). 075/076 job templates set `XDG_CACHE_HOME=$working_directory/.cache`; any new job script must do the same.
 * Record decisions and new data locations in this file.

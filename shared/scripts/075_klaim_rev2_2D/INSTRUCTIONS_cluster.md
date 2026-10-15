@@ -44,6 +44,11 @@ Also check once that the container's `alex` is the same as on the Mac (`cubic_de
 copy): `apptainer exec $HOME/dolfinx_alex/alex-dolfinx.sif python3 -c "import alex.phasefield as pf; print(pf.cubic_degradation)"`
 run from `$HOME/dolfinx_alex/shared` with the usual `--bind $HOME/dolfinx_alex/shared:/home`.
 
+Known pitfall (seen 2026-10-15, 48-core test): `RuntimeError: Failed just-in-time compilation of form: Compilation failed
+on root node` right after the mesh info — several jobs starting in the same minute compiled the same forms into the shared
+`$HOME/.cache/fenics`. The job template therefore sets `XDG_CACHE_HOME=$working_directory/.cache` (private JIT cache per
+job). A job that failed this way is simply resubmitted (`rm` its `*.out.*`/`*.err.*`, then `./03_submit_all.sh --match <name>`).
+
 When the test jobs are finished:
 
 ```bash

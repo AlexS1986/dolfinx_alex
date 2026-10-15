@@ -17,6 +17,11 @@ working_folder_name="{FOLDER_NAME}"
 working_directory="$HPC_SCRATCH/{PROJECT_NAME}/$working_folder_name"
 container="$HOME/dolfinx_alex/alex-dolfinx.sif"
 bindpath="$HOME/dolfinx_alex/shared:/home,$working_directory:/work"
+# private JIT cache per job: many jobs compiling the same forms into the shared $HOME/.cache/fenics at the
+# same time make dolfinx fail with "Failed just-in-time compilation of form: Compilation failed on root node"
+export XDG_CACHE_HOME="$working_directory/.cache"
+export APPTAINERENV_XDG_CACHE_HOME="$XDG_CACHE_HOME"
+mkdir -p "$XDG_CACHE_HOME"
 
 # case parameters
 WSTEG={WSTEG}
