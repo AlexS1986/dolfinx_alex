@@ -1,0 +1,69 @@
+# KLAIM 2025 revision 2 -- 2D case list (one job per line). Lines starting with # are ignored.
+# columns: name  wsteg  material  gc  sig_y  hard  embedding  nrows  crack_factor  geometry
+#   name         : unique job/folder name (letters, digits, _ . -)
+#   wsteg        : wall width w_s / L
+#   material     : vonmises | elastic
+#   gc           : J_c / J_c^0 (1.0 for [vM] and [Eq Jc], 0.5679 for [Eq sigma*])
+#   sig_y, hard  : yield stress / hardening modulus of the porous region (ignored for elastic)
+#   embedding    : isotropic | cubic   (constitutive law of the homogeneous embedding)
+#   nrows        : number of rows of unit cells (3 = paper)
+#   crack_factor : initial crack length = crack_factor * w_c   (1.0 = paper: tip at the left edge of the porous block)
+#   geometry     : porous | strip  (strip = no pores, homogeneous calibration of J_c^num, Fig. 3)
+#
+# ---------------------------------------------------------------- S1: paper sweeps (3 parameter sets x 11 wall widths)
+S1_vM_ws0.25      0.25   vonmises 1.0    1.0  0.2222222 isotropic 3 1.0 porous
+S1_vM_ws0.375     0.375  vonmises 1.0    1.0  0.2222222 isotropic 3 1.0 porous
+S1_vM_ws0.4       0.4    vonmises 1.0    1.0  0.2222222 isotropic 3 1.0 porous
+S1_vM_ws0.5       0.5    vonmises 1.0    1.0  0.2222222 isotropic 3 1.0 porous
+S1_vM_ws0.6       0.6    vonmises 1.0    1.0  0.2222222 isotropic 3 1.0 porous
+S1_vM_ws0.75      0.75   vonmises 1.0    1.0  0.2222222 isotropic 3 1.0 porous
+S1_vM_ws1.0       1.0    vonmises 1.0    1.0  0.2222222 isotropic 3 1.0 porous
+S1_vM_ws1.4       1.4    vonmises 1.0    1.0  0.2222222 isotropic 3 1.0 porous
+S1_vM_ws2.0       2.0    vonmises 1.0    1.0  0.2222222 isotropic 3 1.0 porous
+S1_vM_ws3.0       3.0    vonmises 1.0    1.0  0.2222222 isotropic 3 1.0 porous
+S1_vM_ws4.0       4.0    vonmises 1.0    1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqJc_ws0.25    0.25   elastic  1.0    1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqJc_ws0.375   0.375  elastic  1.0    1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqJc_ws0.4     0.4    elastic  1.0    1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqJc_ws0.5     0.5    elastic  1.0    1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqJc_ws0.6     0.6    elastic  1.0    1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqJc_ws0.75    0.75   elastic  1.0    1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqJc_ws1.0     1.0    elastic  1.0    1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqJc_ws1.4     1.4    elastic  1.0    1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqJc_ws2.0     2.0    elastic  1.0    1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqJc_ws3.0     3.0    elastic  1.0    1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqJc_ws4.0     4.0    elastic  1.0    1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqSig_ws0.25   0.25   elastic  0.5679 1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqSig_ws0.375  0.375  elastic  0.5679 1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqSig_ws0.4    0.4    elastic  0.5679 1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqSig_ws0.5    0.5    elastic  0.5679 1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqSig_ws0.6    0.6    elastic  0.5679 1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqSig_ws0.75   0.75   elastic  0.5679 1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqSig_ws1.0    1.0    elastic  0.5679 1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqSig_ws1.4    1.4    elastic  0.5679 1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqSig_ws2.0    2.0    elastic  0.5679 1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqSig_ws3.0    3.0    elastic  0.5679 1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqSig_ws4.0    4.0    elastic  0.5679 1.0  0.2222222 isotropic 3 1.0 porous
+# ---------------------------------------------------------------- S2: homogeneous calibration of J_c^num (Fig. 3, replaces 062/049)
+S2_strip_vM       1.0    vonmises 1.0    1.0  0.2222222 isotropic 3 1.0 strip
+S2_strip_EqJc     1.0    elastic  1.0    1.0  0.2222222 isotropic 3 1.0 strip
+S2_strip_EqSig    1.0    elastic  0.5679 1.0  0.2222222 isotropic 3 1.0 strip
+# ---------------------------------------------------------------- S3: cubic (non-isotropic) embedding, R1 major point 4
+S3_cubic_vM_ws0.375  0.375 vonmises 1.0  1.0  0.2222222 cubic     3 1.0 porous
+S3_cubic_vM_ws1.0    1.0   vonmises 1.0  1.0  0.2222222 cubic     3 1.0 porous
+S3_cubic_vM_ws4.0    4.0   vonmises 1.0  1.0  0.2222222 cubic     3 1.0 porous
+# ---------------------------------------------------------------- S4: sensitivity w.r.t. yield stress and hardening, R1 major point 3
+S4_sigy0.75_ws0.375  0.375 vonmises 1.0  0.75 0.2222222 isotropic 3 1.0 porous
+S4_sigy1.5_ws0.375   0.375 vonmises 1.0  1.5  0.2222222 isotropic 3 1.0 porous
+S4_H0.11_ws0.375     0.375 vonmises 1.0  1.0  0.1111111 isotropic 3 1.0 porous
+S4_H0.44_ws0.375     0.375 vonmises 1.0  1.0  0.4444444 isotropic 3 1.0 porous
+S4_sigy0.75_ws1.0    1.0   vonmises 1.0  0.75 0.2222222 isotropic 3 1.0 porous
+S4_sigy1.5_ws1.0     1.0   vonmises 1.0  1.5  0.2222222 isotropic 3 1.0 porous
+S4_H0.11_ws1.0       1.0   vonmises 1.0  1.0  0.1111111 isotropic 3 1.0 porous
+S4_H0.44_ws1.0       1.0   vonmises 1.0  1.0  0.4444444 isotropic 3 1.0 porous
+# ---------------------------------------------------------------- S5: representativity probes (initial crack position, number of pore rows), R1 major point 2
+S5_crack1.5_vM_ws1.0   1.0   vonmises 1.0  1.0  0.2222222 isotropic 3 1.5 porous
+S5_crack2.0_vM_ws1.0   1.0   vonmises 1.0  1.0  0.2222222 isotropic 3 2.0 porous
+S5_rows5_vM_ws1.0      1.0   vonmises 1.0  1.0  0.2222222 isotropic 5 1.0 porous
+S5_rows5_vM_ws0.375    0.375 vonmises 1.0  1.0  0.2222222 isotropic 5 1.0 porous
+S5_rows5_EqSig_ws1.0   1.0   elastic  0.5679 1.0 0.2222222 isotropic 5 1.0 porous

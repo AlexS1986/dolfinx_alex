@@ -8,8 +8,8 @@ All commands on the **cluster login node** are run inside the project folder
 ```bash
 cd ~/Work/Hypo/Hypo/Simulation/dolfinx_alex/shared          # git root is shared/ (contains utils/alex and scripts/)
 rm -rf scripts/046_plasticity/_rev2_staging scripts/046_plasticity/revision2_scratch/*.png   # temporary files from the audit session
-git add scripts/075_klaim_rev2_2D scripts/076_klaim_rev2_3D scripts/046_plasticity/CLAUDE.md scripts/046_plasticity/KLAIM_2025/*.md
-git status --short | grep -v "^??"                           # make sure no unintended changes (e.g. the manuscript tex) go in unless wanted
+git add scripts/075_klaim_rev2_2D scripts/076_klaim_rev2_3D scripts/046_plasticity/CLAUDE.md scripts/046_plasticity/KLAIM_2025/*.md scripts/046_plasticity/KLAIM_2025/revision_2
+git status --short | grep -v "^??"                           # the submitted manuscript tex must NOT appear here (it is unchanged)
 git commit -m "KLAIM rev2: 2D/3D rerun studies (075/076), instrumented outputs, cubic embedding, sensitivity, representativity"
 git push
 # on the cluster

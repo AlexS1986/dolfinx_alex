@@ -1,12 +1,12 @@
 #!/bin/bash
-# Create one simulation folder per case of cases_2D.txt under $HPC_SCRATCH/<project>/ and copy the template.
+# Create one simulation folder per case of cases_2D.list under $HPC_SCRATCH/<project>/ and copy the template.
 # Usage: ./01_create_directories.sh [cases_file] [--match TEXT] [--dry-run]
 set -euo pipefail
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 PROJECT_NAME=$(basename "$SCRIPT_DIR")
 TEMPLATE_FOLDER="$SCRIPT_DIR/000_template"
-CASES_FILE="$SCRIPT_DIR/cases_2D.txt"
+CASES_FILE="$SCRIPT_DIR/cases_2D.list"
 MATCH_TEXT=""
 DRY_RUN=0
 

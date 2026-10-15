@@ -1,6 +1,6 @@
 # 076_klaim_rev2_3D — 3D simulations for revision 2 of the KLAIM 2025 paper
 
-Same workflow and scripts as `../075_klaim_rev2_2D` (read its README first); case list `cases_3D.txt`
+Same workflow and scripts as `../075_klaim_rev2_2D` (read its README first); case list `cases_3D.list`
 (10 jobs × 64 cores, 5000 MB/core, 7 d). Template = `061-plasticity-fracture-noll-3D/000_template` with:
 
 * `--eta` (default **1e-5**, old 3D runs used 1e-3), `--beta` (default **0.2**, old runs library default 0.1),

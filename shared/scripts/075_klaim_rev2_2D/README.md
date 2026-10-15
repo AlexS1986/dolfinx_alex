@@ -24,7 +24,7 @@ energy released in unstable crack jumps (kinetic energy in a dynamic model). `D_
 plastic work done by the actual (degraded) stress and `E_pl` the part of it that is still "stored" as crack driving
 force; their difference is plastic work in material that was fractured later.
 
-## Studies in `cases_2D.txt` (52 jobs × 32 cores, 7 d limit)
+## Studies in `cases_2D.list` (52 jobs × 32 cores, 7 d limit)
 
 | study | cases | purpose |
 |---|---|---|
