@@ -19,6 +19,9 @@ the new edits use `\replaced{old}{new}` where possible, equations were changed i
   (1 − f)·C_bulk (isotropic): the library's linear-displacement BC also constrained the pore surface in 2D (z = 0 selects
   every exterior facet). Fixed in the rerun template (`075_klaim_rev2_2D/000_template/run_effective_stiffness.py`); the
   3D unit cell and the homogeneous strip were correct. Sec. 4.1 must state the corrected values (and the Zener ratio).
+  Corrected values (µ0 = λ0 = 1, d = 1): w_s = 0.375 → λ_eff 0.241, µ_eff 0.376, Zener 0.890; w_s = 1.0 → λ_eff 0.520,
+  µ_eff 0.621, Zener 0.959 (old: λ_eff = µ_eff = 0.804); w_s = 4.0 → λ_eff 0.907, µ_eff 0.915, Zener 0.998. The near-unit
+  Zener ratio justifies the isotropic approximation of Sec. 4.1 (R1-M4); the full table comes from the S1 production runs.
 
 ## To be updated after the reruns (numbers that change because β = 0.2 is now used consistently)
 

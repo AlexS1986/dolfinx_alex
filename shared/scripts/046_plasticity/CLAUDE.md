@@ -215,6 +215,9 @@ into the `_PAPER` folders. The `alex`/`ronny` packages live in `shared/utils/` (
     homogeneous strip are not affected. Fixed in `075_klaim_rev2_2D/000_template/run_effective_stiffness.py` (outer
     edges only); the true 2D effective stiffness is lower and cubic (Zener ≠ 1) → the S3 study is now a real test.
     Goes into the letter's "Additional corrections by the authors".
+    Corrected values (cluster homtest 2026-10-15, µ0 = λ0 = 1, d = 1): w_s = 0.375: λ_eff 0.241, µ_eff 0.376, C11 1.087,
+    Zener 0.890; w_s = 1.0: λ_eff 0.520, µ_eff 0.621, C11 1.814, Zener 0.959 (Voigt was 2.411); w_s = 4.0: λ_eff 0.907,
+    µ_eff 0.915, C11 2.740, Zener 0.998. The full table comes with the S1 production runs (`effective_stiffness_table.csv`).
 7. Energy bookkeeping in the tables: for w_s=1 (reference state = after the initial relaxation of s, index argmin A)
    ΔW − ΔE_el − J_cΔA − ΔE_pl = 21 % of ΔW for vM, but 72 % (Eq J_c) and 84 % (Eq σ*) for the elastic runs. The unrecorded
    part is mainly the viscous (Allen–Cahn, 1/M) dissipation during unstable ligament snap-through (energy that would be
