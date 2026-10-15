@@ -10,7 +10,7 @@
 set -euo pipefail
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 PROJECT_NAME=$(basename "$SCRIPT_DIR")
-CASES_FILE="$SCRIPT_DIR/cases_$( [ "$PROJECT_NAME" = "076_klaim_rev2_3D" ] && echo 3D || echo 2D ).txt"
+CASES_FILE="$SCRIPT_DIR/cases_$( [ "$PROJECT_NAME" = "076_klaim_rev2_3D" ] && echo 3D || echo 2D ).list"
 CASE="${CASE:-$( [ "$PROJECT_NAME" = "076_klaim_rev2_3D" ] && echo S1_3D_vM_ws1.0 || echo S1_vM_ws1.0 )}"
 CORES="${CORES:-16 32 48}"
 STOP_FRACTION="${STOP_FRACTION:-0.20}"
