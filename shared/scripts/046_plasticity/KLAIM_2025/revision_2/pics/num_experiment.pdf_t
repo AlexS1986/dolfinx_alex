@@ -1,0 +1,24 @@
+\begin{picture}(0,0)%
+\includegraphics{pics/num_experiment.pdf}%
+\end{picture}%
+\setlength{\unitlength}{3947sp}%
+\begin{picture}(11359,5755)(9279,-8804)
+\put(20251,-6286){\makebox(0,0)[lb]{\smash{\fontsize{24}{28.8}\normalfont\rmfamily {\color[rgb]{0,0,0}$x$}%
+}}}
+\put(13951,-3586){\makebox(0,0)[lb]{\smash{\fontsize{24}{28.8}\normalfont\rmfamily {\color[rgb]{0,0,0}$y$}%
+}}}
+\put(16351,-5611){\makebox(0,0)[lb]{\smash{\fontsize{24}{28.8}\normalfont\rmfamily {\color[rgb]{0,0,0}$\varphi$}%
+}}}
+\put(15976,-4936){\makebox(0,0)[lb]{\smash{\fontsize{24}{28.8}\normalfont\rmfamily {\color[rgb]{0,0,0}$r$}%
+}}}
+\put(17626,-3811){\makebox(0,0)[lb]{\smash{\fontsize{24}{28.8}\normalfont\rmfamily {\color[rgb]{0,0,0}$\dot{x}^{\text{bc}}$}%
+}}}
+\put(17551,-8086){\makebox(0,0)[lb]{\smash{\fontsize{24}{28.8}\normalfont\rmfamily {\color[rgb]{0,0,0}$\dot{x}^{\text{bc}}$}%
+}}}
+\put(17671,-5131){\makebox(0,0)[lb]{\smash{\fontsize{24}{28.8}\normalfont\rmfamily {\color[rgb]{0,0,0}$\Omega$}%
+}}}
+\put(9601,-3511){\makebox(0,0)[lb]{\smash{\fontsize{24}{28.8}\normalfont\rmfamily {\color[rgb]{0,0,0}$F$}%
+}}}
+\put(9526,-8686){\makebox(0,0)[lb]{\smash{\fontsize{24}{28.8}\normalfont\rmfamily {\color[rgb]{0,0,0}$F$}%
+}}}
+\end{picture}%

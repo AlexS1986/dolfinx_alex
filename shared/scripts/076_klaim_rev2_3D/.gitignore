@@ -1,0 +1,4 @@
+results/
+results_local/
+evaluation_output/
+__pycache__/

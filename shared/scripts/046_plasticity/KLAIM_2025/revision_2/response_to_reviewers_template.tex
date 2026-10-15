@@ -1,0 +1,512 @@
+% Response to Reviewers -- round 2
+% Manuscript: Influence of J2-plasticity on the effective crack resistance of a simplified
+%             porous material in a numerical experiment
+% Journal: Computational Science and Engineering (Springer Nature), collection KLAIM 2025
+% Submission ID: 108f21b3-1ae0-46f3-912a-c62cdf4b765e
+% Decision: major revision, 10 September 2026; deadline 1 November 2026 (extended)
+%
+% The quoted manuscript changes in the "Related changes" blocks are generated from
+% manuscript_revised_template.tex by build_response_quotes.py (copy of 063/18_...):
+%     pdflatex manuscript_revised_template.tex   (twice, so that the .aux is current)
+%     python3 build_response_quotes.py manuscript_revised_template.tex manuscript_revised_template.aux response_to_reviewers_template.tex
+%     pdflatex response_to_reviewers_template.tex (twice)
+% Edit only the %@quote request lines and the text outside the %@generated blocks.
+% Every \mycomment{TODO}{...} is an open item; the clean letter must contain none.
+
+\documentclass[pdflatex,sn-mathphys-num]{sn-jnl}
+
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{amsthm}
+\usepackage{mathrsfs}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage[markup=underlined,authormarkup=none]{changes}
+\usepackage{nicefrac}
+\usepackage{xspace}
+
+\DeclareRobustCommand{\mathdefault}[1]{#1}
+\newcommand{\vMLabel}{[\textbf{vM}]\xspace}
+\newcommand{\EqJcLabel}{[\textbf{Eq$\boldsymbol{J_c}$}]\xspace}
+\newcommand{\EqSigmaStarLabel}{[\textbf{Eq$\boldsymbol{\sigma^*}$}]\xspace}
+\newcommand{\changed}[1]{\begingroup\color{blue}#1\endgroup}
+\newcommand{\mycomment}[2]{\textbf{\textcolor{red}{[#1: #2]}}}
+
+\newenvironment{reviewercomment}
+  {\par\noindent\textbf{Reviewer/editor comment.}\begin{quote}\itshape}
+  {\end{quote}}
+\newenvironment{response}
+  {\par\noindent\textbf{Response.}\ }
+  {\par}
+\newenvironment{relatedchanges}
+  {\par\noindent\textbf{Related changes in the manuscript.}\begin{itemize}}
+  {\end{itemize}}
+\newcommand{\msloc}[1]{\textit{#1:}\ }
+\newcommand{\relhead}[1]{\item[]\vspace*{0.2\baselineskip}#1}
+
+\title{Response to Reviewers (second revision)}
+
+\author*[1]{\fnm{Alexander} \sur{Schl\"uter}}
+\author[1]{\fnm{Ronjit} \sur{Medda}}
+\author[1]{\fnm{Ralf} \sur{M\"uller}}
+\affil*[1]{\orgdiv{Institut f\"ur Mechanik, FB Bau- und Umweltingenieurwissenschaften}, \orgname{TU Darmstadt},
+  \orgaddress{\street{Franziska-Braun-Stra{\ss}e 7}, \city{Darmstadt}, \postcode{64287}, \country{Germany}}}
+
+\begin{document}
+\maketitle
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.45\baselineskip}
+
+\section*{Notes on this document}
+
+The comments of the editor and the reviewers on the first revised version (v2.0, submitted 25 May 2026) are repeated
+in italics and are followed by our response. Below each response, the related changes in the manuscript are listed as
+bullets, one bullet per change, and quoted verbatim in the marked-up form of the revised manuscript: new text is
+\added{underlined}, removed text is \deleted{struck out}, and changes inside equations are shown in \changed{blue}.
+Each bullet starts with the location of the change in the revised manuscript. Equation, figure, table and reference
+numbers in the quotes refer to the marked-up revised manuscript. A change that answers several comments is quoted once
+and referred to elsewhere. All numerical results of the manuscript were recomputed for this revision (see the response
+to Reviewer~1, point~3, and the section ``Additional corrections by the authors'').
+
+\section*{Response to the Editor}
+
+\begin{reviewercomment}
+Ref: Submission ID 108f21b3-1ae0-46f3-912a-c62cdf4b765e. Decision: major revision. Deadline: 01 Oct 2026.
+
+Dear Dr Schl\"uter, your manuscript, ``Influence of J2-plasticity on the effective crack resistance of a simplified
+porous material in a numerical experiment'', has now been assessed. We invite you to revise your paper, carefully
+addressing the comments from the reviewers and the editor. Please ensure the results are accurately reported, any
+overstated conclusions are rewritten and the limitations of the work fully explained. When your revision is ready,
+please submit the updated manuscript and a point-by-point response. This will help us move to a swift decision.
+
+Kind regards, Mario Ohlberger, Editor, Computational Science and Engineering
+\end{reviewercomment}
+
+\begin{response}
+We thank the editor and the three reviewers for their assessment and their constructive comments. We have revised the
+manuscript accordingly and answer every comment point by point below. The main revisions are:
+\begin{enumerate}
+\item \mycomment{TODO}{introduction rewritten (problem $\to$ approaches and limitations $\to$ prior work $\to$ open questions), homogenization framing with Hill's RVE definition and the results of Braides et al.\ and Cagnetti et al.; term ``representative region'' dropped}
+\item \mycomment{TODO}{mechanism study: energy partition of the numerical experiment, dissipation per re-nucleation event, stress state in the ligament before re-nucleation (new Section~X / Figures~Y), sensitivity with respect to $\sigma_y$ and $H$, scaling argument for the linear elastic sets}
+\item \mycomment{TODO}{cubic symmetry of the effective stiffness quantified (Zener ratio) and the influence of the isotropic approximation of the embedding tested by simulations with the full cubic stiffness}
+\item all simulations recomputed with consistent parameters ($\beta = 0.2$, $\eta = 10^{-5}$ in two and three dimensions, linear elastic embedding); see ``Additional corrections by the authors''.
+\end{enumerate}
+\end{response}
+
+%==================================================================================================
+\section*{Reviewer 1}
+
+\begin{reviewercomment}
+Synopsis: The authors presents a study of the ``effective crack resistance'' of heterogeneous materials with pores where
+the ``matrix'' material is governed by J2-plasticity and a phase-field fracture approach is used.
+
+Evaluation: The topic is suited to CSE. The submitted version was significantly improved compared to the previous
+version. Yet, certain central issues remain unresolved (to be specified below). Therefore, I recommend a major revision.
+\end{reviewercomment}
+
+\begin{response}
+We thank the reviewer for the detailed second review and for acknowledging the improvements. We address the remaining
+central issues below.
+\end{response}
+
+\subsection*{Major points}
+
+\begin{reviewercomment}
+1. The revision addressed many issues raised in the first review. However, several corrections concern matters of
+notation, terminology, physical interpretation, and mathematical consistency that ideally should have been resolved
+prior to (initial) submission (see minor points). Also, the level of scholarship feels uneven. My previous comments
+forced the authors to introduce literature that arguably should have been there from the beginning. That gives the
+impression that the literature review was assembled around a preferred narrative rather than developed from a broad
+view of the field. This observation is supported by the low number of references.
+\end{reviewercomment}
+
+\begin{response}
+\mycomment{TODO}{answer: literature broadened in the rewritten introduction (homogenization of surface energies: Braides et al.\ 1996, Cagnetti et al.\ 2019; RVE: Hill 1963; numerical experiments for effective toughness: Hossain 2014, Hsueh 2018, Brach 2019, Lebihain 2021, Schneider 2020, Ernesti 2021/22, Michel \& Suquet 2022, Liu \& Shen 2025, Aranda \& Segurado 2025, Hao et al.\ 2026, \dots; ductile phase-field fracture: Miehe/Aldakheel 2016, Ambati 2015, Borden 2016, Kuhn 2016, Noll 2020, \dots; plasticity: Simo \& Hughes). Number of references $28 \to$ \dots. We also went through the whole manuscript once more for notation and consistency (see the additional corrections).}
+\end{response}
+
+\begin{relatedchanges}
+\relhead{\mycomment{TODO}{quotes of the rewritten introduction and the new references}}
+\end{relatedchanges}
+
+\begin{reviewercomment}
+2. Although the authors did change the manuscript to some extent, the understanding of homogenization still seems
+shaky. I still do not get the feeling that the authors have a clear conceptual framework connecting: homogenization,
+effective properties, fracture-process representations, RVE limits and the Hossain numerical experiment. For instance,
+the very first sentence of the introduction reads ``While homogenization techniques for elastic and plastic material
+properties are well established, the homogenization of fracture toughness remains a comparatively young field of
+research.'' There is no homogenization of fracture toughness!!!
+\begin{itemize}
+\item Homogenization is a process with well-defined input and output. Once you homogenize milk, it is homogeneous.
+Periodic/stochastic homogenization in linear elasticity works similarly. This is not true for fracture toughness.
+\item ``Representative'' is a quality that is earned and that can be assessed. For instance, Hill defined an RVE to be
+``the smallest material sample of a heterogeneous mixture that can be treated as a statistically uniform continuum''.
+The authors use the wording ``representative region'' although it is just a sample/snapshot and it is not clear that it
+is representative.
+\item The authors down-toned their claims of representativity of the strategy. However, the manuscript still reads as
+if this property would be automatic and the current work just did not study it. I firmly disagree! It remains entirely
+unclear whether the Hossain experiment would withstand a rigorous representativity study.
+\item A material property is a property of the material. In particular, it does not depend on specific choices like the
+boundary conditions. Quite generally, it is not clear that a microstructured material at the macroscopic scale can be
+described by such a coupled phase-field-plasticity model and what the parameters would look like.
+\end{itemize}
+\end{reviewercomment}
+
+\begin{response}
+\mycomment{TODO}{answer along the agreed line: (i) the first sentence and the introduction are rewritten; homogenization of the surface energy exists under assumptions (Braides et al.\ 1996, Cagnetti et al.\ 2019, discussed by Michel \& Suquet 2022) and is not what we do; (ii) ``representative region'' replaced by ``resolved porous region''/``specimen'' everywhere, Hill's definition quoted, and the quantity is consistently called the effective crack resistance \emph{of the numerical experiment}; (iii) representativity is not assumed: new probes (shifted initial crack, five instead of three pore rows, study S5) show by how much $J_{x,c}^{\text{eff}}$ changes, and the text states what would be required for a representativity study; (iv) we do not claim that the microstructured material is described by the coupled model at the macroscale; the macroscopic use of $J_{x,c}^{\text{eff}}$ is restricted to a crack-growth criterion of the type of eq.~(1) under the loading of the experiment.}
+\end{response}
+
+\begin{relatedchanges}
+\relhead{\mycomment{TODO}{quotes: first sentence, Sec.~2 framing, S5 results, conclusion}}
+\end{relatedchanges}
+
+\begin{reviewercomment}
+3. Results are often interpreted more strongly than justified, but there is no real mechanism study. No energy
+partition, no sensitivity study, no reduced model, no scaling argument, no asymptotic analysis, no attempt to isolate
+competing effects. So many conclusions are essentially post hoc physical interpretations of numerical observations.
+That is not necessarily wrong, but it is not especially rigorous.
+\end{reviewercomment}
+
+\begin{response}
+\mycomment{TODO}{answer: (a) energy partition of every simulation (exact balance $W = E_{\mathrm{el}} + E_{\mathrm{pl}} + E_{\mathrm{fr}} + D_{\mathrm{visc}}$, per re-nucleation event; the energy released in the unstable ligament failure is dissipated by the viscous regularisation and is the quantity that distinguishes the material laws); (b) stress state and plastic zone in the ligament immediately before re-nucleation (event snapshots) for the two regimes $w_s \lesssim 0.6L$ and $w_s \gtrsim 2L$; (c) sensitivity study $\sigma_y \in \{0.75, 1.5\}$, $H \in \{0.11, 0.44\}\mu_0$ at $w_s = 0.375L$ and $1.0L$ (study S4); (d) scaling argument: for the rate-independent linear elastic model $J_{x,c}^{\text{eff}} \propto J_c$ exactly, confirmed by \EqJcLabel vs.\ \EqSigmaStarLabel; (e) reduced one-dimensional ligament model for the nucleation regime (Sec.~3.6 extended). Numbers from 075/076 results.}
+\end{response}
+
+\begin{relatedchanges}
+\relhead{\mycomment{TODO}{quotes: new mechanism section, new figures (energy partition vs.\ $w_s$, event energies, ligament stress), sensitivity paragraph, scaling paragraph}}
+\end{relatedchanges}
+
+\begin{reviewercomment}
+4. ``The representative region is embedded within a surrounding matrix characterized by effective elastic properties,
+such as the effective Young's modulus $E^{\mathrm{eff}}$ and Poisson's ratio $\nu^{\mathrm{eff}}$ in the isotropic
+case.'' $\to$ This assumption assumes isotropy of the effective elastic behavior. Interestingly, \emph{none} of the
+considered examples in the manuscript leads to isotropic effective elastic properties. Both the 2d and the 3d porous
+microstructure are \emph{cubic}, not isotropic. If isotropic effective elastic properties are used although the
+microstructures possess only cubic symmetry, it is unclear whether the embedding problem is posed consistently. The
+authors should discuss the implications of this approximation and justify why it does not affect the reported
+conclusions. Also, embedding the heterogeneous material in a homogeneous material leads to additional discontinuities
+and notch effects due to the sharp corners. This issue is not discussed.
+\end{reviewercomment}
+
+\begin{response}
+\mycomment{TODO}{answer: the reviewer is right; the unit cells have square/cubic symmetry. The full effective stiffness is now reported (Table~X: $C_{11}, C_{12}, C_{33}$ resp.\ $C_{44}$ and the Zener ratio $A = 2C_{44}/(C_{11}-C_{12})$ for all $w_s$); the isotropic approximation used in the paper takes $\lambda^{\mathrm{eff}} = C_{12}$, $\mu^{\mathrm{eff}} = C_{44}$ and thus misrepresents $C_{11}$ by $x$\,\%. Simulations with the full cubic stiffness in the embedding (study S3, 2D: $w_s = 0.375L, 1.0L, 4.0L$; 3D: $w_s = 0.375L, 1.0L$) change $J_{x,c}^{\text{eff}}$ by $y$\,\%, which justifies the approximation for the conclusions drawn. Corner/notch effects: the corners of the resolved porous block are at least $w_c$ from the crack plane and $2w_c$ from the first and last pore; the J-integral is path independent in the homogeneous elastic embedding, and the fields in the embedding stay elastic (yield stress $\to\infty$ there, now stated); the stress concentration at the corners is visible but $\dots$ (quantify from the field output).}
+\end{response}
+
+\begin{relatedchanges}
+\relhead{\mycomment{TODO}{quotes: Sec.~2 and 4.1 (embedding, Zener ratio, Table), new paragraph with the S3 results}}
+\end{relatedchanges}
+
+\subsection*{Minor points}
+
+\begin{reviewercomment}
+0. Avoid the use of semicolons. Use (different, clear, legible) sentences.
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{all semicolons in running text replaced by separate sentences (grep for ';' outside math).}\end{response}
+
+\begin{reviewercomment}
+1. The introduction feels wrong. In the first line, it is claimed that the fracture toughness can be homogenized (which
+is not clear imho). The subsequent discussion appears unordered. The introduction should clearly introduce the overall
+problem (for heterogeneous materials, fracture toughness is required for engineering design), different approaches to
+tackle it, together with the limitations (ad-hoc models, bounds, Hossain's approaches). Then, it should discuss previous
+contributions to the area and open questions.
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{introduction restructured exactly in this order; see major point 1 and 2.}\end{response}
+
+\begin{reviewercomment}
+2. The sentence ``. In contrast to \dots'' is way too long and incomprehensible.
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{sentence split (introduction, paragraph on the previous Ramberg--Osgood study).}\end{response}
+
+\begin{reviewercomment}
+3. The title of section ``2 A Numerical Experiment to Determine the Effective Crack Resistance of Materials with Complex
+Microstructure'' suggests that the effective crack resistance is a material property.
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{section title changed, e.g.\ ``A numerical experiment for the crack resistance of a resolved porous region''.}\end{response}
+
+\begin{reviewercomment}
+4. equations are not words, e.g., ``by (1)'' $\to$ ``by eq. (1)''
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{all bare equation references prefixed with ``eq.''/``Eq.''.}\end{response}
+
+\begin{reviewercomment}
+5. ``representative region'' (see major point 2)
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{term removed everywhere; see major point 2.}\end{response}
+
+\begin{reviewercomment}
+6. ``Furthermore, the simulation must be based on physically consistent principles.'' The statement does not appear to
+convey actionable information and should either be clarified or removed.
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{sentence removed.}\end{response}
+
+\begin{reviewercomment}
+7. ``Only small strain assumptions are considered in this work.'' $\to$ ``Only small strains are considered in this work.''
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{done.}\end{response}
+
+\begin{reviewercomment}
+8. ``The recorded value is \dots'' $\to$ not a sentence. Rewrite for clarity.
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{sentence rewritten (Sec.~2, paragraph on the J-integral at the boundary).}\end{response}
+
+\begin{reviewercomment}
+9. ``The index c denotes the critical crack-resistance value obtained from this maximum,'' $\to$ ``The index c indicates
+that the crack-resistance value is obtained as a maximum, i.e., is \emph{critical}''
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{adopted.}\end{response}
+
+\begin{reviewercomment}
+10. ``Establishing such convergence, if it exists for a given class of microstructures and loading paths, would require
+a separate study.'' Convergence is a mathematical property, not an empirical observation. Please clarify what is meant
+here. $\to$ see major item 2
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{reworded: ``whether $J_{x,c}^{\text{eff}}$ becomes independent of the size of the resolved region and of the position of the initial crack'' instead of ``convergence''.}\end{response}
+
+\begin{reviewercomment}
+11. ``Independence from the initial microscopic crack configuration and adequate representation of fracture mechanisms
+can be ensured by selecting a sufficiently large representative region that contains an appropriate number of
+microstructural features.'' Is that so? $\to$ see major item 2
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{sentence removed; replaced by the statement of what was tested (S5) and what was not.}\end{response}
+
+\begin{reviewercomment}
+12. There is still text between section and subsection (3. vs. 3.1). I complained about this issue the last time already.
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{the introductory sentence of Section~3 moved into Section~3.1 (and checked for Sections 4 and 5).}\end{response}
+
+\begin{reviewercomment}
+13. comma missing at the end of eq. (13)
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{done.}\end{response}
+
+\begin{reviewercomment}
+14. ``serving as a residual stiffness parameter to avoid ill-conditioned tangents if the problem is solved using a Newton
+scheme.'' Well, this has nothing to do with the numerics. Rather, the model itself is severely ill-posed without
+positive eta.
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{reworded: $\eta > 0$ keeps the elastic problem well-posed in fully fractured regions (positive definite stiffness); the numerical remark removed.}\end{response}
+
+\begin{reviewercomment}
+15. ``no pointwise convergence statement for s is intended here,'' I understand what is meant, but the sentence itself
+does not make sense in its current form.
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{sentence rewritten.}\end{response}
+
+\begin{reviewercomment}
+16. ``The mobility parameter M arises from the introduction of a viscous regularization and facilitates the numerical
+solution of fracture problems under quasi-static loading conditions.'' This is reverse logic! The parameter M is
+introduced to write down the phase-field evolution eq. (19), not the other way around.
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{reworded: $M$ is the kinetic coefficient of the evolution equation; large $M$ approximates rate-independent evolution; the viscous dissipation $D_{\mathrm{visc}}$ is now also quantified (energy partition).}\end{response}
+
+\begin{reviewercomment}
+17. Eq. (21) appears late. The isotropy assumption on the stiffness should be stated earlier. Moreover, the shear and
+compression modulus should be introduced.
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{isotropy, $K$ and $\mu$ introduced with the elastic energy, eq.~(16).}\end{response}
+
+\begin{reviewercomment}
+18. ``Gateaux derivative'' $\to$ ``derivative''
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{done.}\end{response}
+
+\begin{reviewercomment}
+19. section 3.3: This is the proper order: first discretizaion, then assembling, then solver.
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{paragraph reordered.}\end{response}
+
+\begin{reviewercomment}
+20. ``satisfies $\Delta h \le \epsilon/2$''; inequalities are no words (see previous review)
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{reworded in words.}\end{response}
+
+\begin{reviewercomment}
+21. ``In the following chapters,''; there are no chapters, only sections or paragraphs
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{done.}\end{response}
+
+\begin{reviewercomment}
+22. ``crack nucleation in previously undamaged material can also be predicted using phase-field models.'' This is a
+strong statement. It is true that one can apply phase-field fracture to pristine setups. Whether the results are
+\emph{predictive}, is another matter entirely.
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{``predicted'' $\to$ ``modelled''; sentence qualified.}\end{response}
+
+\begin{reviewercomment}
+23. ``from (21), cf. [28].'' (see previous review)
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{``follows from eq.~(21); see [28]''.}\end{response}
+
+\begin{reviewercomment}
+24. ``Strictly speaking, these relations hold only in one dimension, but they provide good estimates for two- and
+three-dimensional scenarios,'' Evidence, references, or quantitative error estimates should be provided to support this
+claim.
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{quantify with the new ligament-stress output: maximum stress in the ligament at re-nucleation vs.\ the one-dimensional $\sigma^*$ for all $w_s$ (new figure/table); references Kuhn 2013, Schl\"uter 2018.}\end{response}
+
+\begin{reviewercomment}
+25. The plotted figures have low quality, e.g., Fig. 9. Also, the axis labels should start with an upper case.
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{all result figures regenerated from the new data as vector graphics (pgf), axis labels capitalised.}\end{response}
+
+\begin{reviewercomment}
+26. ``compared the results against'' $\to$ ``compared the results to/with''
+\end{reviewercomment}
+\begin{response}\mycomment{TODO}{done.}\end{response}
+
+%==================================================================================================
+\section*{Reviewer 2}
+
+\begin{reviewercomment}
+Revisions improved the manuscript.
+\end{reviewercomment}
+
+\begin{response}
+We thank the reviewer for the positive assessment.
+\end{response}
+
+%==================================================================================================
+\section*{Reviewer 3}
+
+\begin{reviewercomment}
+I thank the authors for their careful revisions. The scope and positioning of the manuscript are now clearer, and I
+consider that it can be accepted after the following minor points are addressed.
+\end{reviewercomment}
+
+\begin{response}
+We thank the reviewer for the positive assessment and for the three comments, which we address below.
+\end{response}
+
+\begin{reviewercomment}
+Comment 1: The main remaining weakness is the limited discussion of the mechanisms behind the numerical observations.
+The authors describe their simulations as numerical experiments, but experimental papers usually go beyond
+observations. The authors have the chance to have at hand much more observables (including energetic ones) than
+experimentally available.
+
+In particular, I think that the impact of plastic dissipation on the nucleation (small $w_s/L$ regime) and propagation
+(large $w_s/L$ regime) in porous materials need to be discussed more thoroughly. I do not request additional
+simulations. While it is quite intuitive to understand why bulk dissipation inhibits crack growth (large $w_s/L$
+regime), it is not clear why ``the ductile material law leads to a reduction in effective crack resistance below''. A
+focused discussion based on the stress distribution in the immediate vicinity of the crack tip/void wall where crack
+renucleate, and an energy partitioning, based on Eq. (14) would be sufficient.
+\end{reviewercomment}
+
+\begin{response}
+\mycomment{TODO}{same material as Reviewer 1, major point 3: energy partition based on eq.~(14) (now with the exact balance incl.\ the viscous term), stress/plastic-zone fields in the ligament immediately before re-nucleation for $w_s = 0.375L$ and $1.0L$ (vM vs.\ Eq$\sigma^*$), explanation of the small-$w_s$ regime (plastic zone spans the ligament, strain-driven nucleation at lower stress, the plastic work spent before nucleation is not available for the jump) vs.\ the large-$w_s$ regime (plastic dissipation ahead of the trapped tip delays re-nucleation).}
+\end{response}
+
+\begin{relatedchanges}
+\relhead{\mycomment{TODO}{quotes as for R1 major point 3}}
+\end{relatedchanges}
+
+\begin{reviewercomment}
+Comment 2: When the authors state ``Whether such a fracture toughness exists for heterogeneous materials and under which
+circumstances both concepts might coincide remains an open question of research'', they are not entirely correct.
+Braides et al. (1996, doi:10.1007/BF02198476) and more recently Cagnetti et al. (2019, doi:10.1007/s00205-019-01372-x)
+showed that, under some assumptions, the fracture energy, interpreted as a surface energy, could be homogenized. This
+is discussed in details by Michel and Suquet (2022, cited by the authors). As pointed by the authors, this is ``not
+established in general'' but results exist and should not be attributed to Schneider only.
+\end{reviewercomment}
+
+\begin{response}
+We thank the reviewer for the references. The statement is corrected: the homogenization of a surface energy of
+Griffith type is established for periodic and, under assumptions, for stochastic microstructures (Braides, Defranceschi
+and Vitali 1996; Cagnetti, Dal Maso, Scardia and Zeppieri 2019), and the variational definition used by Schneider builds
+on these results, as discussed by Michel and Suquet. The open question addressed in our work is a different one, namely
+whether the maximum driving force recorded in a crack-growth experiment with an elasto-plastic bulk material and
+unstable re-nucleation can be identified with such a homogenized surface energy. \mycomment{TODO}{quote the rewritten
+paragraph of the introduction and the two new bibliography entries.}
+\end{response}
+
+\begin{relatedchanges}
+\relhead{\mycomment{TODO}{quotes: introduction paragraph on the variational definition; bibliography}}
+\end{relatedchanges}
+
+\begin{reviewercomment}
+Comment 3: The definition of the different models vM, Eq$\sigma$ and Eq$J_c$ are now clear, and we understand their
+purpose. However (and in my opinion), to mirror the link between vM and Eq$\sigma$ and minimize finite-size effects,
+Eq$J_c$ could have an evaluated $J_c^{\mathrm{eff}}$ equal to that of vM, not merely setting $J_c^0$. Repeating the
+porous simulations is not necessary and a brief discussion of the expected effect would be enough.
+\end{reviewercomment}
+
+\begin{response}
+We agree that a linear elastic reference set whose numerical crack resistance $J_c^{\mathrm{num}}$ in the homogeneous
+strip equals that of the von~Mises set would be a third natural choice. Its effect can be predicted without
+simulations: for the rate-independent linear elastic phase-field model the only energy scale is $J_c$, so that all
+energies, and in particular $J_{x,c}^{\text{eff}}$, scale linearly with $J_c$ while the crack pattern is unchanged (the
+displacement field scales with $\sqrt{J_c}$). The two linear elastic sets of the manuscript confirm this: normalised by
+their own $J_c^{\mathrm{num}}$, \EqJcLabel and \EqSigmaStarLabel give the same curve $J_{x,c}^{\text{eff}}(w_s)$
+\mycomment{TODO}{insert the numbers from the new S1 runs; v2.0 data: both $\approx 1.9$--$2.0\,J_c^{\mathrm{num}}$ in
+the saturation regime}. A linear elastic set with $J_c^{\mathrm{num}} = J_c^{\mathrm{num,pl}}$ would therefore reach
+$J_{x,c}^{\text{eff}} \approx 1.9\,J_c^{\mathrm{num,pl}}$, i.e.\ it would be \emph{tougher} than the von~Mises set
+($\approx 1.25\,J_c^{\mathrm{num,pl}}$ \mycomment{TODO}{new value}) at large wall widths. This strengthens the
+conclusion that the von~Mises material does not simply behave like a linear elastic material with an increased crack
+resistance; the additional dissipation during re-nucleation is spent differently. A paragraph with this argument was
+added. \mycomment{TODO}{quote}
+\end{response}
+
+\begin{relatedchanges}
+\relhead{\mycomment{TODO}{quote: new paragraph at the end of Section~4.2}}
+\end{relatedchanges}
+
+%==================================================================================================
+\section*{Additional corrections by the authors}
+
+\begin{response}
+While preparing the new simulations we audited the simulation code against the manuscript and corrected the following
+inconsistencies. None of them changes the conclusions of the paper, but the quantitative results were recomputed with
+consistent parameters.
+\begin{enumerate}
+\item The fracture energy density, eq.~(18), was stated with the regularisation $(1-s)^2/(2\epsilon) + 2\epsilon|\nabla s|^2$,
+whereas the implemented crack surface density is $(1-s)^2/(4\epsilon) + \epsilon|\nabla s|^2$, which integrates to the
+crack length for the one-dimensional profile and is consistent with the evolution equation~(19) and the nucleation
+stress~(26) given in the manuscript. Eq.~(18) was corrected.
+\item The Kolosov constant in the surfing boundary condition, eq.~(2), is $\kappa = 3 - 4\nu_{\mathrm{bc}}$ for the plane
+strain setting used throughout; the plane stress expression was printed by mistake.
+\item The auxiliary parameters of the K-field in the porous experiments are the effective elastic constants of the
+surrounding material, $E_{\mathrm{bc}} = E_0^{\mathrm{eff}}$ and $\nu_{\mathrm{bc}} = \nu_0^{\mathrm{eff}}$ (Sections~4.2
+and 5.1); the values $2.5\mu_0$ and $0.25$ hold only for the homogeneous strip of Section~3.5.
+\item The slope parameter of the cubic degradation function was $\beta = 0.1$ in the porous and the homogeneous-strip
+simulations of the previous version but $0.2$ in the one-dimensional bar; the stated value $\beta = 0.2$ is now used in
+all simulations. Likewise, the residual stiffness of the three-dimensional simulations was $\eta = 10^{-3}$ and is now
+$10^{-5}$ as stated, and the yield stress is assigned to the porous region only, so that the surrounding material is
+linear elastic as described. All results in Sections~3.5, 4 and 5 were recomputed accordingly \mycomment{TODO}{(list the
+numbers that changed: $J_c^{\mathrm{num}}$, saturation values, \dots)}.
+\item The FEniCSx version is 0.7.3 (not 0.7.4).
+\end{enumerate}
+\end{response}
+
+\begin{relatedchanges}
+\relhead{Corrections of equations and parameters}
+%@quote env:eq:psi_fr
+%@quote env:eq:surfing-bcs
+%@quote cmd:Kolosov constant
+%@quote cmd:\replaced{0.7.3}{0.7.4}
+%@quote cmd:effective elastic constants of the surrounding material, $E_{\text{bc}} = E_0^{\text{eff}}$
+%@quote cmd:as in the two-dimensional case, the effective elastic constants
+%@generated-begin
+\item \msloc{Section~2, Eq.~(2)}
+\begin{align*}
+    \begin{split}
+        u_x &= \dfrac{K_I^{\text{bc}}}{2\mu_{\text{bc}}}  \sqrt{\dfrac{r}{2\pi}}\left(\kappa - \cos{\varphi}\right)\cos{\dfrac{\varphi}{2}},\\
+        u_y &= \dfrac{K_I^{\text{bc}}}{2\mu_{\text{bc}}}  \sqrt{\dfrac{r}{2\pi}}\left(\kappa - \cos{\varphi}\right)\sin{\dfrac{\varphi}{2}},\\
+        \text{where} \quad \kappa &= \changed{3 - 4\nu_{\text{bc}}} \quad \text{and} \quad \mu_{\text{bc}} = \dfrac{E_{\text{bc}}}{2\left(1 + \nu_{\text{bc}}\right)}.
+    \end{split}
+\end{align*}
+\item \msloc{Section~2}
+\added{, and $\kappa$ is the Kolosov constant for plane strain}
+\item \msloc{Section~3.1, Eq.~(18)}
+\begin{equation*}
+    \psi_{\rm{fr}} = J_c
+    \underbrace{\left(
+    \changed{\dfrac{(1-s)^2}{4\epsilon} + \epsilon\|\nabla{s}\|^2}
+    \right)}_{\bar{A}},
+\end{equation*}
+\item \msloc{Section~3.3}
+\replaced{0.7.3}{0.7.4}
+\item \msloc{Section~4.2}
+\replaced{ and the effective elastic constants of the surrounding material, $E_{\text{bc}} = E_0^{\text{eff}}$ and $\nu_{\text{bc}} = \nu_0^{\text{eff}}$, as the auxiliary parameters of the prescribed K-field~(2)}{, $E_{\text{bc}} = 2.5 \mu_0$, and $\nu_{\text{bc}} = 0.25$}
+\item \msloc{Section~5.1}
+\replaced{ and, as in the two-dimensional case, the effective elastic constants of the surrounding material as the auxiliary parameters $E_{\text{bc}}$ and $\nu_{\text{bc}}$}{, $E_{\text{bc}}=2.5\mu_0$, and $\nu_{\text{bc}}=0.25$}
+%@generated-end
+\end{relatedchanges}
+
+\end{document}
