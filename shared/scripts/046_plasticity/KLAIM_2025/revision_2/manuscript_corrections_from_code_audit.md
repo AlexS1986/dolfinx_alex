@@ -13,6 +13,13 @@ the new edits use `\replaced{old}{new}` where possible, equations were changed i
 | 3 | Sec. 3.3 | dolfinx 0.7.4 → 0.7.3 | verified runtime in the research-data archive |
 | 4 | Sec. 4.2 and 5.1, surfing BC | "E_bc = 2.5µ0, ν_bc = 0.25" → effective elastic constants of the surrounding material (E_0^eff, ν_0^eff) as the auxiliary K-field parameters (`\replaced`) | the code (old and reruns, `--bc_moduli effective`) evaluates the K-field with µ_eff/ν_eff of the embedding; Sec. 3.5 (homogeneous strip, E_0 = 2.5µ0, ν_0 = 0.25) is correct as written. Final decision 2026-10-15. |
 
+## Found 2026-10-15 in the first cluster test (to be added to the letter's "Additional corrections")
+
+* The 2D effective stiffness of the unit cells in v1/v2 was not a homogenized value but exactly the Voigt bound
+  (1 − f)·C_bulk (isotropic): the library's linear-displacement BC also constrained the pore surface in 2D (z = 0 selects
+  every exterior facet). Fixed in the rerun template (`075_klaim_rev2_2D/000_template/run_effective_stiffness.py`); the
+  3D unit cell and the homogeneous strip were correct. Sec. 4.1 must state the corrected values (and the Zener ratio).
+
 ## To be updated after the reruns (numbers that change because β = 0.2 is now used consistently)
 
 * Sec. 3.5: J_c^num ≈ 1.50 / 1.12 / 0.64 J_c^0 (from study S2 of `075_klaim_rev2_2D`, `evaluation_output/Jc_num_strip.csv`).

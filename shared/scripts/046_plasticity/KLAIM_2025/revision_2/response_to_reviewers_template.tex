@@ -471,6 +471,13 @@ $10^{-5}$ as stated, and the yield stress is assigned to the porous region only,
 linear elastic as described. All results in Sections~3.5, 4 and 5 were recomputed accordingly \mycomment{TODO}{(list the
 numbers that changed: $J_c^{\mathrm{num}}$, saturation values, \dots)}.
 \item The FEniCSx version is 0.7.3 (not 0.7.4).
+\item The effective elastic constants of the two-dimensional unit cells reported in Section~4.1 of the previous versions
+were not homogenized values but the Voigt bound $(1-f)\,\mathbb{C}_0$ of the porous cell (porosity $f$): the linear
+displacement boundary condition of the homogenization step had inadvertently also been applied to the pore surface,
+which makes the displacement field affine. The homogenization was corrected (linear displacements on the outer edges of
+the unit cell only, traction-free pore surface); the corrected effective stiffness is lower and of cubic symmetry, see
+the response to Reviewer~1, point~4. The three-dimensional unit cells and the homogeneous strip were not affected.
+\mycomment{TODO}{numbers: old vs.\ new $E_0^{\mathrm{eff}}$, $\nu_0^{\mathrm{eff}}$ and Zener ratio for $w_s = 0.375, 1.0, 4.0$ from effective\_stiffness\_table.csv}
 \end{enumerate}
 \end{response}
 
@@ -482,31 +489,6 @@ numbers that changed: $J_c^{\mathrm{num}}$, saturation values, \dots)}.
 %@quote cmd:\replaced{0.7.3}{0.7.4}
 %@quote cmd:effective elastic constants of the surrounding material, $E_{\text{bc}} = E_0^{\text{eff}}$
 %@quote cmd:as in the two-dimensional case, the effective elastic constants
-%@generated-begin
-\item \msloc{Section~2, Eq.~(2)}
-\begin{align*}
-    \begin{split}
-        u_x &= \dfrac{K_I^{\text{bc}}}{2\mu_{\text{bc}}}  \sqrt{\dfrac{r}{2\pi}}\left(\kappa - \cos{\varphi}\right)\cos{\dfrac{\varphi}{2}},\\
-        u_y &= \dfrac{K_I^{\text{bc}}}{2\mu_{\text{bc}}}  \sqrt{\dfrac{r}{2\pi}}\left(\kappa - \cos{\varphi}\right)\sin{\dfrac{\varphi}{2}},\\
-        \text{where} \quad \kappa &= \changed{3 - 4\nu_{\text{bc}}} \quad \text{and} \quad \mu_{\text{bc}} = \dfrac{E_{\text{bc}}}{2\left(1 + \nu_{\text{bc}}\right)}.
-    \end{split}
-\end{align*}
-\item \msloc{Section~2}
-\added{, and $\kappa$ is the Kolosov constant for plane strain}
-\item \msloc{Section~3.1, Eq.~(18)}
-\begin{equation*}
-    \psi_{\rm{fr}} = J_c
-    \underbrace{\left(
-    \changed{\dfrac{(1-s)^2}{4\epsilon} + \epsilon\|\nabla{s}\|^2}
-    \right)}_{\bar{A}},
-\end{equation*}
-\item \msloc{Section~3.3}
-\replaced{0.7.3}{0.7.4}
-\item \msloc{Section~4.2}
-\replaced{ and the effective elastic constants of the surrounding material, $E_{\text{bc}} = E_0^{\text{eff}}$ and $\nu_{\text{bc}} = \nu_0^{\text{eff}}$, as the auxiliary parameters of the prescribed K-field~(2)}{, $E_{\text{bc}} = 2.5 \mu_0$, and $\nu_{\text{bc}} = 0.25$}
-\item \msloc{Section~5.1}
-\replaced{ and, as in the two-dimensional case, the effective elastic constants of the surrounding material as the auxiliary parameters $E_{\text{bc}}$ and $\nu_{\text{bc}}$}{, $E_{\text{bc}}=2.5\mu_0$, and $\nu_{\text{bc}}=0.25$}
-%@generated-end
 \end{relatedchanges}
 
 \end{document}

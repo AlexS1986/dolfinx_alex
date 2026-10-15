@@ -106,8 +106,18 @@ def get_bcs(t):
     else: # to avoid out of bounds index
         eps_mac = dlfx.fem.Constant(domain, np.array([[0.0, 0.0],
                      [0.0, 0.0]]))
-    bcs = bc.get_total_linear_displacement_boundary_condition_at_box(domain, comm, V,eps_mac=eps_mac, atol=atol)
-    return bcs
+    # KLAIM rev. 2 FIX (2026-10-15): bc.get_total_linear_displacement_boundary_condition_at_box also applies the
+    # "front/back" conditions z == z_min/z_max, which in a 2D mesh (z = 0 everywhere) selects ALL exterior facets,
+    # i.e. also the pore surface. The affine displacement was therefore prescribed on the hole boundary and the
+    # result was exactly the Voigt bound (1 - porosity) * C_bulk (isotropic, Zener ratio 1). Here the linear
+    # displacement is prescribed on the four outer edges of the unit cell only; the pore surface is traction free.
+    u_D = bc.linear_displacements(V=V, eps_mac=eps_mac)
+
+    def outer_box(x):
+        return np.logical_or.reduce([np.isclose(x[0], x_min_all), np.isclose(x[0], x_max_all),
+                                     np.isclose(x[1], y_min_all), np.isclose(x[1], y_max_all)])
+
+    return [bc.define_dirichlet_bc_from_interpolated_function(domain, u_D, outer_box, V, -1)]
 
 n = ufl.FacetNormal(domain)
 simulation_result = np.array([0.0])
@@ -170,6 +180,7 @@ def after_last_timestep():
                 "C11_isotropic_from_lam_mu" : alex.homogenization.lam_hom(Chom)[0] + 2.0 * alex.homogenization.mu_hom(Chom)[0],
         }
         np.savetxt(os.path.join(script_path, "effective_stiffness_matrix.txt"), Chom, header="plane-strain effective stiffness, Voigt (xx, yy, xy)")
+        print(f"Zener ratio 2*C33/(C11-C12) = {zener:.4f}  (1.0 = isotropic; the old 2D runs always gave exactly the Voigt bound, see comment in get_bcs)")
         
         pp.append_to_file(parameters=parameters_to_write,filename=parameter_path,comm=comm)
         
