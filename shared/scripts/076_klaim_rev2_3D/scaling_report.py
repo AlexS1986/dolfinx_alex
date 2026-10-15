@@ -19,26 +19,35 @@ if "3D" in os.path.basename(os.path.dirname(os.path.abspath(__file__))):
     STEPS_V2 = {1.0: 4116}  # only w_s = 1.0 of the v2.0 3D runs is documented locally (64 cores); others unknown
 
 
-def wall_time(folder):
-    """wall-clock seconds: from the newton log ('# elapsed time: [wall, user, sys]') or from the SLURM out timestamps"""
+def wall_time(folder, graphs):
+    """wall-clock seconds of the fracture simulation: from the newton log ('# elapsed time: [wall, user, sys]'),
+    else from the SLURM out timestamps ('[date] fracture simulation ...' -> '[date] finished'), else -- for a running
+    job -- from that start stamp to the last modification of the graphs table."""
+    import datetime
     log = os.path.join(folder, "run_simulation_log.txt")
     if os.path.exists(log):
         for line in reversed(open(log).read().splitlines()):
             m = re.search(r"elapsed time:\s*\[([0-9.eE+-]+)", line)
             if m:
                 return float(m.group(1)), "log"
-    outs = sorted(glob.glob(os.path.join(folder, "*.out.*")))
+    outs = sorted(glob.glob(os.path.join(folder, "*.out.*")), key=os.path.getmtime)
     if outs:
         txt = open(outs[-1]).read()
-        import datetime
         stamps = re.findall(r"^\[(.+?)\] (job|fracture simulation|finished)", txt, flags=re.M)
-        try:
-            times = [datetime.datetime.strptime(s[0], "%a %b %d %H:%M:%S %Z %Y") for s in stamps]
-            if len(times) >= 2:
-                return (times[-1] - times[0]).total_seconds(), "slurm-out (whole job incl. meshing)"
-        except Exception:
-            pass
-    return None, "running / no runtime found"
+        times = {}
+        for stamp, kind in stamps:
+            try:
+                times[kind] = datetime.datetime.strptime(stamp, "%a %b %d %H:%M:%S %Z %Y")
+            except ValueError:
+                pass
+        start = times.get("fracture simulation", times.get("job"))
+        tag = "sim start" if "fracture simulation" in times else "job start (incl. meshing)"
+        if start is not None and "finished" in times:
+            return (times["finished"] - start).total_seconds(), f"slurm-out ({tag} -> finished)"
+        if start is not None:
+            last = datetime.datetime.fromtimestamp(os.path.getmtime(graphs))
+            return (last - start).total_seconds(), f"running ({tag} -> last table write)"
+    return None, "no runtime found"
 
 
 rows = []
@@ -48,11 +57,15 @@ for folder in sorted(glob.glob(os.path.join(base, "*"))):
     graphs = os.path.join(folder, "run_simulation_graphs.txt")
     if not os.path.exists(graphs):
         continue
-    js = os.path.join(folder, "job_script.sh")
     cores = None
-    if os.path.exists(js):
-        m = re.search(r"^#SBATCH -n (\d+)", open(js).read(), flags=re.M)
-        cores = int(m.group(1)) if m else None
+    m = re.search(r"_n(\d+)$", os.path.basename(folder))          # scaling_<case>_n<cores> folders
+    if m:
+        cores = int(m.group(1))
+    else:
+        js = os.path.join(folder, "job_script.sh")
+        if os.path.exists(js):
+            m = re.search(r"^#SBATCH -n (\d+)", open(js).read(), flags=re.M)
+            cores = int(m.group(1)) if m else None
     data = [l.split() for l in open(graphs) if l.strip() and not l.startswith("#")]
     nsteps = len(data)
     t_last = float(data[-1][0]) if data else 0.0
@@ -61,7 +74,7 @@ for folder in sorted(glob.glob(os.path.join(base, "*"))):
     for line in open(os.path.join(folder, "parameters.txt")):
         if line.startswith("wsteg="):
             wsteg = float(line.split("=")[1])
-    wt, src = wall_time(folder)
+    wt, src = wall_time(folder, graphs)
     rows.append((os.path.basename(folder), cores, wsteg, nsteps, t_last, x_ct, wt, src))
 
 print(f"{'case':38s} {'cores':>5s} {'w_s':>6s} {'steps':>7s} {'t_end':>8s} {'x_ct':>8s} {'wall[h]':>8s} {'s/step':>7s} {'full run est.[h]':>16s}  source")

@@ -72,6 +72,7 @@ srun -n 1 apptainer exec --bind $bindpath $container python3 $working_directory/
 
 srun -n 1 apptainer exec --bind $bindpath $container python3 $working_directory/get_mesh_info.py --mesh_file "$MESH_FILE"
 set +e
+echo "[$(date)] fracture simulation starts on {PROCESSOR_NUMBER} cores"
 
 srun -n {PROCESSOR_NUMBER} apptainer exec --bind $bindpath $container python3 $working_directory/run_simulation.py \
     --mesh_file "$MESH_FILE" \
