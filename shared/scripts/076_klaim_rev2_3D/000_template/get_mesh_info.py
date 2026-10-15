@@ -24,9 +24,23 @@ input_file_path = os.path.join(script_path,mesh_file)
 output_histogram_path = os.path.join(script_path, "edge_length_distribution.png")
 parameter_path = os.path.join(script_path,"parameters.txt")
 
-# Load the mesh data
-data = meshio.read(input_file_path)
-points = data.points
+# Load the mesh data: meshio first; it cannot read xdmf files with several grids (mesh + fields + meshtags, as written
+# by the 3D mesh script: "XDMF reader: Only supports one grid right now") -> fall back to the dolfinx reader
+try:
+    data = meshio.read(input_file_path)
+    points = data.points
+    cells_dict = data.cells_dict
+except Exception as e:
+    print(f"meshio could not read {input_file_path} ({e}); using the dolfinx reader")
+    from mpi4py import MPI
+    import dolfinx.io
+    with dolfinx.io.XDMFFile(MPI.COMM_WORLD, input_file_path, "r") as xdmf:
+        domain = xdmf.read_mesh(name="mesh")
+    points = domain.geometry.x
+    conn = domain.geometry.dofmap
+    conn = np.asarray(conn.array if hasattr(conn, "array") else conn)
+    nvert = {"triangle": 3, "tetrahedron": 4}[domain.topology.cell_name()]
+    cells_dict = {"triangle" if nvert == 3 else "tetra": conn.reshape(-1, nvert)}
 
 # Initialize a list to store edge lengths from all types of cells
 all_edge_lengths = []
@@ -45,7 +59,7 @@ def compute_edge_lengths(points, cells, vertices_per_cell):
     return edge_lengths
 
 # Loop through each cell type and compute edge lengths
-for cell_type, cell_data in data.cells_dict.items():
+for cell_type, cell_data in cells_dict.items():
     if cell_type == 'triangle':
         all_edge_lengths.extend(compute_edge_lengths(points, cell_data, 3))
     elif cell_type == 'tetra':

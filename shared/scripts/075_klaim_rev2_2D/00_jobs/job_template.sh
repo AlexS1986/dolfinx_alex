@@ -70,7 +70,8 @@ srun -n 1 apptainer exec --bind $bindpath $container python3 $working_directory/
 srun -n 1 apptainer exec --bind $bindpath $container python3 $working_directory/mesh_fracture_adaptive.py \
     --nholes "$NHOLES" --dhole "$DHOLE" --wsteg "$WSTEG" --e0 "$E0" --e1 "$E1" --nrows "$NROWS" --geometry "$GEOMETRY"
 
-srun -n 1 apptainer exec --bind $bindpath $container python3 $working_directory/get_mesh_info.py --mesh_file "$MESH_FILE"
+srun -n 1 apptainer exec --bind $bindpath $container python3 $working_directory/get_mesh_info.py --mesh_file "$MESH_FILE" \
+    || echo "[$(date)] get_mesh_info failed (non-fatal: edge-length statistics only)"
 set +e
 echo "[$(date)] fracture simulation starts on {PROCESSOR_NUMBER} cores"
 
