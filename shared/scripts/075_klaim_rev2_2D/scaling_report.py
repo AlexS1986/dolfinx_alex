@@ -69,7 +69,13 @@ for folder in sorted(glob.glob(os.path.join(base, "*"))):
     data = [l.split() for l in open(graphs) if l.strip() and not l.startswith("#")]
     nsteps = len(data)
     t_last = float(data[-1][0]) if data else 0.0
-    x_ct = float(data[-1][3]) if data else float("nan")
+    xcol = 3                                   # 2D layout; the 3D table has J_z before x_ct -> read the index from the columns file
+    cols = os.path.join(folder, "run_simulation_graphs_columns.txt")
+    if os.path.exists(cols):
+        names = [tok.split(":", 1)[1] for tok in open(cols).read().split() if ":" in tok]
+        if "x_ct" in names:
+            xcol = names.index("x_ct")
+    x_ct = float(data[-1][xcol]) if data else float("nan")
     wsteg = None
     for line in open(os.path.join(folder, "parameters.txt")):
         if line.startswith("wsteg="):

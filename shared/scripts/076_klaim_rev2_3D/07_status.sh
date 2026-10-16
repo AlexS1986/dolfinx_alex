@@ -12,7 +12,9 @@ for d in "$BASE_DIR"/*/; do
     [ -z "$state" ] && state="-"
     g="$d/run_simulation_graphs.txt"
     if [ -f "$g" ]; then
-        steps=$(grep -vc "^#" "$g"); last=$(grep -v "^#" "$g" | tail -1); t=$(echo "$last" | awk '{print $1}'); x=$(echo "$last" | awk '{print $4}')
+        xcol=4; c="$d/run_simulation_graphs_columns.txt"   # 2D: column 4 = x_ct; 3D has J_z before it -> read the index from the columns file
+        [ -f "$c" ] && xcol=$(( $(tr ' ' '\n' < "$c" | grep ":x_ct$" | cut -d: -f1) + 1 ))
+        steps=$(grep -vc "^#" "$g"); last=$(grep -v "^#" "$g" | tail -1); t=$(echo "$last" | awk '{print $1}'); x=$(echo "$last" | awk -v k="$xcol" '{print $k}')
     else steps=0; t="-"; x="-"; fi
     exitline=$(ls "$d"/*.out.* 2>/dev/null | tail -1 | xargs -r grep -h "finished with exit code\|Simulation stopped early\|Error\|error" 2>/dev/null | tail -1 | cut -c1-60)
     printf "%-34s %-10s %7s %9s %9s  %s\n" "$name" "$state" "$steps" "$t" "$x" "$exitline"

@@ -43,8 +43,8 @@ EVENT_SNAPSHOTS=1
 
 # ------------------------------------------------------------------ resources
 MEMORY_VALUE=4000       # MB per core
-PROCESSOR_NUMBER=32
-TIME=10080              # minutes (7 days)
+PROCESSOR_NUMBER=16       # scaling test 2026-10-15: 1.57/1.35/1.46 s per step on 16/32/48 cores -> 16 (6 jobs per i01 node)
+TIME=7200               # minutes (5 days; longest 2D run w_s = 3.0 estimated ~50 h on 16 cores)
 
 count=0
 for folder_path in "${BASE_DIR}"/*/; do
