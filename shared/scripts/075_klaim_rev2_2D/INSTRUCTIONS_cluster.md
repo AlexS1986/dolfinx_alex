@@ -74,26 +74,28 @@ python3 evaluation_rev2.py --results results --legacy ../046_plasticity/KLAIM_20
 
 ```bash
 cd $HOME/dolfinx_alex/shared/scripts/075_klaim_rev2_2D
-./01_create_directories.sh                 # 52 folders (existing ones are skipped)
+./01_create_directories.sh                 # 52 folders (existing ones are skipped -> see the warning below)
 ./02_create_jobs.sh                        # job_script.sh everywhere (PROCESSOR_NUMBER / TIME from step 1)
 ./03_submit_all.sh --dry-run               # sanity check
 ./03_submit_all.sh --match S2_strip        # 3 calibration runs first (cheapest, needed for every normalisation)
-./03_submit_all.sh --match S1_             # 33 paper sweeps
-./03_submit_all.sh --match S3_             # cubic embedding
-./03_submit_all.sh --match S4_             # sensitivity
-./03_submit_all.sh --match S5_             # representativity
-cd ../076_klaim_rev2_3D
-./01_create_directories.sh && ./02_create_jobs.sh && ./03_submit_all.sh
+cd ../076_klaim_rev2_3D && ./01_create_directories.sh && ./02_create_jobs.sh
+cd ../075_klaim_rev2_2D && ./08_fill_queue.sh   # submits 2D + 3D in priority order until the submit limit is hit
 ```
 
-The scheduler decides the order anyway; submitting everything on day 1 maximises throughput. If the account's
-job limit bites (`squeue -u $USER` shows many PENDING with reason `QOSMaxJobsPerUserLimit`/`AssocMaxJobsLimit`), it is
-still better to have them queued. The submit script skips folders that already have SLURM output, so re-running
-`03_submit_all.sh` after fixing something only submits what is missing (delete `*.out.*` in a folder to resubmit it).
+**Warning:** `01_create_directories.sh` copies `000_template/*.py` only into folders that do not exist yet. If the
+template changed after the folders were created, delete the folders that have not run yet before step 01:
+`cd $HPC_SCRATCH/075_klaim_rev2_2D && for d in S1_* S3_* S4_* S5_*; do ls $d/*.out.* >/dev/null 2>&1 || rm -rf "$d"; done`.
+
+**Submit limit:** the account allows only a limited number of submitted (queued + running) jobs
+(`sbatch: error: AssocMaxSubmitJobLimit`; the value: `sacctmgr show assoc where user=$USER format=Account,MaxSubmitJobs,MaxJobs -p`).
+`03_submit_all.sh` stops at that error (exit 3) and skips cases that are already queued, running or finished, so
+`./08_fill_queue.sh` (2D folder) can be run every morning until it prints `everything submitted`. Order of priority:
+S1_vM, S1_EqSig, S1_EqJc, S1_3D, S3, S3_3D, S4, S5. (Delete `*.out.*` in a folder to resubmit a finished/failed case.)
 
 Monitoring (daily):
 
 ```bash
+./08_fill_queue.sh                         # top up the queue (does nothing when everything is submitted)
 ./07_status.sh                             # or ./07_status.sh --match S1_vM
 squeue -u $USER --format "%.10i %.30j %.8T %.10M %.6D %R" | sort -k2
 ./04_cancel_jobs.sh --dry-run              # lists the project's jobs; without --dry-run cancels them (--match to restrict)

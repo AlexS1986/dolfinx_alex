@@ -24,6 +24,8 @@ while [ "$#" -gt 0 ]; do
 done
 
 submitted=0
+skipped_limit=0
+queued_names=$(squeue --noheader --user "$USER" --format "%120j" 2>/dev/null | sed "s/ *$//" || true)
 for folder_path in "${BASE_DIR}"/*/; do
     [ -d "$folder_path" ] || continue
     folder_name=$(basename "$folder_path")
@@ -42,12 +44,26 @@ for folder_path in "${BASE_DIR}"/*/; do
         echo "already has SLURM output, skipping (delete *.out.* to resubmit): $folder_name"
         continue
     fi
+    if echo "$queued_names" | grep -qx "r2_${folder_name}"; then
+        echo "already queued (pending or running), skipping: $folder_name"
+        continue
+    fi
     if [ "$DRY_RUN" -eq 1 ]; then
         echo "would submit: $job_script"
     else
         echo "submitting: $job_script"
-        sbatch "$job_script"
+        out=$(sbatch "$job_script" 2>&1) && echo "$out" || {
+            echo "$out"
+            if echo "$out" | grep -q "AssocMaxSubmitJobLimit\|QOSMaxSubmitJobPerUserLimit\|job submit limit"; then
+                echo "submit limit of the account reached -> stop here; run this script (or 08_fill_queue.sh) again later"
+                skipped_limit=1
+                break
+            fi
+            exit 1
+        }
     fi
     submitted=$((submitted + 1))
 done
 echo "$submitted jobs $([ "$DRY_RUN" -eq 1 ] && echo 'would be ')submitted."
+[ "$skipped_limit" -eq 1 ] && exit 3
+exit 0

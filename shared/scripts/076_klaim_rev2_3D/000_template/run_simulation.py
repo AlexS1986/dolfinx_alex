@@ -331,11 +331,8 @@ sig_yy0 = dlfx.fem.Function(S0); sig_yy0.name = "sigma_yy"
 s0 = dlfx.fem.Function(S0); s0.name = "s_cell"
 alpha0 = dlfx.fem.Function(S0); alpha0.name = "alpha"
 alpha_prev0 = dlfx.fem.Function(S0); alpha_prev0.name = "alpha"
-# plastic strain as a cell-wise (DG0) tensor: deg_quad = 1 -> one quadrature point per cell, so this is exact
-ep_interpolated = dlfx.fem.Function(TEN); ep_interpolated.name = "eps_p"
-ep_expr = dlfx.fem.Expression(e_p_n_3D, TEN.element.interpolation_points())
-ep_prev_interpolated = dlfx.fem.Function(TEN); ep_prev_interpolated.name = "eps_p"
-ep_prev_expr = dlfx.fem.Expression(e_p_prev_3D, TEN.element.interpolation_points())
+# plastic strain output: the UFL tensors e_p_n_3D / e_p_prev_3D are written cell-wise (DG0) by pp.write_tensor_fields;
+# deg_quad = 1 -> one quadrature point per cell, so this is exact. alpha = equivalent plastic strain.
 w_prev_fields = dlfx.fem.Function(W)
 sigma_prev_interpolated = dlfx.fem.Function(TEN); sigma_prev_interpolated.name = "sigma"
 u_prev, s_prev = ufl.split(w_prev_fields)
@@ -380,7 +377,7 @@ sigma_prev_expr = dlfx.fem.Expression(
     degradation(s_prev, eta) * alex.plasticity.sig_plasticity(u_prev, e_p_n=e_p_prev_3D, alpha_n=alpha_tmp, sig_y=sig_y, hard=hard, lam=la, mu=mu),
     TEN.element.interpolation_points())
 
-state = {"x_ct_prev": in_crack_length + x_min_all, "t_prev": 0.0, "Jx_prev": 0.0, "last_event_step": -10 ** 9, "has_prev": False}
+state = {"x_ct_prev": in_crack_length + x_min_all, "t_prev": 0.0, "Jx_prev": 0.0, "last_event_step": -10 ** 9, "has_prev": False, "n_event_snapshots": 0}
 COLUMNS = ["t", "Jx", "Jy", "Jz", "x_ct", "x_bc", "Rx_top", "Ry_top", "Rz_top", "dW", "W", "A", "dt",
            "E_el", "E_el_micro", "E_pl", "E_pl_undeg", "E_frac", "E_frac_micro", "D_visc", "D_pl_deg", "D_pl_undeg",
            "sig_vM_max_lig", "sig_h_max_lig", "sig_yy_max_lig", "alpha_max_lig", "newton_iters"]
@@ -395,15 +392,19 @@ def ligament_window_max(field0, x_ct):
     return comm.allreduce(local_max, MPI.MAX)
 
 
-def write_event_snapshot(xdmf_path, time_value, w_fields, sigma_fields, alpha_field, label, ep_fields=None):
-    pp.write_tensor_fields(domain, comm, [sigma_fields], ["sigma"], outputfile_xdmf_path=xdmf_path, t=time_value)
-    pp.write_field(domain, xdmf_path, alpha_field, time_value, comm, S=S0)
-    if ep_fields is not None:
-        pp.write_tensor_fields(domain, comm, [ep_fields], ["eps_p"], outputfile_xdmf_path=xdmf_path, t=time_value)
-    pp.write_phasefield_mixed_solution(domain, xdmf_path, w_fields, time_value, comm)
+def write_event_snapshot(xdmf_path, snapshot_index, real_time, w_fields, sigma_fields, alpha_field, label, ep_tensor=None):
+    """Snapshots are stored under an integer pseudo-time (2k = just before, 2k+1 = just after crack jump k): dolfinx names the
+    HDF5 datasets by the time value with 6 decimals, and the pre/post-jump states differ by one tiny time step, which made the
+    second write fail ('Failed to create HDF5 global dataset'). The real pseudo-time is recorded in the events log."""
+    tv = float(snapshot_index)
+    pp.write_tensor_fields(domain, comm, [sigma_fields], ["sigma"], outputfile_xdmf_path=xdmf_path, t=tv)
+    pp.write_field(domain, xdmf_path, alpha_field, tv, comm, S=S0)
+    if ep_tensor is not None:
+        pp.write_tensor_fields(domain, comm, [ep_tensor], ["eps_p"], outputfile_xdmf_path=xdmf_path, t=tv)
+    pp.write_phasefield_mixed_solution(domain, xdmf_path, w_fields, tv, comm)
     if rank == 0:
         with open(events_log_path, "a") as f:
-            f.write(f"{time_value:.8e} {label}\n")
+            f.write(f"{snapshot_index:d} {real_time:.8e} {label}\n")
 
 
 def before_first_time_step():
@@ -415,7 +416,7 @@ def before_first_time_step():
         with open(columns_path, "w") as f:
             f.write(" ".join(f"{i}:{name}" for i, name in enumerate(COLUMNS)) + "\n")
         with open(events_log_path, "w") as f:
-            f.write("# t label(pre_jump|post_jump) x_ct Jx\n")
+            f.write("# snapshot_index(time value in run_simulation_events.xdmf: 2k = before, 2k+1 = after jump k) t label(pre_jump|post_jump) x_ct Jx\n")
     pp.write_meshoutputfile(domain, outputfile_xdmf_path, comm)
     if args.event_snapshots:
         pp.write_meshoutputfile(domain, outputfile_events_xdmf_path, comm)
@@ -491,11 +492,16 @@ def after_timestep_success(t, dt, iters):
             w_prev_fields.x.array[:] = wm1.x.array[:]
             sigma_prev_interpolated.interpolate(sigma_prev_expr)
             alpha_prev0.interpolate(alpha_prev0_expr)
-            ep_prev_interpolated.interpolate(ep_prev_expr)
-            ep_interpolated.interpolate(ep_expr)
-            write_event_snapshot(outputfile_events_xdmf_path, state["t_prev"], w_prev_fields, sigma_prev_interpolated, alpha_prev0,
-                                 f"pre_jump {state['x_ct_prev']:.6e} {state['Jx_prev']:.6e}", ep_fields=ep_prev_interpolated)
-            write_event_snapshot(outputfile_events_xdmf_path, t, w, sigma_interpolated, alpha0, f"post_jump {x_ct:.6e} {Jx:.6e}", ep_fields=ep_interpolated)
+            k = state["n_event_snapshots"]
+            try:
+                write_event_snapshot(outputfile_events_xdmf_path, 2 * k, state["t_prev"], w_prev_fields, sigma_prev_interpolated, alpha_prev0,
+                                     f"pre_jump {state['x_ct_prev']:.6e} {state['Jx_prev']:.6e}", ep_tensor=e_p_prev_3D)
+                write_event_snapshot(outputfile_events_xdmf_path, 2 * k + 1, t, w, sigma_interpolated, alpha0, f"post_jump {x_ct:.6e} {Jx:.6e}", ep_tensor=e_p_n_3D)
+            except Exception as exc:  # output must never kill the run
+                if rank == 0:
+                    print(f"WARNING: event snapshot failed ({exc}); event snapshots disabled")
+                args.event_snapshots = 0
+            state["n_event_snapshots"] += 1
             state["last_event_step"] = step
     state["x_ct_prev"] = x_ct
     state["t_prev"] = t
@@ -512,13 +518,16 @@ def after_timestep_success(t, dt, iters):
     success_timestep_counter.value = success_timestep_counter.value + 1.0
     if not int(success_timestep_counter.value) % int(postprocessing_interval.value) == 0:
         return
-    pp.write_tensor_fields(domain, comm, [sigma_interpolated], ["sigma"], outputfile_xdmf_path=outputfile_xdmf_path, t=t)
-    pp.write_field(domain, outputfile_xdmf_path, alpha_n, t, comm, S=S0)
-    pp.write_field(domain, outputfile_xdmf_path, sig_vm0, t, comm, S=S0)
-    pp.write_field(domain, outputfile_xdmf_path, sig_h0, t, comm, S=S0)
-    ep_interpolated.interpolate(ep_expr)
-    pp.write_tensor_fields(domain, comm, [ep_interpolated], ["eps_p"], outputfile_xdmf_path=outputfile_xdmf_path, t=t)
-    pp.write_phasefield_mixed_solution(domain, outputfile_xdmf_path, w, t, comm)
+    try:
+        pp.write_tensor_fields(domain, comm, [sigma_interpolated], ["sigma"], outputfile_xdmf_path=outputfile_xdmf_path, t=t)
+        pp.write_field(domain, outputfile_xdmf_path, alpha_n, t, comm, S=S0)
+        pp.write_field(domain, outputfile_xdmf_path, sig_vm0, t, comm, S=S0)
+        pp.write_field(domain, outputfile_xdmf_path, sig_h0, t, comm, S=S0)
+        pp.write_tensor_fields(domain, comm, [e_p_n_3D], ["eps_p"], outputfile_xdmf_path=outputfile_xdmf_path, t=t)
+        pp.write_phasefield_mixed_solution(domain, outputfile_xdmf_path, w, t, comm)
+    except Exception as exc:  # output must never kill the run
+        if rank == 0:
+            print(f"WARNING: field output failed at t={t} ({exc})")
 
 
 def after_timestep_restart(t, dt, iters):
@@ -526,7 +535,11 @@ def after_timestep_restart(t, dt, iters):
 
 
 def after_last_timestep():
-    pp.write_phasefield_mixed_solution(domain, outputfile_xdmf_path, w, t_global.value, comm)
+    try:
+        pp.write_phasefield_mixed_solution(domain, outputfile_xdmf_path, w, t_global.value, comm)
+    except Exception as exc:  # e.g. the same time stamp was already written by the periodic output
+        if rank == 0:
+            print(f"WARNING: final field output failed ({exc})")
     timer.stop()
     if rank == 0:
         runtime = timer.elapsed()
