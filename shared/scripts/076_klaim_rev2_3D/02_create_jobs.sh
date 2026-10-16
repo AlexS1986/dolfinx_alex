@@ -45,6 +45,7 @@ EVENT_SNAPSHOTS=1
 MEMORY_VALUE=5000       # MB per core
 PROCESSOR_NUMBER=64
 TIME=10080              # minutes (7 days)
+CONSTRAINT="i01"         # node type(s): "i01" (mpsc*, validated), "i01|i02" after the OpenBLAS positive control on i02 (09_blas_check_i02.sh)
 
 count=0
 for folder_path in "${BASE_DIR}"/*/; do
@@ -89,6 +90,7 @@ for folder_path in "${BASE_DIR}"/*/; do
         -e "s|{MEMORY_VALUE}|${MEMORY_VALUE}|g" \
         -e "s|{PROCESSOR_NUMBER}|${PROCESSOR_NUMBER}|g" \
         -e "s|{TIME}|${TIME}|g" \
+        -e "s#{CONSTRAINT}#${CONSTRAINT}#g" \
         "${JOB_TEMPLATE_PATH}" > "${folder_path}/job_script.sh"
     if grep -q "{[A-Z_]*}" "${folder_path}/job_script.sh"; then
         echo "WARNING: unreplaced placeholder in ${folder_path}/job_script.sh:"

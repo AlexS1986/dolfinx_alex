@@ -70,6 +70,26 @@ python3 evaluation_rev2.py --results results --legacy ../046_plasticity/KLAIM_20
 # -> evaluation_output/old_vs_new_vM_ws1.0.png
 ```
 
+## 1b. OpenBLAS on the i02 nodes (Sapphire Rapids) -- positive control before using them
+
+The container's OpenBLAS 0.3.20 picks the wrong kernel ("Cooperlake") on the i02 nodes (`mpsd*`) and silently computes
+wrong numbers (MUMPS `INFO(1)= -10`, `NO CONVERGENCE` in the first step, NaN). Both job templates therefore export
+`OPENBLAS_CORETYPE=SkylakeX` and `APPTAINERENV_OPENBLAS_CORETYPE=SkylakeX` before every container call (harmless on i01;
+HRZ doc OpenBLAS_SPR_Knoten_20260905.pdf). The jobs are restricted to i01 (`CONSTRAINT="i01"` in `02_create_jobs.sh`)
+until the positive control has passed:
+
+```bash
+cd $HOME/dolfinx_alex/shared/scripts/075_klaim_rev2_2D
+./09_blas_check_i02.sh              # 2 one-core jobs on i02: without / with the fix (same container as the runs)
+./09_blas_check_i02.sh --show       # expected: nofix -> core Cooperlake, dgemm ~1e1; fix -> core SkylakeX, dgemm/dgesv ~1e-13, RESULT: OK
+CONSTRAINT=i02 CORES=16 TIME_LIMIT=60 CASE=S1_vM_ws0.375 ./00_scaling_test.sh   # one short real run on i02 with the fix
+grep -c "INFO(1)= -10\|NO CONVERGENCE\|nan" $HPC_SCRATCH/075_klaim_rev2_2D/scaling_S1_vM_ws0.375_n16/*.err.*   # must be 0
+```
+
+Only then set `CONSTRAINT="i01|i02"` in both `02_create_jobs.sh` (Mac, git), `./02_create_jobs.sh` again, cancel the still
+pending i01-only jobs (`./04_cancel_jobs.sh --match <name>`, they have no output yet and are resubmitted by 08) and run
+`./08_fill_queue.sh`. Record date, job IDs and the numbers of the positive control in CLAUDE.md.
+
 ## 2. Production submission (as soon as the core count is fixed)
 
 ```bash

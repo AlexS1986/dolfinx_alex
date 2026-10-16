@@ -16,6 +16,7 @@ CORES="${CORES:-16 32 48}"
 STOP_FRACTION="${STOP_FRACTION:-0.20}"
 TIME_LIMIT="${TIME_LIMIT:-360}"          # minutes
 SUBMIT="${SUBMIT:-1}"
+CONSTRAINT="${CONSTRAINT:-}"             # e.g. CONSTRAINT=i02 to test the OpenBLAS fix on the Sapphire Rapids nodes
 
 if [ -z "${HPC_SCRATCH:-}" ]; then echo "HPC_SCRATCH not defined"; exit 1; fi
 BASE_DIR="${HPC_SCRATCH}/${PROJECT_NAME}"
@@ -36,12 +37,13 @@ cat "$tmp_cases"
 for n in $CORES; do
     folder="$BASE_DIR/scaling_${CASE}_n${n}"
     js="$folder/job_script.sh"
+    [ -n "$CONSTRAINT" ] && sed -i -e "s#^\#SBATCH -C .*#\#SBATCH -C ${CONSTRAINT}#" "$js"
     sed -i -e "s|^#SBATCH -n .*|#SBATCH -n ${n}|" \
            -e "s|^#SBATCH -t .*|#SBATCH -t ${TIME_LIMIT}|" \
            -e "s|^STOP_FRACTION=.*|STOP_FRACTION=${STOP_FRACTION}|" \
            -e "s|srun -n [0-9]* apptainer exec --bind \$bindpath \$container python3 \$working_directory/run_simulation.py|srun -n ${n} apptainer exec --bind \$bindpath \$container python3 \$working_directory/run_simulation.py|" \
            "$js"
-    grep -n "SBATCH -n\|SBATCH -t\|^STOP_FRACTION\|run_simulation.py" "$js" | head -5
+    grep -n "SBATCH -n\|SBATCH -t\|SBATCH -C\|^STOP_FRACTION\|run_simulation.py" "$js" | head -6
     if [ "$SUBMIT" -eq 1 ]; then sbatch "$js"; else echo "(not submitted: SUBMIT=0)"; fi
 done
 rm -f "$tmp_cases"

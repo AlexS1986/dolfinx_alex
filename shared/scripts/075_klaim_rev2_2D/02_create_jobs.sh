@@ -45,6 +45,7 @@ EVENT_SNAPSHOTS=1
 MEMORY_VALUE=4000       # MB per core
 PROCESSOR_NUMBER=16       # scaling test 2026-10-15: 1.57/1.35/1.46 s per step on 16/32/48 cores -> 16 (6 jobs per i01 node)
 TIME=7200               # minutes (5 days; longest 2D run w_s = 3.0 estimated ~50 h on 16 cores)
+CONSTRAINT="i01"         # node type(s): "i01" (mpsc*, validated), "i01|i02" after the OpenBLAS positive control on i02 (09_blas_check_i02.sh)
 
 count=0
 for folder_path in "${BASE_DIR}"/*/; do
@@ -91,6 +92,7 @@ for folder_path in "${BASE_DIR}"/*/; do
         -e "s|{MEMORY_VALUE}|${MEMORY_VALUE}|g" \
         -e "s|{PROCESSOR_NUMBER}|${PROCESSOR_NUMBER}|g" \
         -e "s|{TIME}|${TIME}|g" \
+        -e "s#{CONSTRAINT}#${CONSTRAINT}#g" \
         "${JOB_TEMPLATE_PATH}" > "${folder_path}/job_script.sh"
     if grep -q "{[A-Z_]*}" "${folder_path}/job_script.sh"; then
         echo "WARNING: unreplaced placeholder in ${folder_path}/job_script.sh:"
