@@ -4,7 +4,7 @@
 set -euo pipefail
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 PROJECT_NAME=$(basename "$SCRIPT_DIR")
-REMOTE_HOST="${REMOTE_HOST:-as1vapa@lcluster14.hrz.tu-darmstadt.de}"
+REMOTE_HOST="${REMOTE_HOST:-as12vapa@lcluster14.hrz.tu-darmstadt.de}"
 REMOTE_ARCHIVE="${REMOTE_ARCHIVE:-/work/scratch/as12vapa/${PROJECT_NAME}_lightweight.tar.gz}"
 LOCAL_RESULTS="${LOCAL_RESULTS:-${SCRIPT_DIR}/results}"
 mkdir -p "$LOCAL_RESULTS"

@@ -13,7 +13,7 @@ git status --short | grep -v "^??"                           # the submitted man
 git commit -m "KLAIM rev2: 2D/3D rerun studies (075/076), instrumented outputs, cubic embedding, sensitivity, representativity"
 git push
 # on the cluster
-ssh as1vapa@lcluster14.hrz.tu-darmstadt.de
+ssh as12vapa@lcluster14.hrz.tu-darmstadt.de
 cd $HOME/dolfinx_alex/shared/scripts && git pull
 chmod +x 075_klaim_rev2_2D/*.sh 076_klaim_rev2_3D/*.sh
 ```
