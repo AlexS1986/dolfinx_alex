@@ -331,6 +331,11 @@ sig_yy0 = dlfx.fem.Function(S0); sig_yy0.name = "sigma_yy"
 s0 = dlfx.fem.Function(S0); s0.name = "s_cell"
 alpha0 = dlfx.fem.Function(S0); alpha0.name = "alpha"
 alpha_prev0 = dlfx.fem.Function(S0); alpha_prev0.name = "alpha"
+# plastic strain as a cell-wise (DG0) tensor: deg_quad = 1 -> one quadrature point per cell, so this is exact
+ep_interpolated = dlfx.fem.Function(TEN); ep_interpolated.name = "eps_p"
+ep_expr = dlfx.fem.Expression(e_p_n_3D, TEN.element.interpolation_points())
+ep_prev_interpolated = dlfx.fem.Function(TEN); ep_prev_interpolated.name = "eps_p"
+ep_prev_expr = dlfx.fem.Expression(e_p_prev_3D, TEN.element.interpolation_points())
 w_prev_fields = dlfx.fem.Function(W)
 sigma_prev_interpolated = dlfx.fem.Function(TEN); sigma_prev_interpolated.name = "sigma"
 u_prev, s_prev = ufl.split(w_prev_fields)
@@ -390,9 +395,11 @@ def ligament_window_max(field0, x_ct):
     return comm.allreduce(local_max, MPI.MAX)
 
 
-def write_event_snapshot(xdmf_path, time_value, w_fields, sigma_fields, alpha_field, label):
+def write_event_snapshot(xdmf_path, time_value, w_fields, sigma_fields, alpha_field, label, ep_fields=None):
     pp.write_tensor_fields(domain, comm, [sigma_fields], ["sigma"], outputfile_xdmf_path=xdmf_path, t=time_value)
     pp.write_field(domain, xdmf_path, alpha_field, time_value, comm, S=S0)
+    if ep_fields is not None:
+        pp.write_tensor_fields(domain, comm, [ep_fields], ["eps_p"], outputfile_xdmf_path=xdmf_path, t=time_value)
     pp.write_phasefield_mixed_solution(domain, xdmf_path, w_fields, time_value, comm)
     if rank == 0:
         with open(events_log_path, "a") as f:
@@ -484,9 +491,11 @@ def after_timestep_success(t, dt, iters):
             w_prev_fields.x.array[:] = wm1.x.array[:]
             sigma_prev_interpolated.interpolate(sigma_prev_expr)
             alpha_prev0.interpolate(alpha_prev0_expr)
+            ep_prev_interpolated.interpolate(ep_prev_expr)
+            ep_interpolated.interpolate(ep_expr)
             write_event_snapshot(outputfile_events_xdmf_path, state["t_prev"], w_prev_fields, sigma_prev_interpolated, alpha_prev0,
-                                 f"pre_jump {state['x_ct_prev']:.6e} {state['Jx_prev']:.6e}")
-            write_event_snapshot(outputfile_events_xdmf_path, t, w, sigma_interpolated, alpha0, f"post_jump {x_ct:.6e} {Jx:.6e}")
+                                 f"pre_jump {state['x_ct_prev']:.6e} {state['Jx_prev']:.6e}", ep_fields=ep_prev_interpolated)
+            write_event_snapshot(outputfile_events_xdmf_path, t, w, sigma_interpolated, alpha0, f"post_jump {x_ct:.6e} {Jx:.6e}", ep_fields=ep_interpolated)
             state["last_event_step"] = step
     state["x_ct_prev"] = x_ct
     state["t_prev"] = t
@@ -507,6 +516,8 @@ def after_timestep_success(t, dt, iters):
     pp.write_field(domain, outputfile_xdmf_path, alpha_n, t, comm, S=S0)
     pp.write_field(domain, outputfile_xdmf_path, sig_vm0, t, comm, S=S0)
     pp.write_field(domain, outputfile_xdmf_path, sig_h0, t, comm, S=S0)
+    ep_interpolated.interpolate(ep_expr)
+    pp.write_tensor_fields(domain, comm, [ep_interpolated], ["eps_p"], outputfile_xdmf_path=outputfile_xdmf_path, t=t)
     pp.write_phasefield_mixed_solution(domain, outputfile_xdmf_path, w, t, comm)
 
 
