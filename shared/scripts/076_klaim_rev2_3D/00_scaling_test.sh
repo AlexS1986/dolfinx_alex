@@ -17,6 +17,7 @@ STOP_FRACTION="${STOP_FRACTION:-0.20}"
 TIME_LIMIT="${TIME_LIMIT:-360}"          # minutes
 SUBMIT="${SUBMIT:-1}"
 CONSTRAINT="${CONSTRAINT:-}"             # e.g. CONSTRAINT=i02 to test the OpenBLAS fix on the Sapphire Rapids nodes (passed through to 02_create_jobs.sh)
+TAG="${TAG:-}"                           # suffix of the folder name, e.g. TAG=_i01 for a twin run of the same case on another node type
 
 if [ -z "${HPC_SCRATCH:-}" ]; then echo "HPC_SCRATCH not defined"; exit 1; fi
 BASE_DIR="${HPC_SCRATCH}/${PROJECT_NAME}"
@@ -27,7 +28,7 @@ tmp_cases=$(mktemp)
 line=$(grep -E "^${CASE}[[:space:]]" "$CASES_FILE" || true)
 if [ -z "$line" ]; then echo "case $CASE not found in $CASES_FILE"; exit 1; fi
 for n in $CORES; do
-    echo "$line" | awk -v n="$n" '{ $1 = "scaling_" $1 "_n" n; print }' >> "$tmp_cases"
+    echo "$line" | awk -v n="$n" -v tag="$TAG" '{ $1 = "scaling_" $1 "_n" n tag; print }' >> "$tmp_cases"
 done
 cat "$tmp_cases"
 
@@ -35,7 +36,7 @@ cat "$tmp_cases"
 "$SCRIPT_DIR/02_create_jobs.sh" --match scaling_
 
 for n in $CORES; do
-    folder="$BASE_DIR/scaling_${CASE}_n${n}"
+    folder="$BASE_DIR/scaling_${CASE}_n${n}${TAG}"
     js="$folder/job_script.sh"
     [ -n "$CONSTRAINT" ] && sed -i -e "s#^\#SBATCH -C .*#\#SBATCH -C ${CONSTRAINT}#" "$js"
     sed -i -e "s|^#SBATCH -n .*|#SBATCH -n ${n}|" \
