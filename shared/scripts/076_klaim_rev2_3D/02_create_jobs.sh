@@ -45,7 +45,7 @@ EVENT_SNAPSHOTS=1
 MEMORY_VALUE=5000       # MB per core
 PROCESSOR_NUMBER=64
 TIME=10080              # minutes (7 days)
-CONSTRAINT="i01"         # node type(s): "i01" (mpsc*, validated), "i01|i02" after the OpenBLAS positive control on i02 (09_blas_check_i02.sh)
+CONSTRAINT="${CONSTRAINT:-i01}"   # node type(s): "i01" (mpsc*, validated), "i01|i02" after the OpenBLAS positive control on i02 (09_blas_check_i02.sh)
 
 count=0
 for folder_path in "${BASE_DIR}"/*/; do
