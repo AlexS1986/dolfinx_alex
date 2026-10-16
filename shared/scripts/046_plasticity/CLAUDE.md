@@ -279,4 +279,11 @@ into the `_PAPER` folders. The `alex`/`ronny` packages live in `shared/utils/` (
   `OPENBLAS_CORETYPE=SkylakeX` + `APPTAINERENV_OPENBLAS_CORETYPE=SkylakeX` before every apptainer call (HRZ doc
   OpenBLAS_SPR_Knoten_20260905.pdf). Jobs stay on `-C i01` (`CONSTRAINT` in `02_create_jobs.sh`) until the positive control
   `09_blas_check_i02.sh` (+ one short real run on i02) has passed; then `CONSTRAINT="i01|i02"`. Record the control here.
+* **SLURM accounts (handoff 2026-10-16):** submit on `p0023647` (`#SBATCH -A`); `p0025962` = follow-on phase of the same
+  project (to 30.11.2026) — use it as soon as as12vapa is a member (`sacctmgr show assoc user=$USER format=account,qos,maxjobs`);
+  `special00008` = group account, only sparingly; **never `l0003507`**. On 2026-10-16 `p0023647` showed MaxSubmit=0 (no
+  submissions possible). Job conventions from the handoff are in the 075/076 templates: no `-C i01` (CONSTRAINT empty),
+  `--exclude=mpsd0138,mpsd0319,mpsd0401,mpsd0415`, OPENBLAS_CORETYPE=SkylakeX, `--mail-type=End`; 2D cases with
+  w_s <= 1.0 get 24 h (deflt partition), the rest 5 d, 3D 7 d. All of ACCOUNT/CONSTRAINT/EXCLUDE are env-overridable in
+  `02_create_jobs.sh`. Quick test: `sbatch -A <acct> -p deflt -n 1 -t 5 --wrap hostname`.
 * Record decisions and new data locations in this file.

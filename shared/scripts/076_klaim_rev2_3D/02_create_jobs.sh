@@ -45,7 +45,9 @@ EVENT_SNAPSHOTS=1
 MEMORY_VALUE=5000       # MB per core
 PROCESSOR_NUMBER=64
 TIME=10080              # minutes (7 days)
-CONSTRAINT="${CONSTRAINT:-i01}"   # node type(s): "i01" (mpsc*, validated), "i01|i02" after the OpenBLAS positive control on i02 (09_blas_check_i02.sh)
+CONSTRAINT="${CONSTRAINT:-}"        # node type(s), e.g. "i01" or "i01|i02"; empty = no constraint (handoff 2026-10-16: leave out -C i01; i02 needs the OpenBLAS fix, which the template sets)
+EXCLUDE="${EXCLUDE:-mpsd0138,mpsd0319,mpsd0401,mpsd0415}"   # faulty nodes (handoff 2026-10-16)
+ACCOUNT="${ACCOUNT:-p0023647}"     # SLURM account (handoff: p0023647; p0025962 = follow-on phase once as12vapa is a member; special00008 only sparingly; never l0003507). p0023647 had MaxSubmit=0 on 2026-10-16.
 
 count=0
 for folder_path in "${BASE_DIR}"/*/; do
@@ -91,7 +93,11 @@ for folder_path in "${BASE_DIR}"/*/; do
         -e "s|{PROCESSOR_NUMBER}|${PROCESSOR_NUMBER}|g" \
         -e "s|{TIME}|${TIME}|g" \
         -e "s#{CONSTRAINT}#${CONSTRAINT}#g" \
+        -e "s#{ACCOUNT}#${ACCOUNT}#g" \
+        -e "s#{EXCLUDE}#${EXCLUDE}#g" \
         "${JOB_TEMPLATE_PATH}" > "${folder_path}/job_script.sh"
+    [ -z "$CONSTRAINT" ] && sed -i "/^#SBATCH -C $/d" "${folder_path}/job_script.sh"
+    [ -z "$EXCLUDE" ] && sed -i "/^#SBATCH --exclude=$/d" "${folder_path}/job_script.sh"
     if grep -q "{[A-Z_]*}" "${folder_path}/job_script.sh"; then
         echo "WARNING: unreplaced placeholder in ${folder_path}/job_script.sh:"
         grep -o "{[A-Z_]*}" "${folder_path}/job_script.sh" | sort -u

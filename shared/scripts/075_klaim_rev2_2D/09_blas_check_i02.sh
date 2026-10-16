@@ -3,12 +3,13 @@
 # once without and once with the OPENBLAS_CORETYPE fix. Results land in $HPC_SCRATCH/<project>/blas_check/.
 # Expected: without fix "core: Cooperlake", dgemm deviation ~1e1; with fix "core: SkylakeX", both ~1e-13.
 # Only after the "with fix" run prints RESULT: OK may CONSTRAINT in 02_create_jobs.sh include i02.
-# Usage: ./09_blas_check_i02.sh            then, when the two jobs are done:  ./09_blas_check_i02.sh --show
+# Usage: ACCOUNT=l0003507 ./09_blas_check_i02.sh            then, when the two jobs are done:  ./09_blas_check_i02.sh --show
 set -euo pipefail
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 PROJECT_NAME=$(basename "$SCRIPT_DIR")
 OUT="$HPC_SCRATCH/$PROJECT_NAME/blas_check"
 container="$HOME/dolfinx_alex/alex-dolfinx.sif"
+ACCOUNT="${ACCOUNT:-p0023647}"
 mkdir -p "$OUT" && cp "$SCRIPT_DIR/blas_check.py" "$OUT/"
 if [ "${1:-}" = "--show" ]; then
     for f in "$OUT"/*.out; do echo "== $f"; grep -v "^\[I\]\|^  \[I\]" "$f" | grep "host\|core:\|dgemm\|dgesv\|RESULT\|OPENBLAS"; done
@@ -16,7 +17,7 @@ if [ "${1:-}" = "--show" ]; then
 fi
 for mode in nofix fix; do
     if [ "$mode" = "fix" ]; then env="OPENBLAS_CORETYPE=SkylakeX,APPTAINERENV_OPENBLAS_CORETYPE=SkylakeX"; else env="NONE"; fi
-    sbatch -A p0023647 -p deflt -C i02 -n 1 -N 1 --mem-per-cpu=8000 -t 10 -J "blas_$mode" \
+    sbatch -A "$ACCOUNT" -p deflt -C i02 --exclude=mpsd0138,mpsd0319,mpsd0401,mpsd0415 -n 1 -N 1 --mem-per-cpu=8000 -t 10 -J "blas_$mode" \
         -o "$OUT/blas_$mode.out" -e "$OUT/blas_$mode.err" --export="ALL,$env" \
         --wrap "cd $OUT && apptainer exec --bind $HOME/dolfinx_alex/shared:/home,$OUT:/work $container python3 $OUT/blas_check.py"
 done

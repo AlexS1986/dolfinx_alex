@@ -16,7 +16,7 @@ CORES="${CORES:-16 32 48}"
 STOP_FRACTION="${STOP_FRACTION:-0.20}"
 TIME_LIMIT="${TIME_LIMIT:-360}"          # minutes
 SUBMIT="${SUBMIT:-1}"
-CONSTRAINT="${CONSTRAINT:-}"             # e.g. CONSTRAINT=i02 to test the OpenBLAS fix on the Sapphire Rapids nodes
+CONSTRAINT="${CONSTRAINT:-}"             # e.g. CONSTRAINT=i02 to test the OpenBLAS fix on the Sapphire Rapids nodes (passed through to 02_create_jobs.sh)
 
 if [ -z "${HPC_SCRATCH:-}" ]; then echo "HPC_SCRATCH not defined"; exit 1; fi
 BASE_DIR="${HPC_SCRATCH}/${PROJECT_NAME}"

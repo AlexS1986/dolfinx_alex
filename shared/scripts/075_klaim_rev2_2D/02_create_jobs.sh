@@ -44,8 +44,12 @@ EVENT_SNAPSHOTS=1
 # ------------------------------------------------------------------ resources
 MEMORY_VALUE=4000       # MB per core
 PROCESSOR_NUMBER=16       # scaling test 2026-10-15: 1.57/1.35/1.46 s per step on 16/32/48 cores -> 16 (6 jobs per i01 node)
-TIME=7200               # minutes (5 days; longest 2D run w_s = 3.0 estimated ~50 h on 16 cores)
-CONSTRAINT="${CONSTRAINT:-i01}"   # node type(s): "i01" (mpsc*, validated), "i01|i02" after the OpenBLAS positive control on i02 (09_blas_check_i02.sh)
+TIME=7200               # minutes (5 days -> partition long; longest 2D run w_s = 3.0 estimated ~50 h on 16 cores)
+TIME_SHORT=1440         # minutes (24 h -> default partition deflt, more capacity) for cases with w_s <= WSTEG_SHORT_MAX (estimated <= 10 h)
+WSTEG_SHORT_MAX=1.0
+CONSTRAINT="${CONSTRAINT:-}"        # node type(s), e.g. "i01" or "i01|i02"; empty = no constraint (handoff 2026-10-16: leave out -C i01; i02 needs the OpenBLAS fix, which the template sets)
+EXCLUDE="${EXCLUDE:-mpsd0138,mpsd0319,mpsd0401,mpsd0415}"   # faulty nodes (handoff 2026-10-16)
+ACCOUNT="${ACCOUNT:-p0023647}"     # SLURM account (handoff: p0023647; p0025962 = follow-on phase once as12vapa is a member; special00008 only sparingly; never l0003507). p0023647 had MaxSubmit=0 on 2026-10-16.
 
 count=0
 for folder_path in "${BASE_DIR}"/*/; do
@@ -58,6 +62,8 @@ for folder_path in "${BASE_DIR}"/*/; do
     # shellcheck disable=SC1090
     source "$folder_path/case.env"
     job_name="r2_${CASE_NAME}"
+    time_limit=$TIME; awk -v w="$WSTEG" -v m="$WSTEG_SHORT_MAX" 'BEGIN{exit !(w+0 <= m+0)}' && time_limit=$TIME_SHORT
+    [ "${GEOMETRY:-porous}" = "strip" ] && time_limit=$TIME     # the vM strip needs > 24 h (tiny steps)
     sed -e "s|{PROJECT_NAME}|${PROJECT_NAME}|g" \
         -e "s|{FOLDER_NAME}|${folder_name}|g" \
         -e "s|{JOB_NAME}|${job_name}|g" \
@@ -91,9 +97,13 @@ for folder_path in "${BASE_DIR}"/*/; do
         -e "s|{EVENT_SNAPSHOTS}|${EVENT_SNAPSHOTS}|g" \
         -e "s|{MEMORY_VALUE}|${MEMORY_VALUE}|g" \
         -e "s|{PROCESSOR_NUMBER}|${PROCESSOR_NUMBER}|g" \
-        -e "s|{TIME}|${TIME}|g" \
+        -e "s|{TIME}|${time_limit}|g" \
         -e "s#{CONSTRAINT}#${CONSTRAINT}#g" \
+        -e "s#{ACCOUNT}#${ACCOUNT}#g" \
+        -e "s#{EXCLUDE}#${EXCLUDE}#g" \
         "${JOB_TEMPLATE_PATH}" > "${folder_path}/job_script.sh"
+    [ -z "$CONSTRAINT" ] && sed -i "/^#SBATCH -C $/d" "${folder_path}/job_script.sh"
+    [ -z "$EXCLUDE" ] && sed -i "/^#SBATCH --exclude=$/d" "${folder_path}/job_script.sh"
     if grep -q "{[A-Z_]*}" "${folder_path}/job_script.sh"; then
         echo "WARNING: unreplaced placeholder in ${folder_path}/job_script.sh:"
         grep -o "{[A-Z_]*}" "${folder_path}/job_script.sh" | sort -u
