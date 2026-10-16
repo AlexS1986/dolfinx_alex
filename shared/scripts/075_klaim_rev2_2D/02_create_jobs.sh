@@ -48,7 +48,7 @@ TIME=7200               # minutes (5 days -> partition long; longest 2D run w_s 
 TIME_SHORT=1440         # minutes (24 h -> default partition deflt, more capacity) for cases with w_s <= WSTEG_SHORT_MAX (estimated <= 10 h)
 WSTEG_SHORT_MAX=1.0
 CONSTRAINT="${CONSTRAINT:-}"        # node type(s), e.g. "i01" or "i01|i02"; empty = no constraint (handoff 2026-10-16: leave out -C i01; i02 needs the OpenBLAS fix, which the template sets)
-EXCLUDE="${EXCLUDE:-mpsd0138,mpsd0319,mpsd0401,mpsd0415}"   # faulty nodes (handoff 2026-10-16)
+EXCLUDE="${EXCLUDE:-mpsd0138,mpsd0319,mpsd0401,mpsd0415,mpsd0557}"   # faulty nodes (handoff 2026-10-16; mpsd0557: SIGBUS 16.10.)
 ACCOUNT="${ACCOUNT:-p0023647}"     # SLURM account (handoff: p0023647; p0025962 = follow-on phase once as12vapa is a member; special00008 only sparingly; never l0003507). p0023647 had MaxSubmit=0 on 2026-10-16.
 
 count=0

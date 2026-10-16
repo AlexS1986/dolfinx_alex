@@ -279,6 +279,12 @@ into the `_PAPER` folders. The `alex`/`ronny` packages live in `shared/utils/` (
   `OPENBLAS_CORETYPE=SkylakeX` + `APPTAINERENV_OPENBLAS_CORETYPE=SkylakeX` before every apptainer call (HRZ doc
   OpenBLAS_SPR_Knoten_20260905.pdf). Jobs stay on `-C i01` (`CONSTRAINT` in `02_create_jobs.sh`) until the positive control
   `09_blas_check_i02.sh` (+ one short real run on i02) has passed; then `CONSTRAINT="i01|i02"`. Record the control here.
+  **Positive control 2026-10-16 (account special00008): PASSED.** BLAS check on mpsd0001: without fix (job 55460066) core
+  Cooperlake, dgemm dev 1.1e+02, dgesv res 1.0e-02 -> WRONG; with fix (55460067) core SkylakeX, dgemm 8.9e-14, dgesv 4.0e-15
+  -> OK. Real run S1_vM_ws0.375, 16 cores, i02 mpsd0010 (55460068) vs. i01 twin (55460202, TAG=_i01): identical t, dt and
+  Newton iterations for the first ~500 steps, no INFO(1)=-10 / NO CONVERGENCE / NaN. Production may use all nodes (no -C).
+  Note: the slow start of w_s = 0.375 (dt stuck at 2e-7..4e-7 with 4-5 Newton iterations for ~500 steps) is normal; the
+  v2.0 run shows the same phase (t = 3.98e-5 at step 200, dt grows after step ~400).
 * **SLURM accounts (handoff 2026-10-16):** submit on `p0023647` (`#SBATCH -A`); `p0025962` = follow-on phase of the same
   project (to 30.11.2026) — use it as soon as as12vapa is a member (`sacctmgr show assoc user=$USER format=account,qos,maxjobs`);
   `special00008` = group account, only sparingly; **never `l0003507`**. On 2026-10-16 `p0023647` showed MaxSubmit=0 (no
@@ -286,4 +292,10 @@ into the `_PAPER` folders. The `alex`/`ronny` packages live in `shared/utils/` (
   `--exclude=mpsd0138,mpsd0319,mpsd0401,mpsd0415`, OPENBLAS_CORETYPE=SkylakeX, `--mail-type=End`; 2D cases with
   w_s <= 1.0 get 24 h (deflt partition), the rest 5 d, 3D 7 d. All of ACCOUNT/CONSTRAINT/EXCLUDE are env-overridable in
   `02_create_jobs.sh`. Quick test: `sbatch -A <acct> -p deflt -n 1 -t 5 --wrap hostname`.
+* **Production submitted 2026-10-16 12:3x on `special00008`** (p0023647 locked, HRZ + Ralf asked): 49 2D jobs (16 cores;
+  w_s <= 1.0 -> 24 h `deflt`, w_s >= 1.4 -> 5 d `long`) and 10 3D jobs (64 cores, 7 d `long`), job IDs 55461100-55461158,
+  no node constraint, faulty i02 nodes excluded. Strip calibrations S2_EqJc/S2_EqSig finished 15.10. on p0023647,
+  S2_strip_vM (55449550) still running there. Cancel all: `./04_cancel_jobs.sh` in 075 and 076.
+* 2026-10-16: `S1_3D_vM_ws0.5` (55461135) killed after 5.7 h on **mpsd0557** by SIGBUS (step exit 0:7, MaxRSS only
+  1.7 GB/task -> not memory). Node added to the exclude list in both `02_create_jobs.sh`; case resubmitted from scratch.
 * Record decisions and new data locations in this file.
