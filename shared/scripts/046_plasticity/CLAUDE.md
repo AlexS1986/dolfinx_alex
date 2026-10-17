@@ -313,3 +313,7 @@ into the `_PAPER` folders. The `alex`/`ronny` packages live in `shared/utils/` (
   Ramberg-Osgood value sigma* = 1.30 of the previous paper). **Decision 2026-10-17: [Eq sigma*] = 0.5523 J_c^0 in all reruns**;
   manuscript Sec. 3.6 numbers (1.31/1.72/1.30, eps* 1.18/1.08/0.82, Pi*) must be regenerated from a local 050 rerun with
   beta = 0.2, mu = 1 (the elastic 050 script currently has mu = 0.25 left over from a Jan-2026 experiment).
+* 2026-10-17 10:25: round 2 submitted (50 jobs on p0023647, IDs ~55468670–55468740). Lesson from the restart: cancel first and
+  wait until the jobs have left squeue, *then* move folders — a COMPLETING job writes by path and re-creates its folder
+  (six stub folders had to be deleted and recreated by hand); `10_restart_round2_Kbc.sh` now waits. `%Z` in squeue is the
+  sbatch cwd on Lichtenberg, so job selection goes by name (`r2_S[1345]_` without `_3D_`).

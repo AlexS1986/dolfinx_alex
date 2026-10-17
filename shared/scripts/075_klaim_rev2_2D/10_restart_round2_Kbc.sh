@@ -21,7 +21,17 @@ PATTERN='^S[1345]_|^S2_strip_EqSig$'    # porous 2D cases + the Eq sigma* strip 
 rows=$(squeue --noheader --user "${USER:-$(id -un)}" --format "%A|%j|%T|%Z" | awk -F'|' '($2 ~ /^r2_S[1345]_/ && $2 !~ /_3D_/) || $2 == "r2_S2_strip_EqSig"')
 if [ -n "$rows" ]; then
     echo "cancelling:"; printf "%s\n" "$rows" | awk -F'|' '{printf "  %s  %-28s %s\n", $1, $2, $3}'
-    [ "$DRY" -eq 0 ] && scancel $(printf "%s\n" "$rows" | cut -d'|' -f1)
+    ids=$(printf "%s\n" "$rows" | cut -d'|' -f1)
+    if [ "$DRY" -eq 0 ]; then
+        scancel $ids
+        # wait until the jobs have left the queue: a COMPLETING job still writes (by path) into its folder and would
+        # re-create it after the mv below, and 03_submit_all.sh skips names that are still in squeue (seen 2026-10-17)
+        for i in $(seq 1 60); do
+            left=$(squeue --noheader --jobs "$(echo $ids | tr ' ' ',')" --format "%A" 2>/dev/null | wc -l)
+            [ "$left" -eq 0 ] && break
+            echo "  waiting for $left job(s) to finish cancelling ..."; sleep 10
+        done
+    fi
 else
     echo "no porous 2D jobs in the queue"
 fi
@@ -39,8 +49,7 @@ done
 echo "parked $n folders"
 [ "$DRY" -eq 1 ] && { echo "dry run: stopping before 01/02/03"; exit 0; }
 
-# 3. recreate and submit (a job that was COMPLETING when cancelled is still in squeue -> 03 skips it; rerun 03 in a minute)
-sleep 20
+# 3. recreate and submit
 "$SCRIPT_DIR/01_create_directories.sh"
 "$SCRIPT_DIR/02_create_jobs.sh"
 grep -h "^K_BC_RULE=" "$BASE_DIR"/S*/job_script.sh | sort | uniq -c
