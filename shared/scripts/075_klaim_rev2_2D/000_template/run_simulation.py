@@ -56,7 +56,7 @@ class StopSimulation(Exception):
     pass
 
 
-dlfx.log.set_log_level(dlfx.log.LogLevel.INFO)
+dlfx.log.set_log_level(dlfx.log.LogLevel.WARNING)   # INFO wrote GBs of dolfinx log into the .err files (16.10.2026)
 
 script_path = os.path.dirname(__file__)
 script_name_without_extension = os.path.splitext(os.path.basename(__file__))[0]
