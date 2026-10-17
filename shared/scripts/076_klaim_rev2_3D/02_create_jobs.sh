@@ -62,6 +62,12 @@ for folder_path in "${BASE_DIR}"/*/; do
     # shellcheck disable=SC1090
     source "$folder_path/case.env"
     job_name="r2_${CASE_NAME}"  # 3D
+    GEOMETRY="${GEOMETRY:-porous}"
+    k_rule=$K_BC_RULE; sig_y_emb=$SIG_Y_EMBEDDING
+    case "$GEOMETRY" in
+        strip) k_rule=value ;;                                   # no pores, embedding linear elastic (as the 2D S2 strips)
+        solid) k_rule=value; sig_y_emb=$SIG_Y ;;                 # no pores, the same yield stress everywhere = one homogeneous vM material (2026-10-17)
+    esac
     sed -e "s|{PROJECT_NAME}|${PROJECT_NAME}|g" \
         -e "s|{FOLDER_NAME}|${folder_name}|g" \
         -e "s|{JOB_NAME}|${job_name}|g" \
@@ -84,9 +90,10 @@ for folder_path in "${BASE_DIR}"/*/; do
         -e "s|{BETA}|${BETA}|g" \
         -e "s|{ETA}|${ETA}|g" \
         -e "s|{MOB}|${MOB}|g" \
-        -e "s|{SIG_Y_EMBEDDING}|${SIG_Y_EMBEDDING}|g" \
+        -e "s|{SIG_Y_EMBEDDING}|${sig_y_emb}|g" \
         -e "s|{BC_MODULI}|${BC_MODULI}|g" \
-        -e "s|{K_BC_RULE}|${K_BC_RULE}|g" \
+        -e "s|{K_BC_RULE}|${k_rule}|g" \
+        -e "s|{GEOMETRY}|${GEOMETRY}|g" \
         -e "s|{E_BC}|${E_BC}|g" \
         -e "s|{NU_BC}|${NU_BC}|g" \
         -e "s|{STOP_FRACTION}|${STOP_FRACTION}|g" \

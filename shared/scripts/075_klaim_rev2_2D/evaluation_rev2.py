@@ -245,20 +245,24 @@ def main():
     print(f"loaded {len(cases)} cases")
 
     # --- J_c^num from strip runs
-    jc_num = {}
+    jc_num = {}       # from the "solid" run (one homogeneous material) when present, else from the "strip" run (elastic embedding)
+    jc_num_all = {}
     for c in cases:
-        if c.geometry == "strip":
-            jc_num[c.set_name] = Jc_num_from_strip(c)
-    print("J_c^num from strip runs:", jc_num)
+        if c.geometry in ("strip", "solid"):
+            jc_num_all[(c.set_name, c.geometry)] = Jc_num_from_strip(c)
+    for (name, geo), v in jc_num_all.items():
+        if geo == "solid" or name not in jc_num:
+            jc_num[name] = v
+    print("J_c^num from strip/solid runs:", jc_num_all, "-> used:", jc_num)
     with open(os.path.join(args.out, "Jc_num_strip.csv"), "w") as f:
-        f.write("set,Jc_num\n")
-        for k, v in jc_num.items():
-            f.write(f"{k},{v:.5f}\n")
+        f.write("set,geometry,Jc_num,used\n")
+        for (name, geo), v in jc_num_all.items():
+            f.write(f"{name},{geo},{v:.5f},{int(jc_num[name] == v)}\n")
 
     # --- master table
     rows = []
     for c in cases:
-        if c.geometry == "strip":
+        if c.geometry in ("strip", "solid"):
             continue
         je = Jeff(c)
         e = energy_partition(c)
@@ -310,7 +314,7 @@ def main():
     with open(os.path.join(args.out, "events.csv"), "w") as f:
         f.write("case,set,wsteg,x_before,x_after,Jx_before,dW,dE_el,dE_frac,dE_pl,dD_visc\n")
         for c in cases:
-            if c.geometry == "strip":
+            if c.geometry in ("strip", "solid"):
                 continue
             plot_energy_partition(c, args.out)
             for ev in event_energies(c):

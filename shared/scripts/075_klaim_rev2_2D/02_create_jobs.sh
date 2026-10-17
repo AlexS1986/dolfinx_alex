@@ -69,7 +69,11 @@ for folder_path in "${BASE_DIR}"/*/; do
     [ "${GEOMETRY:-porous}" = "strip" ] && time_limit=$TIME     # the vM strip needs > 24 h (tiny steps)
     [ "$MATERIAL" = "vonmises" ] && time_limit=$TIME            # round 1: four vM runs with w_s <= 1 hit the 24 h limit in the last pore
     k_rule=$K_BC_RULE
-    [ "${GEOMETRY:-porous}" = "strip" ] && k_rule=value         # homogeneous strips (Sec. 3.5) keep K_bc^2 = 2.5 Jc0 mu0 (J_bc = 0.94 Jc0); the crack regulates itself there
+    sig_y_emb=$SIG_Y_EMBEDDING
+    case "${GEOMETRY:-porous}" in
+        strip) k_rule=value ;;                                   # homogeneous strips (Sec. 3.5) keep K_bc^2 = 2.5 Jc0 mu0 (J_bc = 0.94 Jc0); the crack regulates itself there
+        solid) k_rule=value; sig_y_emb=$SIG_Y ;;                 # solid = strip mesh + the same yield stress everywhere (one homogeneous material, 2026-10-17)
+    esac
     sed -e "s|{PROJECT_NAME}|${PROJECT_NAME}|g" \
         -e "s|{FOLDER_NAME}|${folder_name}|g" \
         -e "s|{JOB_NAME}|${job_name}|g" \
@@ -94,7 +98,7 @@ for folder_path in "${BASE_DIR}"/*/; do
         -e "s|{BETA}|${BETA}|g" \
         -e "s|{ETA}|${ETA}|g" \
         -e "s|{MOB}|${MOB}|g" \
-        -e "s|{SIG_Y_EMBEDDING}|${SIG_Y_EMBEDDING}|g" \
+        -e "s|{SIG_Y_EMBEDDING}|${sig_y_emb}|g" \
         -e "s|{BC_MODULI}|${BC_MODULI}|g" \
         -e "s|{K_BC_RULE}|${k_rule}|g" \
         -e "s|{E_BC}|${E_BC}|g" \

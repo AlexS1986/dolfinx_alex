@@ -1,5 +1,6 @@
 # KLAIM 2025 revision 2 -- 3D case list (one job per line, 64 cores each). Lines starting with # are ignored.
-# columns: name  wsteg  material  gc  sig_y  hard  embedding  crack_factor
+# columns: name  wsteg  material  gc  sig_y  hard  embedding  crack_factor  [geometry: porous (default) | strip | solid]
+#   solid = the w_s = 1 box without pores and with the yield stress everywhere (one homogeneous vM material) -> J_c^num of the 3D discretization
 # ---------------------------------------------------------------- S1_3D: paper sweep (vM), eta = 1e-5, beta = 0.2
 S1_3D_vM_ws0.25    0.25  vonmises 1.0 1.0 0.2222222 isotropic 1.0
 S1_3D_vM_ws0.375   0.375 vonmises 1.0 1.0 0.2222222 isotropic 1.0
@@ -12,6 +13,8 @@ S1_3D_vM_ws4.0     4.0   vonmises 1.0 1.0 0.2222222 isotropic 1.0
 # ---------------------------------------------------------------- S3_3D: cubic embedding (R1 major point 4), reference w_s
 S3_3D_cubic_vM_ws1.0   1.0   vonmises 1.0 1.0 0.2222222 cubic 1.0
 S3_3D_cubic_vM_ws0.375 0.375 vonmises 1.0 1.0 0.2222222 cubic 1.0
+# ---------------------------------------------------------------- S2_3D: homogeneous reference (no pores), 2026-10-17
+S2_3D_solid_vM     1.0   vonmises 1.0 1.0 0.2222222 isotropic 1.0 solid
 # ---------------------------------------------------------------- S6_3D (optional, comment in if the queue allows): elastic reference sets in 3D
 #S6_3D_EqJc_ws1.0    1.0   elastic 1.0    1.0 0.2222222 isotropic 1.0
-#S6_3D_EqSig_ws1.0   1.0   elastic 0.5679 1.0 0.2222222 isotropic 1.0
+#S6_3D_EqSig_ws1.0   1.0   elastic 0.5523 1.0 0.2222222 isotropic 1.0

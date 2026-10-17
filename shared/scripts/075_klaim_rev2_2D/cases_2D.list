@@ -9,7 +9,7 @@
 #   embedding    : isotropic | cubic   (constitutive law of the homogeneous embedding)
 #   nrows        : number of rows of unit cells (3 = paper)
 #   crack_factor : initial crack length = crack_factor * w_c   (1.0 = paper: tip at the left edge of the porous block)
-#   geometry     : porous | strip  (strip = no pores, homogeneous calibration of J_c^num, Fig. 3)
+#   geometry     : porous | strip (no pores, embedding linear elastic; J_c^num calibration, Fig. 3) | solid (no pores, plastic everywhere = one homogeneous vM material)
 #
 # ---------------------------------------------------------------- S1: paper sweeps (3 parameter sets x 11 wall widths)
 S1_vM_ws0.25      0.25   vonmises 1.0    1.0  0.2222222 isotropic 3 1.0 porous
@@ -49,6 +49,7 @@ S1_EqSig_ws4.0    4.0    elastic  0.5523 1.0  0.2222222 isotropic 3 1.0 porous
 S2_strip_vM       1.0    vonmises 1.0    1.0  0.2222222 isotropic 3 1.0 strip
 S2_strip_EqJc     1.0    elastic  1.0    1.0  0.2222222 isotropic 3 1.0 strip
 S2_strip_EqSig    1.0    elastic  0.5523 1.0  0.2222222 isotropic 3 1.0 strip
+S2_solid_vM       1.0    vonmises 1.0    1.0  0.2222222 isotropic 3 1.0 solid
 # ---------------------------------------------------------------- S3: cubic (non-isotropic) embedding, R1 major point 4
 S3_cubic_vM_ws0.375  0.375 vonmises 1.0  1.0  0.2222222 cubic     3 1.0 porous
 S3_cubic_vM_ws1.0    1.0   vonmises 1.0  1.0  0.2222222 cubic     3 1.0 porous

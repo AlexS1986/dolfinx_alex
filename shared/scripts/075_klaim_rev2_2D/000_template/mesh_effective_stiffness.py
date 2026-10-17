@@ -15,7 +15,7 @@ try:
     parser.add_argument("--dhole", type=float, required=True, help="Diameter of hole")
     parser.add_argument("--wsteg", type=float, required=True, help="width of steg")
     parser.add_argument("--e0", type=float, required=True, help="size of elements")
-    parser.add_argument("--geometry", type=str, default="porous", choices=["porous", "strip"])
+    parser.add_argument("--geometry", type=str, default="porous", choices=["porous", "strip", "solid"])
     args = parser.parse_args()
     dhole=args.dhole
     wsteg=args.wsteg

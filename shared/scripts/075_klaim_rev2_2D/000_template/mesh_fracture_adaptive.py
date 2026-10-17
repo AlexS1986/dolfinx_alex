@@ -21,8 +21,9 @@ try:
     parser.add_argument("--e0", type=float, required=True, help="Size of elements")
     parser.add_argument("--e1", type=float, required=True, help="Coarse element size")
     parser.add_argument("--nrows", type=int, default=3, help="Number of rows of unit cells (odd, centred on y=0)")
-    parser.add_argument("--geometry", type=str, default="porous", choices=["porous", "strip"],
-                        help="porous: circular pores in every cell; strip: same cell layout without pores (homogeneous calibration)")
+    parser.add_argument("--geometry", type=str, default="porous", choices=["porous", "strip", "solid"],
+                        help="porous: circular pores in every cell; strip/solid: same cell layout without pores (homogeneous calibration; "
+                             "solid = the job script also makes the embedding plastic, i.e. one homogeneous material)")
     args = parser.parse_args()
     Nholes = args.nholes
     dhole = args.dhole

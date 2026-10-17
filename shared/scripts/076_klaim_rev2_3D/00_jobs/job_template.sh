@@ -36,6 +36,7 @@ SIG_Y={SIG_Y}
 HARD={HARD}
 EMBEDDING="{EMBEDDING}"
 CRACK_FACTOR={CRACK_FACTOR}
+GEOMETRY="{GEOMETRY}"
 
 NL_EFFECTIVE={NL_EFFECTIVE}
 NL_FRACTURE={NL_FRACTURE}
@@ -59,19 +60,24 @@ POSTPROCESSING_INTERVAL={POSTPROCESSING_INTERVAL}
 EVENT_SNAPSHOTS={EVENT_SNAPSHOTS}
 
 LCRACK=$(awk "BEGIN {print $CRACK_FACTOR * ($WSTEG + $DHOLE)}")
-echo "[$(date)] job $SLURM_JOB_ID case $working_folder_name: wsteg=$WSTEG material=$MATERIAL gc=$GC_MICRO_PARAM sig_y=$SIG_Y hard=$HARD embedding=$EMBEDDING lcrack=$LCRACK"
+echo "[$(date)] job $SLURM_JOB_ID case $working_folder_name: wsteg=$WSTEG material=$MATERIAL gc=$GC_MICRO_PARAM sig_y=$SIG_Y hard=$HARD embedding=$EMBEDDING lcrack=$LCRACK geometry=$GEOMETRY"
 cd $HPC_SCRATCH
 
 set -e
+if [ "$GEOMETRY" = "porous" ]; then
 echo "[$(date)] effective stiffness mesh"
 srun -n 1 apptainer exec --bind $bindpath $container python3 $working_directory/mesh_effective_stiffness.py \
     --dhole "$DHOLE" --wsteg "$WSTEG" --NL "$NL_EFFECTIVE"
 echo "[$(date)] effective stiffness"
 srun -n 1 apptainer exec --bind $bindpath $container python3 $working_directory/run_effective_stiffness.py \
     --lam_micro_param "$LAM_MICRO_PARAM" --mue_micro_param "$MUE_MICRO_PARAM"
+else
+echo "[$(date)] no pores ($GEOMETRY): effective stiffness = micro stiffness, no homogenization"
+printf "lam_effective=%s\nmue_effective=%s\n" "$LAM_MICRO_PARAM" "$MUE_MICRO_PARAM" >> $working_directory/parameters.txt
+fi
 echo "[$(date)] fracture mesh"
 srun -n 1 apptainer exec --bind $bindpath $container python3 $working_directory/mesh_fracture_adaptive.py \
-    --Nholes "$NHOLES" --dhole "$DHOLE" --wsteg "$WSTEG" --NL "$NL_FRACTURE"
+    --Nholes "$NHOLES" --dhole "$DHOLE" --wsteg "$WSTEG" --NL "$NL_FRACTURE" --geometry "$GEOMETRY"
 echo "[$(date)] mesh info"
 srun -n 1 apptainer exec --bind $bindpath $container python3 $working_directory/get_mesh_info.py --mesh_file "$MESH_FILE" \
     || echo "[$(date)] get_mesh_info failed (non-fatal: edge-length statistics only)"

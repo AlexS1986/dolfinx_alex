@@ -33,7 +33,8 @@ mkdir -p "$BASE_WORKING_DIR"
 created=0
 skipped=0
 
-while read -r name wsteg material gc sig_y hard embedding crack_factor rest; do
+while read -r name wsteg material gc sig_y hard embedding crack_factor geometry rest; do
+    geometry=${geometry:-porous}
     [ -z "$name" ] && continue
     case "$name" in \#*) continue ;; esac
     if [ -n "$MATCH_TEXT" ] && [[ "$name" != *"$MATCH_TEXT"* ]]; then
@@ -61,6 +62,7 @@ SIG_Y=$sig_y
 HARD=$hard
 EMBEDDING=$embedding
 CRACK_FACTOR=$crack_factor
+GEOMETRY=$geometry
 EOF
     echo "created: $target"
     created=$((created + 1))

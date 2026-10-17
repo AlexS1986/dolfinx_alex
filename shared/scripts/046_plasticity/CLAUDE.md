@@ -324,3 +324,8 @@ into the `_PAPER` folders. The `alex`/`ronny` packages live in `shared/utils/` (
   (not yet copied to KLAIM_2025/pics).
 * 2026-10-17: Sec. 3.6 updated from 077 (`revision_2/edits_round2_part4_1Dbar.py`): σ* 1.28/1.72/1.28, ε* (collapse) 1.17/1.07/0.80,
   Π* 2.12/2.19/1.23, [Eq σ*] J_c = 0.5523 J_c^0, weak zone |x| ≤ 0.15L; figures `pics/*_1D_rev2.*`; letter item 6 + quotes.
+* 2026-10-17: homogeneous references without pores: the 2D `S2_strip_*` runs are the porous box (16L x 20L at w_s = 1) without pores but
+  with the *elastic* embedding (plasticity only in the 3 x 6 block) — not the fully plastic 16L x 2L strip of the v2.0 text. New geometry
+  `solid` (2D + 3D: no pores, yield stress everywhere = one homogeneous vM material, K_bc^2 = 2.5, no homogenization step):
+  `S2_solid_vM` (075) and `S2_3D_solid_vM` (076, void-free gmsh mesh with the same refinement box as MatrixPores3D, 174k tets at w_s = 1).
+  `evaluation_rev2.py` takes J_c^num from the solid run when present, else from the strip. Manuscript Sec. 3.5 must describe the new geometry.
