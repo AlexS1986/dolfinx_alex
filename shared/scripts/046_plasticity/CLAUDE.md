@@ -317,3 +317,10 @@ into the `_PAPER` folders. The `alex`/`ronny` packages live in `shared/utils/` (
   wait until the jobs have left squeue, *then* move folders — a COMPLETING job writes by path and re-creates its folder
   (six stub folders had to be deleted and recreated by hand); `10_restart_round2_Kbc.sh` now waits. `%Z` in squeue is the
   sbatch cwd on Lichtenberg, so job selection goes by name (`r2_S[1345]_` without `_3D_`).
+* **077_klaim_rev2_1D_bar (2026-10-17):** local 1D-bar rerun (β = 0.2, µ = 1, λ = 0, η = 1e-5, ε = 0.1, M = 1000; CLI copies of the 050
+  scripts). σ* = 1.2803 (vM) / 1.7227 (Eq J_c) / 1.2812 (Eq σ*, J_c = 0.5523); ε* at peak 1.00/0.97/0.72, at stress collapse 1.17/1.07/0.80;
+  Π* = max W = 2.12/2.19/1.23. The manuscript's ε* (1.18/1.08/0.82) was the collapse strain, and σ*_vM = 1.31 was from β = 0.1.
+  vM peak is rate-independent (rate/2 and M = 1e4: < 0.5 %). New figures + list of Sec. 3.6 changes: `077_klaim_rev2_1D_bar/RESULTS.md`
+  (not yet copied to KLAIM_2025/pics).
+* 2026-10-17: Sec. 3.6 updated from 077 (`revision_2/edits_round2_part4_1Dbar.py`): σ* 1.28/1.72/1.28, ε* (collapse) 1.17/1.07/0.80,
+  Π* 2.12/2.19/1.23, [Eq σ*] J_c = 0.5523 J_c^0, weak zone |x| ≤ 0.15L; figures `pics/*_1D_rev2.*`; letter item 6 + quotes.
