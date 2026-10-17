@@ -17,7 +17,8 @@ DRY=0; [ "${1:-}" = "--dry-run" ] && DRY=1
 PATTERN='^S[1345]_|^S2_strip_EqSig$'    # porous 2D cases + the Eq sigma* strip (J_c 0.5679 -> 0.5523); the other strips stay
 
 # 1. cancel
-rows=$(squeue --noheader --user "${USER:-$(id -un)}" --format "%A|%j|%T|%Z" | awk -F'|' -v p="/$PROJECT_NAME/" 'index($4, p) && $2 !~ /^r2_S2_strip_(vM|EqJc)/')
+# match by job name (%Z is the sbatch cwd on Lichtenberg, not the scratch folder): porous 2D = r2_S1/S3/S4/S5 without _3D_, plus the EqSig strip
+rows=$(squeue --noheader --user "${USER:-$(id -un)}" --format "%A|%j|%T|%Z" | awk -F'|' '($2 ~ /^r2_S[1345]_/ && $2 !~ /_3D_/) || $2 == "r2_S2_strip_EqSig"')
 if [ -n "$rows" ]; then
     echo "cancelling:"; printf "%s\n" "$rows" | awk -F'|' '{printf "  %s  %-28s %s\n", $1, $2, $3}'
     [ "$DRY" -eq 0 ] && scancel $(printf "%s\n" "$rows" | cut -d'|' -f1)
