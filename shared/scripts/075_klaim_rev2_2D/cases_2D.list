@@ -3,7 +3,8 @@
 #   name         : unique job/folder name (letters, digits, _ . -)
 #   wsteg        : wall width w_s / L
 #   material     : vonmises | elastic
-#   gc           : J_c / J_c^0 (1.0 for [vM] and [Eq Jc], 0.5679 for [Eq sigma*])
+#   gc           : J_c / J_c^0 (1.0 for [vM] and [Eq Jc]; [Eq sigma*]: 0.5523 = (sig*_vM/sig*_EqJc)^2 of the 1D bar with beta = 0.2
+#                  (bar1d_homogeneous_check.py, FE 050: 1.2803/1.7237; the v2.0 value 0.5679 belongs to sig* = 1.30, i.e. beta = 0.1 / Ramberg-Osgood)
 #   sig_y, hard  : yield stress / hardening modulus of the porous region (ignored for elastic)
 #   embedding    : isotropic | cubic   (constitutive law of the homogeneous embedding)
 #   nrows        : number of rows of unit cells (3 = paper)
@@ -33,21 +34,21 @@ S1_EqJc_ws1.4     1.4    elastic  1.0    1.0  0.2222222 isotropic 3 1.0 porous
 S1_EqJc_ws2.0     2.0    elastic  1.0    1.0  0.2222222 isotropic 3 1.0 porous
 S1_EqJc_ws3.0     3.0    elastic  1.0    1.0  0.2222222 isotropic 3 1.0 porous
 S1_EqJc_ws4.0     4.0    elastic  1.0    1.0  0.2222222 isotropic 3 1.0 porous
-S1_EqSig_ws0.25   0.25   elastic  0.5679 1.0  0.2222222 isotropic 3 1.0 porous
-S1_EqSig_ws0.375  0.375  elastic  0.5679 1.0  0.2222222 isotropic 3 1.0 porous
-S1_EqSig_ws0.4    0.4    elastic  0.5679 1.0  0.2222222 isotropic 3 1.0 porous
-S1_EqSig_ws0.5    0.5    elastic  0.5679 1.0  0.2222222 isotropic 3 1.0 porous
-S1_EqSig_ws0.6    0.6    elastic  0.5679 1.0  0.2222222 isotropic 3 1.0 porous
-S1_EqSig_ws0.75   0.75   elastic  0.5679 1.0  0.2222222 isotropic 3 1.0 porous
-S1_EqSig_ws1.0    1.0    elastic  0.5679 1.0  0.2222222 isotropic 3 1.0 porous
-S1_EqSig_ws1.4    1.4    elastic  0.5679 1.0  0.2222222 isotropic 3 1.0 porous
-S1_EqSig_ws2.0    2.0    elastic  0.5679 1.0  0.2222222 isotropic 3 1.0 porous
-S1_EqSig_ws3.0    3.0    elastic  0.5679 1.0  0.2222222 isotropic 3 1.0 porous
-S1_EqSig_ws4.0    4.0    elastic  0.5679 1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqSig_ws0.25   0.25   elastic  0.5523 1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqSig_ws0.375  0.375  elastic  0.5523 1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqSig_ws0.4    0.4    elastic  0.5523 1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqSig_ws0.5    0.5    elastic  0.5523 1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqSig_ws0.6    0.6    elastic  0.5523 1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqSig_ws0.75   0.75   elastic  0.5523 1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqSig_ws1.0    1.0    elastic  0.5523 1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqSig_ws1.4    1.4    elastic  0.5523 1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqSig_ws2.0    2.0    elastic  0.5523 1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqSig_ws3.0    3.0    elastic  0.5523 1.0  0.2222222 isotropic 3 1.0 porous
+S1_EqSig_ws4.0    4.0    elastic  0.5523 1.0  0.2222222 isotropic 3 1.0 porous
 # ---------------------------------------------------------------- S2: homogeneous calibration of J_c^num (Fig. 3, replaces 062/049)
 S2_strip_vM       1.0    vonmises 1.0    1.0  0.2222222 isotropic 3 1.0 strip
 S2_strip_EqJc     1.0    elastic  1.0    1.0  0.2222222 isotropic 3 1.0 strip
-S2_strip_EqSig    1.0    elastic  0.5679 1.0  0.2222222 isotropic 3 1.0 strip
+S2_strip_EqSig    1.0    elastic  0.5523 1.0  0.2222222 isotropic 3 1.0 strip
 # ---------------------------------------------------------------- S3: cubic (non-isotropic) embedding, R1 major point 4
 S3_cubic_vM_ws0.375  0.375 vonmises 1.0  1.0  0.2222222 cubic     3 1.0 porous
 S3_cubic_vM_ws1.0    1.0   vonmises 1.0  1.0  0.2222222 cubic     3 1.0 porous
@@ -66,4 +67,4 @@ S5_crack1.5_vM_ws1.0   1.0   vonmises 1.0  1.0  0.2222222 isotropic 3 1.5 porous
 S5_crack2.0_vM_ws1.0   1.0   vonmises 1.0  1.0  0.2222222 isotropic 3 2.0 porous
 S5_rows5_vM_ws1.0      1.0   vonmises 1.0  1.0  0.2222222 isotropic 5 1.0 porous
 S5_rows5_vM_ws0.375    0.375 vonmises 1.0  1.0  0.2222222 isotropic 5 1.0 porous
-S5_rows5_EqSig_ws1.0   1.0   elastic  0.5679 1.0 0.2222222 isotropic 5 1.0 porous
+S5_rows5_EqSig_ws1.0   1.0   elastic  0.5523 1.0 0.2222222 isotropic 5 1.0 porous

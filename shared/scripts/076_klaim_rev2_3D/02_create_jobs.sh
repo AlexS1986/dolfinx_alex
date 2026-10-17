@@ -35,6 +35,8 @@ ETA=0.00001             # residual stiffness (manuscript: 1e-5)
 MOB=1000.0              # mobility
 SIG_Y_EMBEDDING=1000000.0   # linear elastic embedding (manuscript); set to 1.0 to mimic the old global yield stress
 BC_MODULI="effective"   # surfing K-field with (E_eff, nu_eff) of the embedding (= all previous runs, manuscript corrected accordingly); "fixed" = E_BC/NU_BC below
+K_BC_RULE="${K_BC_RULE:-value}"   # value | equal_gc
+# value: K_bc^2 = 2.5 (first 3D round, running since 2026-10-16). equal_gc (J_bc = gc, as in 075) only for a new 3D round.
 E_BC=2.5
 NU_BC=0.25
 STOP_FRACTION=0.9       # stop when x_ct >= STOP_FRACTION * domain length (0.9 = paper); small values for tests
@@ -84,6 +86,7 @@ for folder_path in "${BASE_DIR}"/*/; do
         -e "s|{MOB}|${MOB}|g" \
         -e "s|{SIG_Y_EMBEDDING}|${SIG_Y_EMBEDDING}|g" \
         -e "s|{BC_MODULI}|${BC_MODULI}|g" \
+        -e "s|{K_BC_RULE}|${K_BC_RULE}|g" \
         -e "s|{E_BC}|${E_BC}|g" \
         -e "s|{NU_BC}|${NU_BC}|g" \
         -e "s|{STOP_FRACTION}|${STOP_FRACTION}|g" \

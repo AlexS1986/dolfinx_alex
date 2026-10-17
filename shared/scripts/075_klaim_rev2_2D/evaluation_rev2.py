@@ -102,10 +102,10 @@ class Case:
     @property
     def set_name(self):
         if self.dim == 3:
-            return "3D_vM" if self.material == "vonmises" else ("3D_EqSig" if abs(self.gc - 0.5679) < 1e-3 else "3D_EqJc")
+            return "3D_vM" if self.material == "vonmises" else ("3D_EqSig" if self.gc < 0.9 else "3D_EqJc")
         if self.material == "vonmises":
             return "vM"
-        return "EqSig" if abs(self.gc - 0.5679) < 1e-3 else "EqJc"
+        return "EqSig" if self.gc < 0.9 else "EqJc"
 
     def is_baseline(self):
         return (self.geometry == "porous" and self.embedding == "isotropic" and self.nrows == 3 and abs(self.crack_factor - 1.0) < 1e-6

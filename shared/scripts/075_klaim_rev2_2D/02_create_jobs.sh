@@ -35,6 +35,9 @@ ETA=0.00001             # residual stiffness (manuscript: 1e-5)
 MOB=1000.0              # mobility
 SIG_Y_EMBEDDING=1000000.0   # linear elastic embedding (manuscript); set to 1.0 to mimic the old global yield stress
 BC_MODULI="effective"   # surfing K-field with (E_eff, nu_eff) of the embedding (= all previous runs, manuscript corrected accordingly); "fixed" = E_BC/NU_BC below
+K_BC_RULE="${K_BC_RULE:-equal_gc}"   # value | equal_gc
+# equal_gc: K_bc^2 = 2 mu_bc gc/(1 - nu_bc) so that J_bc = gc for every case (2026-10-17: with the fixed K_bc^2 = 2.5 the
+#   small-w_s runs were overdriven, J_bc/J_eff up to 4.4, crack 3-4 w_c ahead of the K-field; the elastic sets become self-similar)
 E_BC=2.5
 NU_BC=0.25
 STOP_FRACTION=0.9       # stop when x_ct >= STOP_FRACTION * domain length (0.9 = paper); small values for tests
@@ -46,7 +49,7 @@ MEMORY_VALUE=4000       # MB per core
 PROCESSOR_NUMBER=16       # scaling test 2026-10-15: 1.57/1.35/1.46 s per step on 16/32/48 cores -> 16 (6 jobs per i01 node)
 TIME=7200               # minutes (5 days -> partition long; longest 2D run w_s = 3.0 estimated ~50 h on 16 cores)
 TIME_SHORT=1440         # minutes (24 h -> default partition deflt, more capacity) for cases with w_s <= WSTEG_SHORT_MAX (estimated <= 10 h)
-WSTEG_SHORT_MAX=1.0
+WSTEG_SHORT_MAX=1.0     # (elastic cases only, see below)
 CONSTRAINT="${CONSTRAINT:-}"        # node type(s), e.g. "i01" or "i01|i02"; empty = no constraint (handoff 2026-10-16: leave out -C i01; i02 needs the OpenBLAS fix, which the template sets)
 EXCLUDE="${EXCLUDE:-mpsd0138,mpsd0319,mpsd0401,mpsd0415,mpsd0557}"   # faulty nodes (handoff 2026-10-16; mpsd0557: SIGBUS 16.10.)
 ACCOUNT="${ACCOUNT:-p0023647}"     # SLURM account (handoff: p0023647; p0025962 = follow-on phase once as12vapa is a member; special00008 only sparingly; never l0003507). p0023647 had MaxSubmit=0 on 2026-10-16.
@@ -64,6 +67,9 @@ for folder_path in "${BASE_DIR}"/*/; do
     job_name="r2_${CASE_NAME}"
     time_limit=$TIME; awk -v w="$WSTEG" -v m="$WSTEG_SHORT_MAX" 'BEGIN{exit !(w+0 <= m+0)}' && time_limit=$TIME_SHORT
     [ "${GEOMETRY:-porous}" = "strip" ] && time_limit=$TIME     # the vM strip needs > 24 h (tiny steps)
+    [ "$MATERIAL" = "vonmises" ] && time_limit=$TIME            # round 1: four vM runs with w_s <= 1 hit the 24 h limit in the last pore
+    k_rule=$K_BC_RULE
+    [ "${GEOMETRY:-porous}" = "strip" ] && k_rule=value         # homogeneous strips (Sec. 3.5) keep K_bc^2 = 2.5 Jc0 mu0 (J_bc = 0.94 Jc0); the crack regulates itself there
     sed -e "s|{PROJECT_NAME}|${PROJECT_NAME}|g" \
         -e "s|{FOLDER_NAME}|${folder_name}|g" \
         -e "s|{JOB_NAME}|${job_name}|g" \
@@ -90,6 +96,7 @@ for folder_path in "${BASE_DIR}"/*/; do
         -e "s|{MOB}|${MOB}|g" \
         -e "s|{SIG_Y_EMBEDDING}|${SIG_Y_EMBEDDING}|g" \
         -e "s|{BC_MODULI}|${BC_MODULI}|g" \
+        -e "s|{K_BC_RULE}|${k_rule}|g" \
         -e "s|{E_BC}|${E_BC}|g" \
         -e "s|{NU_BC}|${NU_BC}|g" \
         -e "s|{STOP_FRACTION}|${STOP_FRACTION}|g" \

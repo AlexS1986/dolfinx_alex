@@ -77,6 +77,9 @@ parser.add_argument("--bc_moduli", type=str, default="effective", choices=["effe
 parser.add_argument("--E_bc", type=float, default=2.5)
 parser.add_argument("--nu_bc", type=float, default=0.25)
 parser.add_argument("--K_bc", type=float, default=math.sqrt(2.5))
+parser.add_argument("--K_bc_rule", type=str, default="value", choices=["value", "equal_gc"],
+                    help="value: use --K_bc as given (old runs, K_bc^2 = 2.5 Jc0 mu0); equal_gc: K_bc^2 = 2 mu_bc gc / (1 - nu_bc), "
+                         "i.e. the energy release rate of the applied K-field equals the crack resistance gc")
 parser.add_argument("--postprocessing_interval", type=int, default=200)
 parser.add_argument("--event_snapshots", type=int, default=1)
 parser.add_argument("--jump_threshold_factor", type=float, default=4.0)
@@ -233,7 +236,6 @@ def update_plastic_state_3D(u_):
 
 
 # ---------------------------------------------------------------- crack and BCs (as in 061)
-K1 = dlfx.fem.Constant(domain, args.K_bc)
 crack_tip_start_location_x = in_crack_length + x_min_all
 crack_tip_start_location_y = (y_max_all + y_min_all) / 2.0
 
@@ -267,6 +269,15 @@ if args.bc_moduli == "fixed":
 else:
     mu_bc_value = mu_effective
     nu_bc_value = alex.linearelastic.get_nu(lam=la_effective, mu=mu_effective)
+if args.K_bc_rule == "equal_gc":   # J_bc = K_bc^2 (1 - nu^2) / E_bc = gc  (plane strain)
+    K_bc_value = math.sqrt(2.0 * mu_bc_value * gc_micro / (1.0 - nu_bc_value))
+else:
+    K_bc_value = args.K_bc
+J_bc_value = K_bc_value ** 2 * (1.0 - nu_bc_value) / (2.0 * mu_bc_value)
+if rank == 0:
+    print(f"surfing BC: rule={args.K_bc_rule} K_bc={K_bc_value:.6f} mu_bc={mu_bc_value:.6f} nu_bc={nu_bc_value:.6f} "
+          f"J_bc={J_bc_value:.6f} (gc={gc_micro})")
+K1 = dlfx.fem.Constant(domain, K_bc_value)
 mu_bc = dlfx.fem.Constant(domain, mu_bc_value)
 nu_bc = dlfx.fem.Constant(domain, nu_bc_value)
 
@@ -557,7 +568,7 @@ parameters_to_write = {
     'lam_micro_simulation': la_micro, 'mue_micro_simulation': mu_micro, 'Gc_simulation': gc_micro,
     'sig_y_simulation': sig_y_micro_value, 'sig_y_embedding_simulation': sig_y_eff_value, 'hard_simulation': args.hard,
     'beta_simulation': args.beta, 'eps_simulation': eps_param, 'eps': epsilon.value, 'eta': eta.value, 'mob': Mob.value,
-    'bc_moduli': args.bc_moduli, 'mu_bc_simulation': mu_bc_value, 'nu_bc_simulation': nu_bc_value, 'K_bc_simulation': args.K_bc,
+    'bc_moduli': args.bc_moduli, 'mu_bc_simulation': mu_bc_value, 'nu_bc_simulation': nu_bc_value, 'K_bc_simulation': K_bc_value, 'K_bc_rule': args.K_bc_rule, 'J_bc_simulation': J_bc_value,
     'element_order': 1, 'in_crack_length': in_crack_length, 'thickness_z': thickness_z,
     'dt_start': args.dt_start, 'dt_max': args.dt_max, 'postprocessing_interval': args.postprocessing_interval,
 }

@@ -51,6 +51,7 @@ ETA={ETA}
 MOB={MOB}
 SIG_Y_EMBEDDING={SIG_Y_EMBEDDING}
 BC_MODULI="{BC_MODULI}"
+K_BC_RULE="{K_BC_RULE}"
 E_BC={E_BC}
 NU_BC={NU_BC}
 STOP_FRACTION={STOP_FRACTION}
@@ -94,6 +95,7 @@ srun -n {PROCESSOR_NUMBER} apptainer exec --bind $bindpath $container python3 $w
     --mob "$MOB" \
     --embedding "$EMBEDDING" \
     --bc_moduli "$BC_MODULI" \
+    --K_bc_rule "$K_BC_RULE" \
     --E_bc "$E_BC" \
     --nu_bc "$NU_BC" \
     --stop_fraction "$STOP_FRACTION" \

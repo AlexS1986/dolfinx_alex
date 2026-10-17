@@ -151,3 +151,23 @@ h5 files (large).
 
 If by Oct 22 the S1 sweeps are not through, reduce: keep S2, S1 at w_s ∈ {0.375, 0.6, 1.0, 2.0, 3.0} for the three sets,
 S3 and S4 at w_s = 1.0 — cancel the rest with `./04_cancel_jobs.sh --match <name>`.
+
+## Round 2 of the 2D porous runs (2026-10-17): K_bc per case, J_bc = J_c
+
+Round 1 (K_bc^2 = 2.5 J_c^0 mu_0 for every case) overdrove the small-w_s runs: J_bc = K_bc^2 (1 - nu_eff^2)/E_eff grows as
+E_eff drops (3.4 J_c^0 at w_s = 0.25), J_bc/J_eff reached 2.3-4.4 for w_s <= 0.5, the crack ran 3-4 w_c ahead of the
+K-field centre and W decreased (stored-energy dump). Symptom: the [Eq J_c]/[Eq sigma*] ratio of J_eff was 1.29-1.41 at
+w_s = 0.25/0.375/0.4 instead of 1/0.5679 = 1.761 (held within 1-3.5 % for w_s >= 0.5).
+Fix: `run_simulation.py --K_bc_rule equal_gc` -> K_bc^2 = 2 mu_bc J_c/(1 - nu_bc), i.e. J_bc = J_c (`02_create_jobs.sh`:
+`K_BC_RULE=equal_gc`, strips keep `value`). `parameters.txt` now records `K_bc_rule`, `K_bc_simulation`, `J_bc_simulation`.
+[Eq sigma*] now uses J_c = 0.5523 J_c^0 (= (sigma*_vM/sigma*_EqJc)^2 of the 1D bar at beta = 0.2, `bar1d_homogeneous_check.py`;
+0.5679 was the value for sigma* = 1.30, i.e. the Ramberg-Osgood / beta = 0.1 bar).
+
+Restart on the cluster (cancels the porous 2D jobs, parks round 1 in `$HPC_SCRATCH/075_klaim_rev2_2D_round1_K2.5/`,
+recreates and submits; strips vM/EqJc and all 3D jobs are untouched):
+```bash
+cd $HOME/dolfinx_alex/shared/scripts && git pull && cd 075_klaim_rev2_2D
+./10_restart_round2_Kbc.sh --dry-run     # shows what would be cancelled / parked
+./10_restart_round2_Kbc.sh               # then ./07_status.sh; grep "surfing BC" $HPC_SCRATCH/075_klaim_rev2_2D/*/*.out.* to see J_bc
+```
+3D (076) keeps `K_BC_RULE=value` for the running round; the option exists there for a possible new round.

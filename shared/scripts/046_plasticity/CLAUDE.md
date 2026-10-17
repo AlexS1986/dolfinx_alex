@@ -299,3 +299,17 @@ into the `_PAPER` folders. The `alex`/`ronny` packages live in `shared/utils/` (
 * 2026-10-16: `S1_3D_vM_ws0.5` (55461135) killed after 5.7 h on **mpsd0557** by SIGBUS (step exit 0:7, MaxRSS only
   1.7 GB/task -> not memory). Node added to the exclude list in both `02_create_jobs.sh`; case resubmitted from scratch.
 * Record decisions and new data locations in this file.
+
+### 2026-10-17: 2D round 2 (K_bc per case) and the [Eq sigma*] value
+* Round-1 evaluation (K_bc^2 = 2.5 for all): J_eff agrees with v2.0 within ~3 % for w_s >= 1 (vM 1.589 at w_s = 1), S3/S5
+  fine, energy balance closes after the initial relaxation. But small w_s was overdriven (J_bc/J_eff up to 4.4, crack 3-4 w_c
+  ahead of the K-field, EqJc/EqSig ratio 1.3-1.4 instead of 1.761 for w_s <= 0.4). Round-1 data: cluster
+  `$HPC_SCRATCH/075_klaim_rev2_2D_round1_K2.5/`, Mac `075_klaim_rev2_2D/results_round1_K2.5/`.
+* Fix: `--K_bc_rule equal_gc` (J_bc = J_c, K_bc^2 = 2 mu_bc J_c/(1 - nu_bc)) for all porous 2D cases; strips keep K_bc^2 = 2.5.
+  Elastic sets are then exactly self-similar (R3-C3). 3D round 1 unchanged (J_bc ~ 1.06 J_c at w_s = 1).
+* 1D bar check (`075/bar1d_homogeneous_check.py`, rate-independent homogeneous uniaxial-strain bar = 050 BCs u_y = 0):
+  elastic J_c = 1: sigma* = 1.7230 (FE 050: 1.7237); vM beta = 0.2: 1.2806 (FE 050 of 2026-05: 1.2803; beta = 0.1: 1.32);
+  elastic sigma* is exactly proportional to sqrt(J_c). Equal strength at beta = 0.2 needs J_c = 0.5523 J_c^0 (0.5679 = the
+  Ramberg-Osgood value sigma* = 1.30 of the previous paper). **Decision 2026-10-17: [Eq sigma*] = 0.5523 J_c^0 in all reruns**;
+  manuscript Sec. 3.6 numbers (1.31/1.72/1.30, eps* 1.18/1.08/0.82, Pi*) must be regenerated from a local 050 rerun with
+  beta = 0.2, mu = 1 (the elastic 050 script currently has mu = 0.25 left over from a Jan-2026 experiment).

@@ -468,3 +468,6 @@ Notes/Hypo/.obsidian/
 *.pgf
 *.pdf
 *.png
+
+shared/scripts/*/results_round*/
+shared/scripts/*/evaluation_output*/
