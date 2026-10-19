@@ -378,3 +378,8 @@ into the `_PAPER` folders. The `alex`/`ronny` packages live in `shared/utils/` (
   the whole domain in ~5 h (old ones: 22-24 % after 3 days): J_eff (ligament before pore 2) w_s 0.5: 1.173, 0.75: 1.465, 1.0: 1.535,
   cubic 0.375: 1.079; on the common range J(x) median -0.7..-1.8 % vs. the old runs, first-ligament maxima within 0-5 %.
   2D S7_vM_ws4.0_mi5 sits at exactly 5 iterations -> frozen again; added S7_vM_ws4.0_mi6 (2D) and S7_3D_vM_ws2.0_mi5.
+* 2026-10-19 15:45 queue: special00008 usage by as12vapa: 60,039 core-h since 16.10., 110,030 in 2026 (he is 99.96 % of its use),
+  fair-share 0.081 vs 0.072 on p0023647 -> moving jobs there gains ~5 % priority only, not done. 7 old S1_3D/S3_3D runs on special00008
+  cancelled (covered by S7 / evaluation window already passed); ws0.25, ws2.0, ws4.0 left to finish. The pending 3D jobs (7-day limit)
+  had an expected start of 28.10.; moved with scontrol to deflt / 24 h -> expected start 19.10. 16:45 (S1F, S2F) .. 20.10. 16:45.
+  076 02_create_jobs.sh default TIME is now 1440 (24 h); longer runs continue via 11_resubmit_timeouts.sh.
