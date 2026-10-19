@@ -469,8 +469,10 @@ Notes/Hypo/.obsidian/
 *.pdf
 *.png
 
-shared/scripts/*/results_round*/
-shared/scripts/*/evaluation_output*/
-shared/scripts/*/meshes_cluster/
-shared/scripts/*/results/
-*.tar.gz
+shared/scripts/07[567]_klaim_rev2_*/meshes_cluster/
+shared/scripts/07[567]_klaim_rev2_*/results/
+shared/scripts/07[567]_klaim_rev2_*/results_round*/
+shared/scripts/07[567]_klaim_rev2_*/evaluation_output*/
+shared/scripts/07[567]_klaim_rev2_*/*.tar.gz
+shared/scripts/077_klaim_rev2_1D_bar/*.h5
+shared/scripts/077_klaim_rev2_1D_bar/*.xdmf
