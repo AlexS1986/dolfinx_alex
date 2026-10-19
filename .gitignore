@@ -471,3 +471,6 @@ Notes/Hypo/.obsidian/
 
 shared/scripts/*/results_round*/
 shared/scripts/*/evaluation_output*/
+shared/scripts/*/meshes_cluster/
+shared/scripts/*/results/
+*.tar.gz
