@@ -383,3 +383,8 @@ into the `_PAPER` folders. The `alex`/`ronny` packages live in `shared/utils/` (
   cancelled (covered by S7 / evaluation window already passed); ws0.25, ws2.0, ws4.0 left to finish. The pending 3D jobs (7-day limit)
   had an expected start of 28.10.; moved with scontrol to deflt / 24 h -> expected start 19.10. 16:45 (S1F, S2F) .. 20.10. 16:45.
   076 02_create_jobs.sh default TIME is now 1440 (24 h); longer runs continue via 11_resubmit_timeouts.sh.
+* 2026-10-19 16:00 correction: the 2D round 2 of 17.10. (and S2_strip_EqSig) also ran on special00008 — the shell variable ACCOUNT=special00008
+  from 16.10. was still exported when 10_restart_round2_Kbc.sh ran (02_create_jobs.sh reads ${ACCOUNT:-p0023647}). Not set any more
+  (checked, not in login files). All 3D special00008 jobs cancelled (S1_3D ws0.25/2.0/4.0 included; results exist or are covered by S7 /
+  S1F); 2D S1_vM_ws3.0 cancelled (J_eff 1.880 exists). Still on special00008: 2D S1_vM_ws4.0 and S3_cubic_vM_ws4.0 (16 cores each)
+  until their S7 copies pass the evaluation window. 02_create_jobs.sh now prints the account and warns if it is not p0023647.

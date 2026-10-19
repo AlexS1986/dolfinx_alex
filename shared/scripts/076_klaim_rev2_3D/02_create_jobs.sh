@@ -123,4 +123,5 @@ for folder_path in "${BASE_DIR}"/*/; do
     count=$((count + 1))
     echo "wrote ${folder_path}job_script.sh"
 done
-echo "Wrote $count job scripts."
+echo "Wrote $count job scripts. SLURM account: ${ACCOUNT}"
+[ "$ACCOUNT" != "p0023647" ] && echo "WARNING: account is ${ACCOUNT}, not p0023647 (shell variable ACCOUNT set?). Unset it unless intended: unset ACCOUNT"
