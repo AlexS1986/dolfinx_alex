@@ -373,3 +373,8 @@ into the `_PAPER` folders. The `alex`/`ronny` packages live in `shared/utils/` (
   *uninterrupted* runs with the same process count already differ from step 26 on (PT-SCOTCH/MUMPS non-deterministic, adaptive dt),
   so bitwise reproduction is impossible; checkpoint->restore->write is bitwise identical for 4->2 and 4->4 procs. Legacy restart and
   3D restart (4->3 procs, first new row identical) also tested. Not tested on the cluster yet: first real use = after the next timeouts.
+* 2026-10-19 15:30 S7 result: NEWTON_MIN_ITERS = 5 changes nothing in the results and is 6x (2D) / >100x (3D) faster.
+  2D S7_vM_ws1.0_mi5: J_eff 1.563 = S1 (per-ligament maxima identical, J(x) within 0.6 %), 5145 vs 30200 steps. 3D S7 runs finished
+  the whole domain in ~5 h (old ones: 22-24 % after 3 days): J_eff (ligament before pore 2) w_s 0.5: 1.173, 0.75: 1.465, 1.0: 1.535,
+  cubic 0.375: 1.079; on the common range J(x) median -0.7..-1.8 % vs. the old runs, first-ligament maxima within 0-5 %.
+  2D S7_vM_ws4.0_mi5 sits at exactly 5 iterations -> frozen again; added S7_vM_ws4.0_mi6 (2D) and S7_3D_vM_ws2.0_mi5.

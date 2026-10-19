@@ -75,3 +75,5 @@ S5_rows5_EqSig_ws1.0   1.0   elastic  0.5523 1.0 0.2222222 isotropic 5 1.0 porou
 S7_vM_ws1.0_mi5        1.0 vonmises 1.0 1.0 0.2222222 isotropic 3 1.0 porous 5
 S7_vM_ws4.0_mi5        4.0 vonmises 1.0 1.0 0.2222222 isotropic 3 1.0 porous 5
 S7_cubic_vM_ws4.0_mi5  4.0 vonmises 1.0 1.0 0.2222222 cubic     3 1.0 porous 5
+# 2026-10-19 15:30: S7_vM_ws4.0_mi5 converges in exactly 5 Newton iterations -> dt frozen again (9e-6); same case with 6
+S7_vM_ws4.0_mi6        4.0 vonmises 1.0 1.0 0.2222222 isotropic 3 1.0 porous 6
