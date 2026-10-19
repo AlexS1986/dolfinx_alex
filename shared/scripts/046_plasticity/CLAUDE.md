@@ -336,3 +336,40 @@ into the `_PAPER` folders. The `alex`/`ronny` packages live in `shared/utils/` (
   `newton_min_iters` in cases_2D/3D.list -> job template exports NEWTON_MIN_ITERS (+ APPTAINERENV_). Parallel S7 runs with 5:
   3D ws0.5, 0.75, 1.0, cubic 0.375; 2D vM ws4.0, cubic ws4.0 (backups) and vM ws1.0 (validation against the finished S1 run).
   Old runs keep running; evaluation_rev2.py treats `_mi` cases as non-baseline. Decide per case which run to use once both exist.
+* 2026-10-19 3D mesh effect: the 3D fracture mesh scales with the domain (band element size = L_domain/NL/n_ref = 0.08 w_cell ->
+  Δh/ε = 1.0 (w_s 0.25) ... 1.6 (1.0) ... 4.0 (4.0); 2D has Δh = 0.02 L fixed). 3D J_eff per ligament: w_s 2: 1.76, 3: 2.00, 4: 2.39
+  (steepening, 2D flat at 1.83/1.88/1.9). The 3D solid reference (1.676) is for the w_s = 1 mesh only. Added: solid references for
+  every w_s mesh (S2_3D_solid_vM_ws*), mesh-convergence pair at w_s = 4 (solid NL = 10, porous NL = 8 = S8_3D_vM_ws4.0_nl8;
+  optional 11th column `nl` in cases_3D.list). Manuscript Sec. 5 must normalize with J_c^num,3D(w_s) and state Δh/ε.
+  Update 10:30: porous NL = 8 on the 6-pore specimen (~385k tets, 4x) would take 2-3 weeks -> replaced by a 3-pore series at w_s = 4
+  (S8_3D_vM_ws4.0_nh3_nl3/4/5: 4.2/3.1/2.5 eps, ~56k/130k/240k tets; optional 12th column `nholes`). Solid NL = 10 (740k tets) stays.
+  Mesh sizes measured locally with gmsh (create_solid_mesh): w_s 1: 174k, 0.5: 211k, 2: 134k, 3: 112k, 4: 100k tets at NL = 5.
+* 2026-10-19 12:00 fixed-size 3D series (decision: user "lets do your suggestions"): the S1_3D meshes have measured median edge
+  lengths in the crack band of 1.7 / 2.4 / 3.6 / 6.4 eps at w_s = 0.5 / 1 / 2 / 4 (gmsh HXT edges ~1.45-1.5x the target size).
+  New option `mesh_fracture_adaptive.py --h_band` (076 template; default = old rule): target h in |y| < 0.35 L, 2h in |y| < 0.65 L,
+  min(L/NL, 1.0) elsewhere, the same for every w_s; porous meshes keep ronny.mesh.MatrixPores3D (its mesh_refinement is replaced
+  on the instance). Tested locally with gmsh (dolfinx stubbed): h = 0.1 -> median edge 1.49 eps, tets 85k/103k/141k/185k/416k
+  (w_s 0.375/0.5/0.75/1/2, 4 pores); h = 0.07 -> 1.03 eps, 505k (w_s 1). New optional columns h_band, cores in cases_3D.list
+  (-N = ceil(cores/64)). Cases S1F_3D_vM_ws{0.375,0.5,0.75,1.0,2.0} (h 0.1; ws2.0 on 128 cores), S2F solid references ws1.0/ws2.0,
+  S9F ws1.0 with h 0.07 (+ solid) as convergence check. S8 w_s = 4 series commented out (not needed if 3D results stop at w_s = 2).
+  Manuscript: 3D Delta h statement (Sec. 5: "0.02 L") is wrong -> report the median edge / eps of the meshes actually used.
+
+### 2026-10-19: Restart after SLURM timeout (075 + 076)
+* `run_simulation.py` (2D and 3D) writes `run_simulation_checkpoint.h5` (+ `.json`) every `CHECKPOINT_MINUTES` (default 30, CLI
+  `--checkpoint_minutes`, env) and after the last step; atomic (tmp + os.replace, meta as HDF5 attribute). Content: w, wm1,
+  alpha_n/alpha_tmp, all e_p components (2D `_n`/`_n_tmp`, 3D `_n`/`_prev`), t, dt, trestart, Work, D_visc, D_pl_*, step counter,
+  state dict, table sizes, case fingerprint. Rows keyed by mesh-file node/cell indices (`input_global_indices`,
+  `original_cell_index`), coordinates/midpoints stored as check and fallback -> any process count. Code: `000_template/klaim_restart.py`
+  (identical in 075/076). `--restart auto` (job template default, `RESTART_MODE=no` forces fresh) continues from the checkpoint;
+  tables (graphs, Newton log, events) are cut back to the checkpoint and continued, fields go to `run_simulation_r<N>.xdmf` /
+  `run_simulation_events_r<N>.xdmf`; prep steps skipped when restart data exist. Without restart data: unchanged behaviour.
+* Legacy (folders started before this change): no checkpoint -> continue from the last field output (`run_simulation.xdmf`, every
+  400 (2D) / 200 (3D) steps), t/dt from the Newton log, W and D_* from the table (4 digits); parameters checked against parameters.txt.
+* `11_resubmit_timeouts.sh [--dry-run] [--match] [--max]` (075/076): TIMEOUT (sacct) / "DUE TO TIME LIMIT" / unfinished checkpoint,
+  not in squeue, no "finished with exit code 0" -> `sbatch -A ${ACCOUNT:-p0023647} --exclude=<list> job_script.sh`; old folders get the
+  new run_simulation.py + klaim_restart.py and `02_create_jobs.sh --exact <folder>`. Docs: `075_klaim_rev2_2D/RESTART_NACH_TIMEOUT.md`.
+* Local test (Docker, 2D w_s 1 vM, STOP_FRACTION 0.25): reference 4 procs vs. kill -9 after checkpoint at step 352 + restart on 3 procs:
+  final J_x 1.2246/1.2244, E_el 1.2e-4, E_pl 4e-5, D_pl_deg 2e-4, W/D_visc identical at %.4e, t_end 5.7553/5.7555. Note: two
+  *uninterrupted* runs with the same process count already differ from step 26 on (PT-SCOTCH/MUMPS non-deterministic, adaptive dt),
+  so bitwise reproduction is impossible; checkpoint->restore->write is bitwise identical for 4->2 and 4->4 procs. Legacy restart and
+  3D restart (4->3 procs, first new row identical) also tested. Not tested on the cluster yet: first real use = after the next timeouts.

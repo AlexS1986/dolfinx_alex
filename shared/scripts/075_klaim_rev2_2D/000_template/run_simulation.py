@@ -25,6 +25,11 @@ following switches (all default to the settings stated in the manuscript):
 
 Additional outputs (energy partition, dissipation, ligament stress state, event-triggered field snapshots)
 are documented in README.md of the project folder and in run_simulation_graphs_columns.txt.
+
+Restart after a SLURM timeout (2026-10-19, klaim_restart.py, RESTART_NACH_TIMEOUT.md): a checkpoint
+(run_simulation_checkpoint.h5) is written every --checkpoint_minutes of wall time and after the last step;
+--restart auto continues from it (or, for runs without checkpoint, from the last field output).
+Without restart data the simulation runs exactly as before.
 """
 import argparse
 import dolfinx as dlfx
@@ -50,6 +55,8 @@ import basix
 
 import shutil
 from datetime import datetime
+
+import klaim_restart as kr
 
 
 class StopSimulation(Exception):
@@ -108,6 +115,10 @@ parser.add_argument("--jump_threshold_factor", type=float, default=4.0, help="cr
 parser.add_argument("--stop_fraction", type=float, default=0.9, help="stop when x_ct >= fraction * x_max")
 parser.add_argument("--dt_max", type=float, default=0.01)
 parser.add_argument("--dt_start", type=float, default=2.0e-7)
+parser.add_argument("--restart", type=str, default=os.environ.get("RESTART_MODE", "no"), choices=["no", "auto"],
+                    help="auto: continue from run_simulation_checkpoint.h5 (or the last field output) if present")
+parser.add_argument("--checkpoint_minutes", type=float, default=float(os.environ.get("CHECKPOINT_MINUTES", "30")),
+                    help="wall-time interval of the restart checkpoints (0 = only after the last step)")
 args = parser.parse_args()
 
 mesh_file = args.mesh_file
@@ -493,6 +504,9 @@ def write_event_snapshot(xdmf_path, snapshot_index, real_time, w_fields, sigma_f
 
 def before_first_time_step():
     timer.start()
+    if restart_info is not None:
+        before_first_time_step_restart()
+        return
     wm1.sub(1).x.array[:] = np.ones_like(wm1.sub(1).x.array[:])
     wrestart.x.array[:] = wm1.x.array[:]
     if rank == 0:
@@ -508,6 +522,9 @@ def before_first_time_step():
 
 
 def before_each_time_step(t, dt):
+    # checkpoint of the state after the last accepted step (t, dt = next step as chosen by the time stepping)
+    if int(success_timestep_counter.value) > ckpt_state["last_step"] and ckpt.due():
+        write_checkpoint(finished=False)
     if rank == 0:
         sol.print_time_and_dt(t, dt)
 
@@ -641,6 +658,7 @@ def after_last_timestep():
     except Exception as exc:  # e.g. the same time stamp was already written by the periodic output
         if rank == 0:
             print(f"WARNING: final field output failed ({exc})")
+    write_checkpoint(finished=True)
     timer.stop()
     if rank == 0:
         runtime = timer.elapsed()
@@ -696,7 +714,143 @@ def copy_files_to_directory(files, target_directory):
             print(f"Warning: File '{file}' does not exist and will not be copied.")
 
 
-if rank == 0:
+# ----------------------------------------------------------------------------------------------
+# Checkpoint / restart (klaim_restart.py)
+# ----------------------------------------------------------------------------------------------
+checkpoint_path = os.path.join(script_path, script_name_without_extension + "_checkpoint.h5")
+ckpt = kr.Checkpointer(comm, domain, checkpoint_path, args.checkpoint_minutes)
+ckpt.register_p1("w", w)
+ckpt.register_p1("wm1", wm1)
+for _name, _f in [("alpha_n", alpha_n), ("alpha_tmp", alpha_tmp),
+                  ("e_p_11_n", e_p_11_n), ("e_p_22_n", e_p_22_n), ("e_p_12_n", e_p_12_n), ("e_p_33_n", e_p_33_n),
+                  ("e_p_11_n_tmp", e_p_11_n_tmp), ("e_p_22_n_tmp", e_p_22_n_tmp), ("e_p_12_n_tmp", e_p_12_n_tmp),
+                  ("e_p_33_n_tmp", e_p_33_n_tmp)]:
+    ckpt.register_quadrature(_name, _f)
+ckpt_state = {"last_step": int(success_timestep_counter.value)}
+case_fingerprint = {"mesh_file": mesh_file, "material": args.material, "in_crack_length": in_crack_length,
+                    "gc": gc_matrix, "sig_y": sig_y_micro_value, "sig_y_embedding": sig_y_eff_value, "hard": args.hard,
+                    "beta": args.beta, "eta": args.eta, "mob": args.mob, "eps": eps_param, "embedding": args.embedding,
+                    "K_bc": K_bc_value, "mu_bc": mu_bc_value, "nu_bc": nu_bc_value}
+restart_generation = 0
+restart_info = None
+
+
+def write_checkpoint(finished):
+    sizes = None
+    if rank == 0:
+        sizes = {"graphs": kr.file_size(outputfile_graph_path), "newton_log": kr.file_size(logfile_path),
+                 "events": kr.file_size(events_log_path)}
+    meta = {"t": float(t_global.value), "dt": float(dt_global.value), "trestart": float(trestart_global.value),
+            "step": int(success_timestep_counter.value), "finished": bool(finished),
+            "Work": float(Work.value), "D_visc": float(D_visc.value), "D_pl_deg": float(D_pl_deg.value),
+            "D_pl_undeg": float(D_pl_undeg.value), "success_timestep_counter": float(success_timestep_counter.value),
+            "state": dict(state), "event_snapshots": int(args.event_snapshots),
+            "graph_rows": kr.count_data_lines(outputfile_graph_path) if rank == 0 else None, "sizes": sizes,
+            "restart_generation": restart_generation, "field_xdmf": os.path.basename(outputfile_xdmf_path),
+            "events_xdmf": os.path.basename(outputfile_events_xdmf_path), "case": case_fingerprint}
+    ckpt.write(meta)
+    ckpt_state["last_step"] = int(success_timestep_counter.value)
+
+
+def apply_restart_meta(meta):
+    t_global.value = meta["t"]
+    dt_global.value = meta["dt"]
+    trestart_global.value = meta["trestart"]
+    Work.value = meta["Work"]
+    D_visc.value = meta["D_visc"]
+    D_pl_deg.value = meta["D_pl_deg"]
+    D_pl_undeg.value = meta["D_pl_undeg"]
+    success_timestep_counter.value = meta["success_timestep_counter"]
+    state.update(meta["state"])
+    if "event_snapshots" in meta:
+        args.event_snapshots = meta["event_snapshots"]
+    wrestart.x.array[:] = w.x.array[:]
+    ckpt_state["last_step"] = int(success_timestep_counter.value)
+
+
+def before_first_time_step_restart():
+    """Continue the tables (cut back to the restart point) and open new field-output files *_r<N>.xdmf."""
+    if rank == 0:
+        sizes = restart_info["sizes"]
+        kr.truncate_file(outputfile_graph_path, sizes["graphs"])
+        kr.truncate_file(logfile_path, sizes["newton_log"])
+        kr.truncate_file(events_log_path, sizes.get("events"))
+        n_rows = kr.count_data_lines(outputfile_graph_path)
+        if n_rows != restart_info["graph_rows"]:
+            raise kr.RestartError(f"graph table has {n_rows} rows after truncation, checkpoint says {restart_info['graph_rows']}")
+        with open(logfile_path, "a") as f:
+            f.write(f"# restart r{restart_generation} from {restart_info['source']} at t = {restart_info['t']!r} "
+                    f"on {size} processes\n")
+        if os.path.isfile(events_log_path):
+            with open(events_log_path, "a") as f:
+                f.write(f"# restart r{restart_generation}: following snapshot indices are in "
+                        f"{os.path.basename(outputfile_events_xdmf_path)}\n")
+        print(f"[RESTART] tables continued at row {n_rows}; field output -> {os.path.basename(outputfile_xdmf_path)}", flush=True)
+    pp.write_meshoutputfile(domain, outputfile_xdmf_path, comm)
+    if args.event_snapshots:
+        pp.write_meshoutputfile(domain, outputfile_events_xdmf_path, comm)
+
+
+if args.restart == "auto":
+    restart_meta = ckpt.read_meta()
+    if restart_meta is not None:
+        if restart_meta.get("case") != case_fingerprint:
+            raise kr.RestartError(f"checkpoint belongs to different case parameters: {restart_meta.get('case')} "
+                                  f"vs. {case_fingerprint} (delete {os.path.basename(checkpoint_path)} to start fresh)")
+        if restart_meta.get("finished"):
+            if rank == 0:
+                print(f"[RESTART] checkpoint says the simulation already finished (t = {restart_meta['t']}); nothing to do.",
+                      flush=True)
+            sys.exit(0)
+        ckpt.restore()
+        restart_meta["source"] = "checkpoint"
+        restart_info = restart_meta
+    else:
+        # legacy runs (started before the checkpoint code): continue from the last field output, if any
+        if os.path.isfile(outputfile_xdmf_path):
+            _bad = kr.parameter_mismatches(parameters, {
+                "material": args.material, "Gc_simulation": gc_matrix, "sig_y_simulation": sig_y_micro_value,
+                "sig_y_embedding_simulation": sig_y_eff_value, "hard_simulation": args.hard, "beta_simulation": args.beta,
+                "eta": args.eta, "mob": args.mob, "eps_simulation": eps_param, "embedding": args.embedding,
+                "K_bc_simulation": K_bc_value, "in_crack_length": in_crack_length})
+            if _bad:
+                raise kr.RestartError("field output of a run with different parameters (" + "; ".join(_bad) +
+                                      ") - start fresh with RESTART_MODE=no")
+        t_field = kr.restore_from_field_output(
+            comm, domain, outputfile_xdmf_path, w, wm1, alpha_n,
+            [e_p_11_n, e_p_22_n, e_p_12_n, e_p_33_n] if args.material == "vonmises" else None, "2D")
+        if t_field is not None:
+            restart_meta, err = None, ""
+            if rank == 0:
+                try:
+                    restart_meta = kr.legacy_meta(t_field, outputfile_graph_path, columns_path, logfile_path, events_log_path,
+                                                  int(os.environ.get("NEWTON_MIN_ITERS", "4")), args.dt_max)
+                except Exception as exc:
+                    err = str(exc)
+            err = comm.bcast(err, root=0)
+            if err:
+                raise kr.RestartError(f"field output at t = {t_field} found, but the tables do not fit: {err}")
+            restart_meta = comm.bcast(restart_meta, root=0)
+            # previous plastic state (only used for diagnostics of the pre-jump snapshot): = current state
+            for _a, _b in [(alpha_tmp, alpha_n), (e_p_11_n_tmp, e_p_11_n), (e_p_22_n_tmp, e_p_22_n),
+                           (e_p_12_n_tmp, e_p_12_n), (e_p_33_n_tmp, e_p_33_n)]:
+                _a.x.array[:] = _b.x.array[:]
+            restart_info = restart_meta
+    if restart_info is not None:
+        apply_restart_meta(restart_info)
+        if rank == 0:
+            restart_generation, outputfile_xdmf_path = kr.next_generation_path(outputfile_xdmf_path)
+            outputfile_events_xdmf_path = outputfile_events_xdmf_path[:-5] + f"_r{restart_generation}.xdmf"
+        restart_generation, outputfile_xdmf_path, outputfile_events_xdmf_path = comm.bcast(
+            (restart_generation, outputfile_xdmf_path, outputfile_events_xdmf_path), root=0)
+        if rank == 0:
+            print(f"[RESTART] r{restart_generation} from {restart_info['source']}: t = {float(t_global.value)!r}, "
+                  f"dt = {float(dt_global.value)!r}, step = {int(success_timestep_counter.value)}, x_ct = {state['x_ct_prev']}, "
+                  f"{size} processes", flush=True)
+    elif rank == 0:
+        print("[RESTART] no checkpoint and no field output found: fresh start", flush=True)
+
+if rank == 0 and restart_info is None:
     pp.append_to_file(parameters=parameters_to_write, filename=parameter_path, comm=comm)
 
 try:

@@ -30,6 +30,13 @@ parser.add_argument("--NL", type=int, help="Number of elements along domain leng
 parser.add_argument("--geometry", type=str, default="porous", choices=["porous", "strip", "solid"],
                     help="porous: spherical pores in every cell (ronny.mesh.MatrixPores3D); strip/solid: the same box without pores, "
                          "meshed with gmsh directly using the same refinement box (solid = the job script also makes the embedding plastic)")
+parser.add_argument("--h_band", type=float, default=None,
+                    help="fixed target element size in the crack band |y| < band1 (2*h_band in |y| < band2, covering the central "
+                         "pore row), independent of the domain length; default: old rule (L/NL/n_ref in |y| < 1.5 r_pore). "
+                         "gmsh (HXT) gives median edges of about 1.45 * h_band, i.e. h_band = 0.07 -> median edge = eps = 0.1")
+parser.add_argument("--band1", type=float, default=0.35, help="half width of the fine band (only with --h_band)")
+parser.add_argument("--band2", type=float, default=0.65, help="half width of the 2*h_band band (only with --h_band)")
+parser.add_argument("--h_far", type=float, default=1.0, help="upper bound of the element size away from the bands (only with --h_band)")
 args = parser.parse_args()
 geometry = args.geometry
 
@@ -127,6 +134,28 @@ for vx in range(n_void_x):
 ModelDim = 3
 matrix_marker = 0
 
+def fixed_refinement(L, W):
+    """2026-10-19 (078): element size h_band in |y| < band1, 2 h_band in |y| < band2, min(L/NL, h_far) elsewhere; called
+    instead of the Box field of MatrixPores3D.mesh_refinement / create_solid_mesh, inside the active gmsh model."""
+    import gmsh
+    h_far = min(L / nl, args.h_far)
+    fields = []
+    for size, b in ((args.h_band, args.band1), (2.0 * args.h_band, args.band2)):
+        f = gmsh.model.mesh.field.add("Box")
+        gmsh.model.mesh.field.setNumber(f, "VIn", size)
+        gmsh.model.mesh.field.setNumber(f, "VOut", h_far)
+        for k, v in (("XMin", -L), ("XMax", L), ("YMin", -b), ("YMax", b), ("ZMin", -W), ("ZMax", W), ("Thickness", 0.5)):
+            gmsh.model.mesh.field.setNumber(f, k, v)
+        fields.append(f)
+    fmin = gmsh.model.mesh.field.add("Min")
+    gmsh.model.mesh.field.setNumbers(fmin, "FieldsList", fields)
+    gmsh.model.mesh.field.setAsBackgroundMesh(fmin)
+    gmsh.option.setNumber("Mesh.MeshSizeExtendFromBoundary", 0)
+    gmsh.option.setNumber("Mesh.MeshSizeFromPoints", 0)
+    gmsh.option.setNumber("Mesh.MeshSizeFromCurvature", 0)
+    gmsh.model.occ.synchronize()
+
+
 def create_solid_mesh(L, H, W, nl, n_ref, inclusions, matrix_marker, inclusion_marker, mesh_file):
     """Box L x H x W without pores: outer matrix (marker 0, the 'effective' region) and the inner block (marker 1, the
     'micro' region of the porous runs), meshed with the same background field as MatrixPores3D.mesh_refinement(n_ref,
@@ -149,6 +178,13 @@ def create_solid_mesh(L, H, W, nl, n_ref, inclusions, matrix_marker, inclusion_m
     gmsh.model.addPhysicalGroup(3, inner_tags, inclusion_marker)
     h_el = L / nl
     r_pore = dhole / 2.0
+    if args.h_band is not None:
+        fixed_refinement(L, W)
+        gmsh.option.setNumber("Mesh.Algorithm3D", 10)
+        gmsh.model.mesh.generate(3)
+        gmsh.write(mesh_file)
+        gmsh.finalize()
+        return
     f = gmsh.model.mesh.field.add("Box")
     gmsh.model.mesh.field.setNumber(f, "VIn", h_el / n_ref)
     gmsh.model.mesh.field.setNumber(f, "VOut", h_el)
@@ -199,6 +235,8 @@ elif RecreateMesh and rank == 0:
         n_void_z=n_void_z
     )
 
+    if args.h_band is not None:   # replace the Box field of MatrixPores3D (called inside create(), before meshing)
+        domain_mesh.mesh_refinement = lambda n_ref_, scope_: fixed_refinement(L, W)
     domain_mesh.create(n_ref=n_ref)
     #domain_mesh.create()
 
@@ -265,6 +303,8 @@ params = {
     "wsteg": wsteg,
     "wb": wb,
     "nl": nl,
+    "h_band": args.h_band if args.h_band is not None else "old_rule",
+    "band1": args.band1, "band2": args.band2, "h_far": args.h_far,
     "geometry": geometry
 }
 

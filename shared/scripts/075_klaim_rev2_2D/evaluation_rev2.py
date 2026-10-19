@@ -108,7 +108,7 @@ class Case:
         return "EqSig" if self.gc < 0.9 else "EqJc"
 
     def is_baseline(self):
-        if self.name.startswith("scaling_") or "_mi" in self.name:
+        if self.name.startswith("scaling_") or any(tag in self.name for tag in ("_mi", "_nl", "_nh", "F_3D")):   # S7/S8 variants are not baseline
             return False
         plastic_ok = self.material != "vonmises" or (abs(self.sig_y - 1.0) < 1e-9 and abs(self.hard - 0.2222222) < 1e-6)
         return (self.geometry == "porous" and self.embedding == "isotropic" and self.nrows == 3 and abs(self.crack_factor - 1.0) < 1e-6

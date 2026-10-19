@@ -1,15 +1,17 @@
 #!/bin/bash
 # Write job_script.sh into every case folder (reads case.env written by 01_create_directories.sh).
-# Global (study-wide) parameters are set here. Usage: ./02_create_jobs.sh [--match TEXT]
+# Global (study-wide) parameters are set here. Usage: ./02_create_jobs.sh [--match TEXT | --exact FOLDER]
 set -euo pipefail
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 PROJECT_NAME=$(basename "$SCRIPT_DIR")
 JOB_TEMPLATE_PATH="$SCRIPT_DIR/00_jobs/job_template.sh"
 MATCH_TEXT=""
+EXACT_NAME=""
 while [ "$#" -gt 0 ]; do
     case "$1" in
         --match) MATCH_TEXT="$2"; shift 2 ;;
+        --exact) EXACT_NAME="$2"; shift 2 ;;   # only this folder (used by 11_resubmit_timeouts.sh)
         *) echo "Unknown argument: $1"; exit 1 ;;
     esac
 done
@@ -62,6 +64,7 @@ for folder_path in "${BASE_DIR}"/*/; do
     if [ -n "$MATCH_TEXT" ] && [[ "$folder_name" != *"$MATCH_TEXT"* ]]; then
         continue
     fi
+    [ -n "$EXACT_NAME" ] && [ "$folder_name" != "$EXACT_NAME" ] && continue
     # shellcheck disable=SC1090
     unset NEWTON_MIN_ITERS GEOMETRY
     source "$folder_path/case.env"

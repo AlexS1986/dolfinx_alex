@@ -123,6 +123,9 @@ squeue -u $USER --format "%.10i %.30j %.8T %.10M %.6D %R" | sort -k2
 
 A finished run prints `Simulation stopped early: specimen separated completely` and `finished with exit code 0`
 in its `.out.*` file; a run killed by the time limit has no such line but its tables are still usable up to the last step.
+**Timeouts (since 2026-10-19):** runs write a checkpoint every 30 min and continue with `--restart auto`; after a timeout
+run `./11_resubmit_timeouts.sh --dry-run`, then `./11_resubmit_timeouts.sh` (075 and 076). Older folders are upgraded and
+continue from their last field output. Details: `RESTART_NACH_TIMEOUT.md`.
 
 ## 3. Collect, download, evaluate
 

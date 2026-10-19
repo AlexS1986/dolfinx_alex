@@ -75,6 +75,23 @@ LCRACK=$(awk "BEGIN {print $CRACK_FACTOR * ($WSTEG + $DHOLE)}")
 echo "[$(date)] job $SLURM_JOB_ID case $working_folder_name: wsteg=$WSTEG material=$MATERIAL gc=$GC_MICRO_PARAM sig_y=$SIG_Y hard=$HARD embedding=$EMBEDDING nrows=$NROWS lcrack=$LCRACK geometry=$GEOMETRY"
 cd $HPC_SCRATCH
 
+# restart after a timeout (RESTART_NACH_TIMEOUT.md): run_simulation.py --restart auto continues from
+# run_simulation_checkpoint.h5 (or the last field output of runs started before the checkpoint code); without such data
+# it starts fresh as before. RESTART_MODE=no sbatch job_script.sh forces a fresh start. CHECKPOINT_MINUTES = wall-time
+# interval of the checkpoints. With restart data the preparation steps (meshes, homogenization) are skipped.
+RESTART_MODE="${RESTART_MODE:-auto}"
+CHECKPOINT_MINUTES="${CHECKPOINT_MINUTES:-30}"
+HAVE_RESTART_DATA=0
+if [ "$RESTART_MODE" != "no" ] && [ -f "$working_directory/$MESH_FILE" ] && grep -q "^mue_effective=" "$working_directory/parameters.txt" 2>/dev/null; then
+    if [ -f "$working_directory/run_simulation_checkpoint.h5" ] || grep -qv "^#" "$working_directory/run_simulation_graphs.txt" 2>/dev/null; then
+        HAVE_RESTART_DATA=1
+    fi
+fi
+echo "[$(date)] RESTART_MODE=$RESTART_MODE CHECKPOINT_MINUTES=$CHECKPOINT_MINUTES restart data: $HAVE_RESTART_DATA"
+
+if [ "$HAVE_RESTART_DATA" -eq 1 ]; then
+echo "[$(date)] restart: mesh and parameters.txt exist, preparation steps skipped"
+else
 set -e
 srun -n 1 apptainer exec --bind $bindpath $container python3 $working_directory/mesh_effective_stiffness.py \
     --dhole "$DHOLE" --wsteg "$WSTEG" --e0 "$E0" --geometry "$GEOMETRY"
@@ -88,6 +105,7 @@ srun -n 1 apptainer exec --bind $bindpath $container python3 $working_directory/
 srun -n 1 apptainer exec --bind $bindpath $container python3 $working_directory/get_mesh_info.py --mesh_file "$MESH_FILE" \
     || echo "[$(date)] get_mesh_info failed (non-fatal: edge-length statistics only)"
 set +e
+fi
 echo "[$(date)] fracture simulation starts on {PROCESSOR_NUMBER} cores"
 
 srun -n {PROCESSOR_NUMBER} apptainer exec --bind $bindpath $container python3 $working_directory/run_simulation.py \
@@ -112,7 +130,9 @@ srun -n {PROCESSOR_NUMBER} apptainer exec --bind $bindpath $container python3 $w
     --nu_bc "$NU_BC" \
     --stop_fraction "$STOP_FRACTION" \
     --postprocessing_interval "$POSTPROCESSING_INTERVAL" \
-    --event_snapshots "$EVENT_SNAPSHOTS"
+    --event_snapshots "$EVENT_SNAPSHOTS" \
+    --restart "$RESTART_MODE" \
+    --checkpoint_minutes "$CHECKPOINT_MINUTES"
 
 EXITCODE=$?
 echo "[$(date)] finished with exit code $EXITCODE"
