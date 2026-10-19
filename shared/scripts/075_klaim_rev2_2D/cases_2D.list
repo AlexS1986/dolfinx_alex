@@ -69,3 +69,9 @@ S5_crack2.0_vM_ws1.0   1.0   vonmises 1.0  1.0  0.2222222 isotropic 3 2.0 porous
 S5_rows5_vM_ws1.0      1.0   vonmises 1.0  1.0  0.2222222 isotropic 5 1.0 porous
 S5_rows5_vM_ws0.375    0.375 vonmises 1.0  1.0  0.2222222 isotropic 5 1.0 porous
 S5_rows5_EqSig_ws1.0   1.0   elastic  0.5523 1.0 0.2222222 isotropic 5 1.0 porous
+# ---------------------------------------------------------------- S7: time-step control check (2026-10-19), NEWTON_MIN_ITERS = 5
+# columns as above + newton_min_iters (dt doubles when Newton needs < 5 instead of < 4 iterations; the 4-iteration steps
+# otherwise freeze dt after a cut-back -> runs crawl). ws1.0 = validation against the finished S1_vM_ws1.0; ws4.0 = backups
+S7_vM_ws1.0_mi5        1.0 vonmises 1.0 1.0 0.2222222 isotropic 3 1.0 porous 5
+S7_vM_ws4.0_mi5        4.0 vonmises 1.0 1.0 0.2222222 isotropic 3 1.0 porous 5
+S7_cubic_vM_ws4.0_mi5  4.0 vonmises 1.0 1.0 0.2222222 cubic     3 1.0 porous 5

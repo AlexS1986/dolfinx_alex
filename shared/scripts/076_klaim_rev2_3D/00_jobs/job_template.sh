@@ -28,6 +28,14 @@ mkdir -p "$XDG_CACHE_HOME"
 # apptainer call; APPTAINERENV_ is what reaches the container. Ref: HRZ, OpenBLAS_SPR_Knoten_20260905.pdf
 export OPENBLAS_CORETYPE="${OPENBLAS_CORETYPE:-SkylakeX}"
 export APPTAINERENV_OPENBLAS_CORETYPE="${APPTAINERENV_OPENBLAS_CORETYPE:-$OPENBLAS_CORETYPE}"
+# optional per case (cases list, last column): dt grows again when Newton converges in < NEWTON_MIN_ITERS iterations
+# (alex/solution.py default 4; with exactly 4 iterations per step dt stays frozen after a cut-back, see CLAUDE.md 2026-10-19)
+NEWTON_MIN_ITERS_CASE="{NEWTON_MIN_ITERS}"
+if [ -n "$NEWTON_MIN_ITERS_CASE" ]; then
+    export NEWTON_MIN_ITERS="$NEWTON_MIN_ITERS_CASE"
+    export APPTAINERENV_NEWTON_MIN_ITERS="$NEWTON_MIN_ITERS_CASE"
+    echo "[$(date)] NEWTON_MIN_ITERS=$NEWTON_MIN_ITERS"
+fi
 
 WSTEG={WSTEG}
 MATERIAL="{MATERIAL}"

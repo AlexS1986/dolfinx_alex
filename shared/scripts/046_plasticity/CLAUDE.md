@@ -329,3 +329,10 @@ into the `_PAPER` folders. The `alex`/`ronny` packages live in `shared/utils/` (
   `solid` (2D + 3D: no pores, yield stress everywhere = one homogeneous vM material, K_bc^2 = 2.5, no homogenization step):
   `S2_solid_vM` (075) and `S2_3D_solid_vM` (076, void-free gmsh mesh with the same refinement box as MatrixPores3D, 174k tets at w_s = 1).
   `evaluation_rev2.py` takes J_c^num from the solid run when present, else from the strip. Manuscript Sec. 3.5 must describe the new geometry.
+* 2026-10-19 "Kriecher" in 3D: S1_3D ws0.5/0.75/cubic0.375 (and 2D cubic ws4.0) converge in exactly 4 Newton iterations per
+  step; alex/solution.py doubles dt only for < min_iters = 4 iterations, so after a cut-back dt stays frozen (1e-5 .. 8e-5 in 3D,
+  3e-7 in 2D cubic ws4) and t advances ~0.005-0.01 per hour -> ws0.5/0.75/cubic0.375 would not reach the evaluation window
+  (pores 1-3) within 7 d. alex already has the switch `NEWTON_MIN_ITERS` (env, added 2026-09-05). New optional last column
+  `newton_min_iters` in cases_2D/3D.list -> job template exports NEWTON_MIN_ITERS (+ APPTAINERENV_). Parallel S7 runs with 5:
+  3D ws0.5, 0.75, 1.0, cubic 0.375; 2D vM ws4.0, cubic ws4.0 (backups) and vM ws1.0 (validation against the finished S1 run).
+  Old runs keep running; evaluation_rev2.py treats `_mi` cases as non-baseline. Decide per case which run to use once both exist.

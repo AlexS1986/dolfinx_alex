@@ -60,6 +60,7 @@ for folder_path in "${BASE_DIR}"/*/; do
         continue
     fi
     # shellcheck disable=SC1090
+    unset NEWTON_MIN_ITERS GEOMETRY
     source "$folder_path/case.env"
     job_name="r2_${CASE_NAME}"  # 3D
     GEOMETRY="${GEOMETRY:-porous}"
@@ -94,6 +95,7 @@ for folder_path in "${BASE_DIR}"/*/; do
         -e "s|{BC_MODULI}|${BC_MODULI}|g" \
         -e "s|{K_BC_RULE}|${k_rule}|g" \
         -e "s|{GEOMETRY}|${GEOMETRY}|g" \
+        -e "s|{NEWTON_MIN_ITERS}|${NEWTON_MIN_ITERS:-}|g" \
         -e "s|{E_BC}|${E_BC}|g" \
         -e "s|{NU_BC}|${NU_BC}|g" \
         -e "s|{STOP_FRACTION}|${STOP_FRACTION}|g" \

@@ -33,7 +33,8 @@ mkdir -p "$BASE_WORKING_DIR"
 created=0
 skipped=0
 
-while read -r name wsteg material gc sig_y hard embedding crack_factor geometry rest; do
+while read -r name wsteg material gc sig_y hard embedding crack_factor geometry newton_min_iters rest; do
+    [ "${newton_min_iters:--}" = "-" ] && newton_min_iters=""
     geometry=${geometry:-porous}
     [ -z "$name" ] && continue
     case "$name" in \#*) continue ;; esac
@@ -63,6 +64,7 @@ HARD=$hard
 EMBEDDING=$embedding
 CRACK_FACTOR=$crack_factor
 GEOMETRY=$geometry
+NEWTON_MIN_ITERS=$newton_min_iters
 EOF
     echo "created: $target"
     created=$((created + 1))

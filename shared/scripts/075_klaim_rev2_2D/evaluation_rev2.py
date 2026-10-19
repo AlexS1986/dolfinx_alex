@@ -89,9 +89,9 @@ class Case:
         self.sig_y = float(self.params.get("sig_y_simulation", 1.0))
         self.hard = float(self.params.get("hard_simulation", 0.2222222))
         self.crack_factor = float(self.params.get("in_crack_length", self.w_cell)) / self.w_cell
-        # x offset: 3D meshes are centred at the origin, 2D meshes start at x = 0
-        xct = self.data[:, self.col["x_ct"]]
-        self.x_offset = -np.min(self.data[:, self.col["x_bc"]]) if self.dim == 3 else 0.0
+        # x offset: 3D meshes are centred at the origin (length (nholes + 2) w_cell), 2D meshes start at x = 0; pore_positions()
+        # uses the 2D convention (one embedding cell, then the pores), so 3D x values are shifted by half the domain length
+        self.x_offset = 0.5 * (self.nholes + 2) * self.w_cell if self.dim == 3 else 0.0
 
     def c(self, name):
         return self.data[:, self.col[name]]
@@ -108,14 +108,17 @@ class Case:
         return "EqSig" if self.gc < 0.9 else "EqJc"
 
     def is_baseline(self):
+        if self.name.startswith("scaling_") or "_mi" in self.name:
+            return False
+        plastic_ok = self.material != "vonmises" or (abs(self.sig_y - 1.0) < 1e-9 and abs(self.hard - 0.2222222) < 1e-6)
         return (self.geometry == "porous" and self.embedding == "isotropic" and self.nrows == 3 and abs(self.crack_factor - 1.0) < 1e-6
-                and abs(self.sig_y - 1.0) < 1e-9 and abs(self.hard - 0.2222222) < 1e-6)
+                and plastic_ok)
 
 
 def load_cases(results_dir):
     cases = []
     for folder in sorted(glob.glob(os.path.join(results_dir, "*"))):
-        if not os.path.isdir(folder):
+        if not os.path.isdir(folder) or os.path.basename(folder).startswith(("scaling_", "blas_check", "homtest")):
             continue
         if not (os.path.exists(os.path.join(folder, "parameters.txt")) and os.path.exists(os.path.join(folder, "run_simulation_graphs.txt"))):
             continue

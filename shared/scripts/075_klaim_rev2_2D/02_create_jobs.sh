@@ -63,6 +63,7 @@ for folder_path in "${BASE_DIR}"/*/; do
         continue
     fi
     # shellcheck disable=SC1090
+    unset NEWTON_MIN_ITERS GEOMETRY
     source "$folder_path/case.env"
     job_name="r2_${CASE_NAME}"
     time_limit=$TIME; awk -v w="$WSTEG" -v m="$WSTEG_SHORT_MAX" 'BEGIN{exit !(w+0 <= m+0)}' && time_limit=$TIME_SHORT
@@ -86,6 +87,7 @@ for folder_path in "${BASE_DIR}"/*/; do
         -e "s|{NROWS}|${NROWS}|g" \
         -e "s|{CRACK_FACTOR}|${CRACK_FACTOR}|g" \
         -e "s|{GEOMETRY}|${GEOMETRY}|g" \
+        -e "s|{NEWTON_MIN_ITERS}|${NEWTON_MIN_ITERS:-}|g" \
         -e "s|{NHOLES}|${NHOLES}|g" \
         -e "s|{DHOLE}|${DHOLE}|g" \
         -e "s|{E0}|${E0}|g" \
