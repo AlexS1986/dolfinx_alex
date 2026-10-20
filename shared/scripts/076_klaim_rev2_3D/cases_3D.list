@@ -49,13 +49,15 @@ S7_3D_vM_ws2.0_mi5         2.0   vonmises 1.0 1.0 0.2222222 isotropic 1.0 porous
 # h = 0.07; the S1_3D meshes above have 1.7 / 2.4 / 3.6 / 6.4 eps at w_s = 0.5 / 1 / 2 / 4). 4 pores along x (the 3D
 # evaluation uses the ligament before pore 2), NEWTON_MIN_ITERS = 5. Tets: 85k / 103k / 141k / 185k / 416k (w_s 0.375-2.0),
 # 505k for h = 0.07 at w_s = 1. One solid reference per h is enough (band size independent of w_s); ws2.0 checks that.
+# 2026-10-20: 128 cores on 2 nodes failed at the first parallel XDMF/HDF5 write ("Failed to create HDF5 file", both jobs,
+# 15:47 on 19.10) -> 96 cores on ONE node (all nodes have >= 96 cores); multi-node runs are avoided.
 # name                        wsteg material gc  sig_y hard      embedding crack geometry nmi nl nholes h_band cores
 S1F_3D_vM_ws0.375             0.375 vonmises 1.0 1.0 0.2222222 isotropic 1.0 porous   5   -  4      0.1    64
 S1F_3D_vM_ws0.5               0.5   vonmises 1.0 1.0 0.2222222 isotropic 1.0 porous   5   -  4      0.1    64
 S1F_3D_vM_ws0.75              0.75  vonmises 1.0 1.0 0.2222222 isotropic 1.0 porous   5   -  4      0.1    64
 S1F_3D_vM_ws1.0               1.0   vonmises 1.0 1.0 0.2222222 isotropic 1.0 porous   5   -  4      0.1    64
-S1F_3D_vM_ws2.0               2.0   vonmises 1.0 1.0 0.2222222 isotropic 1.0 porous   5   -  4      0.1    128
+S1F_3D_vM_ws2.0               2.0   vonmises 1.0 1.0 0.2222222 isotropic 1.0 porous   5   -  4      0.1    96
 S2F_3D_solid_vM_ws1.0         1.0   vonmises 1.0 1.0 0.2222222 isotropic 1.0 solid    5   -  4      0.1    64
 S2F_3D_solid_vM_ws2.0         2.0   vonmises 1.0 1.0 0.2222222 isotropic 1.0 solid    5   -  4      0.1    64
-S9F_3D_vM_ws1.0_h07           1.0   vonmises 1.0 1.0 0.2222222 isotropic 1.0 porous   5   -  4      0.07   128
+S9F_3D_vM_ws1.0_h07           1.0   vonmises 1.0 1.0 0.2222222 isotropic 1.0 porous   5   -  4      0.07   96
 S9F_3D_solid_vM_ws1.0_h07     1.0   vonmises 1.0 1.0 0.2222222 isotropic 1.0 solid    5   -  4      0.07   64

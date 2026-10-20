@@ -388,3 +388,13 @@ into the `_PAPER` folders. The `alex`/`ronny` packages live in `shared/utils/` (
   (checked, not in login files). All 3D special00008 jobs cancelled (S1_3D ws0.25/2.0/4.0 included; results exist or are covered by S7 /
   S1F); 2D S1_vM_ws3.0 cancelled (J_eff 1.880 exists). Still on special00008: 2D S1_vM_ws4.0 and S3_cubic_vM_ws4.0 (16 cores each)
   until their S7 copies pass the evaluation window. 02_create_jobs.sh now prints the account and warns if it is not p0023647.
+
+### 2026-10-20 morning check
+- 3D S1F ws0.375/0.5/0.75/1.0 (h_band 0.1) and S7_3D_vM_ws2.0_mi5 finished (exit 0).
+- S1F_3D_vM_ws2.0 and S9F_3D_vM_ws1.0_h07 (128 cores, -N 2) both died at the first parallel XDMF write
+  ("RuntimeError: Failed to create HDF5 file", postprocessing.write_meshoutputfile) -> rerun with 96 cores on one node;
+  02_create_jobs.sh (076) now uses NODES = ceil(cores/96). Avoid multi-node jobs (HDF5 on 2 nodes not working here).
+- 2D S7_vM_ws4.0_mi5 was NOT stuck: 87 % at 21 h (the "frozen dt" phase passed); S7_cubic_vM_ws4.0_mi5 71 %.
+  The special00008 originals S1_vM_ws4.0 / S3_cubic_vM_ws4.0 were at 34/39 % with ETA 134/108 h > 51 h left -> cancelled.
+  S7_vM_ws4.0_mi6 left the queue at 55 % (superseded by mi5, not restarted).
+- 3D solid references with the old mesh (S2_3D_solid_vM_ws*) run with NEWTON_MIN_ITERS default 4 -> slow (ETA up to 49 h).

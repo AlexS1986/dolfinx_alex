@@ -107,7 +107,7 @@ for folder_path in "${BASE_DIR}"/*/; do
         -e "s|{EVENT_SNAPSHOTS}|${EVENT_SNAPSHOTS}|g" \
         -e "s|{MEMORY_VALUE}|${MEMORY_VALUE}|g" \
         -e "s|{PROCESSOR_NUMBER}|${CORES_CASE:-$PROCESSOR_NUMBER}|g" \
-        -e "s|{NODES}|$(( (${CORES_CASE:-$PROCESSOR_NUMBER} + 63) / 64 ))|g" \
+        -e "s|{NODES}|$(( (${CORES_CASE:-$PROCESSOR_NUMBER} + 95) / 96 ))|g" \
         -e "s|{H_BAND}|${H_BAND_CASE:-}|g" \
         -e "s|{TIME}|${TIME}|g" \
         -e "s#{CONSTRAINT}#${CONSTRAINT}#g" \
