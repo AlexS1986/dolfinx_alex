@@ -404,6 +404,8 @@ into the `_PAPER` folders. The `alex`/`ronny` packages live in `shared/utils/` (
   S2F ws2.0 1.46 (first bins, +2-3 %), S9F h0.07 1.379 in the first bin (S2F same bin 1.415 -> -2.5 %).
   Normalised by the solid on the SAME mesh, old and new agree: ws1.0 0.925 (old) vs 0.946 (S1F) -> J_eff/J_c^num is the
   mesh-robust quantity. 3D/2D (normalised): ws0.375 0.78/0.50, ws0.5 0.79/0.65, ws0.75 0.92/0.91, ws1.0 0.95/1.10.
-  -> keep the old-mesh solid refs (needed to normalise the old 3D series up to ws4.0); restart them with NEWTON_MIN_ITERS = 5.
+  Decision (Alex, 20.10): the paper uses ONLY the fixed-mesh runs (S1F porous, normalised by S2F/S9F solid of the same h).
+  The old-mesh 3D runs (S1_3D, S7_3D, S2_3D_solid_vM_ws*) play no role in results or normalisation -> old-mesh solid
+  refs to be cancelled and parked in $HPC_SCRATCH/076_klaim_rev2_3D_oldmesh/ (not restarted).
   evaluation_rev2.py: Jc_num_from_strip gives nan for 3D (x_bc not shifted by x_offset) and keys solids only by (set, geometry)
   -> to fix: match the solid by mesh (h_band) and wsteg.
