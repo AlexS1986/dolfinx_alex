@@ -101,9 +101,17 @@ else
 echo "[$(date)] no pores ($GEOMETRY): effective stiffness = micro stiffness, no homogenization"
 printf "lam_effective=%s\nmue_effective=%s\n" "$LAM_MICRO_PARAM" "$MUE_MICRO_PARAM" >> $working_directory/parameters.txt
 fi
+if [ -f "$working_directory/premesh/mesh_fracture_adaptive.xdmf" ]; then
+# 2026-10-26: mesh generated and inspected beforehand (6x3x2 series), copied into premesh/ -> use exactly this mesh
+echo "[$(date)] fracture mesh: using the provided mesh in premesh/ (not regenerated)"
+cp "$working_directory/premesh/domain_mesh.msh" "$working_directory/premesh/mesh_fracture_adaptive.xdmf" \
+   "$working_directory/premesh/mesh_fracture_adaptive.h5" "$working_directory/"
+cat "$working_directory/premesh/mesh_parameters.txt" >> "$working_directory/parameters.txt"
+else
 echo "[$(date)] fracture mesh"
 srun -n 1 apptainer exec --bind $bindpath $container python3 $working_directory/mesh_fracture_adaptive.py \
     --Nholes "$NHOLES" --dhole "$DHOLE" --wsteg "$WSTEG" --NL "$NL_FRACTURE" --geometry "$GEOMETRY" ${H_BAND:+--h_band "$H_BAND"}
+fi
 echo "[$(date)] mesh info"
 srun -n 1 apptainer exec --bind $bindpath $container python3 $working_directory/get_mesh_info.py --mesh_file "$MESH_FILE" \
     || echo "[$(date)] get_mesh_info failed (non-fatal: edge-length statistics only)"

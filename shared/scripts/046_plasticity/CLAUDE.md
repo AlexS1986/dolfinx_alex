@@ -687,3 +687,35 @@ into the `_PAPER` folders. The `alex`/`ronny` packages live in `shared/utils/` (
   0 errors / 0 undefined. **No open TODO** in manuscript, letter or cover letter. Script edits_round2_part8_final.py; pre-part-8
   backups only in the session scratchpad. Nothing committed. Next: Alex reads, co-authors (Ralf, Ronny) review, then git commit/push
   and the final upload package (README "Final package").
+- 2026-10-26 committed + pushed as a7a3203 (origin/main): 22 KLAIM files only (075/076 templates, evaluation, figure scripts, cases,
+  02 fix; revision_2 tex files, edit scripts part5-8, README; CLAUDE.md). Left unstaged on purpose: 063, 072, utils/alex (other
+  projects). Figures (pics/PAPER_rev2_*) are NOT tracked (repo ignores *.pgf/*.pdf, same as v2.0) -> regenerate with
+  paper_figures_2D.py / paper_figures_3D.py / paper_figure_mesh3D.py from results/ (also ignored); the upload package must copy them.
+  Alex reads the full version next; v2.0 and all earlier states remain in git history (and ../submission_ready_20260525 untouched).
+
+### 2026-10-26 checks after Alex's questions (3D statements, Fig. 15)
+- Origin of the v2.0 "3D also toughens" statement: normalisation by the 2D strip value 1.50 J_c^0 instead of a 3D homogeneous
+  reference on the same mesh, combined with the w_s-scaled 3D mesh (band size 0.08 w_c, Δh/eps 1.0 -> 4.0) that raises all 3D J
+  values with w_s (old-mesh solid: 1.49 at w_s 0.25 -> 2.39 at 4.0). Old-mesh rev2 runs: J_eff/1.50 = 0.79/1.02/1.18/1.33/1.61
+  (w_s 0.25/1/2/3/4) vs J_eff/solid(same mesh) = 0.79/0.93/0.93/0.95/1.01 -> no toughening either way once normalised correctly;
+  fixed mesh: 0.87-0.96. -> mesh effect + wrong reference.
+- Fig. 15 shows only one pore row: the S1F mesh contains all 24 pores (4x3x2, verified: no material at any pore centre), but the outer
+  pore rows lie outside the refined band (|y| < 0.65L) and are meshed with mean face edge 0.66L (160 faces for 16 pores, ~10 per
+  sphere; middle row 0.10L, 5236 faces) -> polyhedral voids that appear as "diamonds" in the section. Same coarse treatment in the
+  old mesh rule (refinement only |y| < 1.5 r_pore). Undiscussed in the manuscript so far; 2D S5 (5 instead of 3 rows: <= 1.1 %) suggests
+  a small influence on J_eff. Options: caption note + limitation sentence in 5.1; optional check run with the band widened to the
+  outer rows at w_s = L.
+- Statements quoted by Alex (not from our manuscript) checked: homogeneous vM dissipates 1.42 vs 1.06 J_c^0 per crack advance, of which
+  plastic 0.17 and fracture 1.25 (wider band) -> "due to enhanced (plastic) dissipation" only half true; "retains only part" true vs
+  own homogeneous value and vs Eq sigma*, false vs Eq J_c; "regimes set by w_s / plastic zone" not evaluated (Irwin r_p/w_s ≈ 0.5
+  plane strain at the transition, smooth, estimate only). Check figure evaluation_output/check_statements_2026-10-26.png.
+- 2026-10-26 Alex: 3D must be **6 x 3 x 2 pores** (as in v2.0 and the text) with **all pores recognisably spherical**; meshes first for
+  inspection, then rerun; target Friday 30.10. Cause of the coarse outer pores: `fixed_refinement` (h_band mode) switches off
+  MeshSizeFromCurvature and refines only |y| < 0.65L. Fix in `076/000_template/mesh_fracture_adaptive.py`: new `--h_pore` (Distance +
+  Threshold field on ALL curved surfaces, grading `--pore_grading` 1.0L; OCC bounding boxes of the sphere faces are loose in gmsh
+  4.11.1, so pores are detected by surface type != Plane). New meshes (Docker, gmsh 4.11.1), h_band 0.1, h_pore 0.1, Nholes 6:
+  porous w_s 0.375/0.5/0.75/1/2: 183,750 / 212,968 / 280,037 / 353,921 / 740,781 tets, 36 pores, face edge 0.10 (middle row) /
+  0.11 L (outer rows, ~625 faces per pore); solids w_s 1/2: 258,887 / 568,158 tets. Download folders (not in git, ~310 MB each):
+  `076/meshes_6x3x2_20261026/<case>/` (msh, xdmf/h5, mesh_parameters.txt, check_3D/section.png) and
+  `076/meshes_4x3x2_used_in_S1F_S2F_S9F_runs/<case>/` (copies from scratch of the meshes the current runs used).
+  Check/render script `076/mesh_check_render.py`. Nothing submitted yet (waiting for Alex's OK after mesh inspection).

@@ -62,3 +62,13 @@ S2F_3D_solid_vM_ws1.0         1.0   vonmises 1.0 1.0 0.2222222 isotropic 1.0 sol
 S2F_3D_solid_vM_ws2.0         2.0   vonmises 1.0 1.0 0.2222222 isotropic 1.0 solid    7   -  4      0.1    64
 S9F_3D_vM_ws1.0_h07           1.0   vonmises 1.0 1.0 0.2222222 isotropic 1.0 porous   7   -  4      0.07   96
 S9F_3D_solid_vM_ws1.0_h07     1.0   vonmises 1.0 1.0 0.2222222 isotropic 1.0 solid    7   -  4      0.07   64
+
+# 2026-10-26: 6 x 3 x 2 series (as in v2.0 and the manuscript text), all pore surfaces resolved (h_pore = 0.1L), meshes generated
+# beforehand and inspected (meshes_6x3x2_20261026/, copied to <case>/premesh/ on the cluster; job uses them unchanged)
+S1G_3D_vM_ws0.375             0.375 vonmises 1.0 1.0 0.2222222 isotropic 1.0 porous   7   -  6      0.1    64
+S1G_3D_vM_ws0.5               0.5   vonmises 1.0 1.0 0.2222222 isotropic 1.0 porous   7   -  6      0.1    64
+S1G_3D_vM_ws0.75              0.75  vonmises 1.0 1.0 0.2222222 isotropic 1.0 porous   7   -  6      0.1    64
+S1G_3D_vM_ws1.0               1.0   vonmises 1.0 1.0 0.2222222 isotropic 1.0 porous   7   -  6      0.1    96
+S1G_3D_vM_ws2.0               2.0   vonmises 1.0 1.0 0.2222222 isotropic 1.0 porous   7   -  6      0.1    96
+S2G_3D_solid_vM_ws1.0         1.0   vonmises 1.0 1.0 0.2222222 isotropic 1.0 solid    7   -  6      0.1    64
+S2G_3D_solid_vM_ws2.0         2.0   vonmises 1.0 1.0 0.2222222 isotropic 1.0 solid    7   -  6      0.1    96

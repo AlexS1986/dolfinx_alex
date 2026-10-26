@@ -37,6 +37,10 @@ parser.add_argument("--h_band", type=float, default=None,
 parser.add_argument("--band1", type=float, default=0.35, help="half width of the fine band (only with --h_band)")
 parser.add_argument("--band2", type=float, default=0.65, help="half width of the 2*h_band band (only with --h_band)")
 parser.add_argument("--h_far", type=float, default=1.0, help="upper bound of the element size away from the bands (only with --h_band)")
+parser.add_argument("--h_pore", type=float, default=None,
+                    help="element size on ALL pore surfaces (only with --h_band); default None = band only (outer pore rows coarse)")
+parser.add_argument("--pore_grading", type=float, default=1.0,
+                    help="distance from the pore surface over which the size grows from h_pore to the far-field size (only with --h_pore)")
 args = parser.parse_args()
 geometry = args.geometry
 
@@ -140,6 +144,23 @@ def fixed_refinement(L, W):
     import gmsh
     h_far = min(L / nl, args.h_far)
     fields = []
+    gmsh.model.occ.synchronize()
+    if args.h_pore is not None:
+        # 2026-10-26: all pore surfaces resolved with h_pore (the band alone left the outer pore rows as coarse polyhedra,
+        # mean face edge 0.66L); pore surfaces = the only curved surfaces (box and block faces are planes; OCC bounding boxes
+        # of the sphere faces are loose, 1.5 x 1.73 x 1.0 for d = 1, so they cannot be used)
+        pore_surfaces = [tag for dim, tag in gmsh.model.getEntities(2) if gmsh.model.getType(dim, tag) != "Plane"]
+        fd = gmsh.model.mesh.field.add("Distance")
+        gmsh.model.mesh.field.setNumbers(fd, "SurfacesList", pore_surfaces)
+        gmsh.model.mesh.field.setNumber(fd, "Sampling", 60)
+        ft = gmsh.model.mesh.field.add("Threshold")
+        gmsh.model.mesh.field.setNumber(ft, "InField", fd)
+        gmsh.model.mesh.field.setNumber(ft, "SizeMin", args.h_pore)
+        gmsh.model.mesh.field.setNumber(ft, "SizeMax", h_far)
+        gmsh.model.mesh.field.setNumber(ft, "DistMin", 0.0)
+        gmsh.model.mesh.field.setNumber(ft, "DistMax", args.pore_grading)
+        fields.append(ft)
+        print(f"pore-surface refinement: {len(pore_surfaces)} surfaces, h_pore = {args.h_pore}, grading over {args.pore_grading}")
     for size, b in ((args.h_band, args.band1), (2.0 * args.h_band, args.band2)):
         f = gmsh.model.mesh.field.add("Box")
         gmsh.model.mesh.field.setNumber(f, "VIn", size)
