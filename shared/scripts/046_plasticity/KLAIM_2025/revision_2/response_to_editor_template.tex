@@ -1,6 +1,6 @@
 % Cover letter / response to the editor -- round 2 (fill in before submission)
 \documentclass[11pt]{article}
-\usepackage[a4paper,margin=25mm]{geometry}
+\usepackage[a4paper,margin=20mm]{geometry}
 \usepackage{xcolor}
 \newcommand{\mycomment}[2]{\textbf{\textcolor{red}{[#1: #2]}}}
 \begin{document}
@@ -9,15 +9,15 @@ Institut f\"ur Mechanik, FB Bau- und Umweltingenieurwissenschaften\\
 TU Darmstadt, Franziska-Braun-Stra{\ss}e 7, 64287 Darmstadt, Germany\\
 alexander.schlueter@tu-darmstadt.de
 
-\vspace{8mm}
+\vspace{5mm}
 \noindent Prof.\ Dr.\ Mario Ohlberger\\
 Editor, \emph{Computational Science and Engineering}\\
 Collection: Kaiserslautern Applied and Industrial Mathematics Days -- KLAIM 2025
 
-\vspace{8mm}
-\noindent Darmstadt, \mycomment{TODO}{date}
+\vspace{5mm}
+\noindent Darmstadt, \today
 
-\vspace{6mm}
+\vspace{4mm}
 \noindent \textbf{Resubmission of manuscript 108f21b3-1ae0-46f3-912a-c62cdf4b765e --
 ``Influence of J2-plasticity on the effective crack resistance of a simplified porous material in a numerical experiment''}
 
@@ -30,18 +30,22 @@ with a marked-up and a clean version of the revised manuscript.
 
 The main revisions are:
 \begin{enumerate}
-\item \mycomment{TODO}{introduction and framing of the numerical experiment rewritten (Reviewer~1, points 1--2; Reviewer~3, comment 2): \dots}
-\item \mycomment{TODO}{mechanism study added (Reviewer~1, point 3; Reviewer~3, comment 1): energy partition, dissipation per re-nucleation event, ligament stress state, sensitivity with respect to yield stress and hardening, scaling argument}
-\item \mycomment{TODO}{cubic symmetry of the effective stiffness quantified and its influence on the embedding tested (Reviewer~1, point 4)}
-\item All simulations were recomputed with consistent parameters after an audit of the code against the manuscript;
-the corrections are listed at the end of the response letter. The conclusions are unchanged.
+\item The introduction and the framing of the numerical experiment were rewritten (Reviewer~1, points~1 and~2; Reviewer~3, comment~2). The manuscript now distinguishes the rigorous homogenization of surface energies of Griffith type (Braides et al., Cagnetti et al., Michel and Suquet), the crack-front analyses and the numerical experiment of Hossain et al., cites Hill's definition of a representative volume element, states why the resolved region is not called representative and names the limitations of the numerical experiment. Ten references were added.
+\item A mechanism study was added to the two-dimensional results (Reviewer~1, point~3; Reviewer~3, comment~1): the energy partition per pore-to-pore cycle from the exact energy balance of the model, the stress state and the plastic zone in the ligament immediately before re-nucleation, the sensitivity with respect to the yield stress and the hardening modulus, and the scaling of the linear elastic reference sets with the fracture resistance. The influence of plasticity is explained by a nucleation regime for thin and a propagation regime for wide walls.
+\item The square resp.\ cubic symmetry of the effective stiffness of the unit cells is quantified and the isotropic approximation of the embedding was tested with the full anisotropic stiffness (Reviewer~1, point~4): the effective crack resistance changes by at most $0.2\,\%$, and by at most $1.1\,\%$ with the length of the initial crack and the number of resolved pore rows.
+\item All simulations were recomputed. Reviewer~3 requested no new simulations; they were carried out to answer points~3
+and~4 of Reviewer~1 with recorded observables and to correct inconsistencies between the simulation code and the manuscript
+found in an audit of the code (listed at the end of the response letter). The two-dimensional conclusions are confirmed. The
+three-dimensional series was recomputed on meshes with a fixed element size and normalized by a three-dimensional homogeneous
+reference, and its result changed: with spherical pores, the crack front bypasses the pores and the effective crack resistance
+no longer exceeds that of the homogeneous material. The abstract and the conclusion were rewritten accordingly.
 \end{enumerate}
 
 \noindent All authors have approved the revised manuscript. We hope that the manuscript is now acceptable for publication.
 
-\vspace{6mm}
+\vspace{4mm}
 \noindent Sincerely,
 
-\vspace{10mm}
+\vspace{6mm}
 \noindent Alexander Schl\"uter, on behalf of all authors (Ronjit Medda, Ralf M\"uller)
 \end{document}

@@ -124,4 +124,4 @@ for folder_path in "${BASE_DIR}"/*/; do
     echo "wrote ${folder_path}job_script.sh"
 done
 echo "Wrote $count job scripts. SLURM account: ${ACCOUNT}"
-[ "$ACCOUNT" != "p0023647" ] && echo "WARNING: account is ${ACCOUNT}, not p0023647 (shell variable ACCOUNT set?). Unset it unless intended: unset ACCOUNT"
+if [ "$ACCOUNT" != "p0023647" ]; then echo "WARNING: account is ${ACCOUNT}, not p0023647 (shell variable ACCOUNT set?). Unset it unless intended: unset ACCOUNT"; fi   # if-form: exit code 0 (2026-10-21)

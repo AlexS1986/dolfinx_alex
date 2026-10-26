@@ -259,6 +259,9 @@ into the `_PAPER` folders. The `alex`/`ronny` packages live in `shared/utils/` (
 
 ## 8. Working agreements for agents
 
+* **Interaction rule (Alex, 2026-10-21): per answer give at most ONE command block for the cluster (plus, if needed, ONE
+  block for the Mac terminal), then stop and wait for the pasted output.** Never several cluster blocks in one answer, never
+  mix Mac commands into the cluster block (they get pasted on the login node).
 * The user's folders are on his Mac; work there through the device shell (`$HOME/mnt/<folder>`), do not rebuild
   files from truncated tool output. Never edit files under `submission_ready_*` (archive of what was submitted).
 * Manuscript edits for round 2: **only in `KLAIM_2025/revision_2/manuscript_revised_template.tex`** (round-1 markup already
@@ -409,3 +412,278 @@ into the `_PAPER` folders. The `alex`/`ronny` packages live in `shared/utils/` (
   refs to be cancelled and parked in $HPC_SCRATCH/076_klaim_rev2_3D_oldmesh/ (not restarted).
   evaluation_rev2.py: Jc_num_from_strip gives nan for 3D (x_bc not shifted by x_offset) and keys solids only by (set, geometry)
   -> to fix: match the solid by mesh (h_band) and wsteg.
+
+### 2026-10-21 morning check
+- 2D (075): ALL cases finished (exit 0), incl. S7_vM_ws4.0_mi5 and S7_cubic_vM_ws4.0_mi5 (38.5k steps each). S7_vM_ws4.0_mi6
+  (55 %) superseded, not restarted. 2D data complete -> full 2D evaluation after the next 06 download.
+- 3D (076): S1F ws0.375/0.5/0.75/1.0 finished. The five other fixed-mesh runs hit the 24 h limit (no KLAIM job was in squeue):
+  S1F ws2.0 22 % (t 1.1 -> 6.6 in 24 h), S9F porous h07 15 % (t 0.9 -> 3.8), S2F solid ws1.0 77 % (t 9.8 -> 10.2),
+  S2F solid ws2.0 25 % (t 7.79 -> 7.85) and S9F solid h07 13 % (t 4.42 -> 4.49): the two solids are practically stalled ->
+  inspect dt / Newton iterations in run_simulation_log.txt after the next download.
+- Resubmitted 21.10. 08:36 with `11_resubmit_timeouts.sh --match F_3D` (first real checkpoint restart on the cluster), account
+  p0023647: S1F_3D_vM_ws2.0 55505184 (deflt), S2F ws1.0 55505185, S2F ws2.0 55505186, S9F solid h07 55505187 (these three
+  landed in partition `long` because their job_script.sh still carries the old 7-d TIME -> move to deflt/24 h with scontrol),
+  S9F_3D_vM_ws1.0_h07 55505188 (deflt).
+- Old-mesh 3D runs (S1_3D, S3_3D, S2_3D_solid_vM_ws*) are cancelled/parked and not restarted.
+- Gap: no fixed-mesh 3D cubic-embedding run (R1-M4 in 3D only on the old mesh: S3_3D / S7_3D_cubic) - decide: add S3F case or
+  report the normalised old-mesh comparison.
+- 08:41: the three solid jobs were already RUNNING when moved (scontrol: "no longer pending") -> they keep the 7-d limit in
+  `long`, which is fine. **First real checkpoint restart on the cluster: OK for all five** (`[RESTART] r1 from checkpoint`,
+  t/dt/step/x_ct as at the timeout; S1F ws2.0 and S9F porous on 96 procs, solids on 64).
+- The 2D download of 21.10. 08:40 fetched the OLD tarball (same size as 19.10., S7 ws4.0 still at 6354/4302 steps):
+  05_prepare_lightweight_results_on_cluster.sh had not been re-run -> run 05 on the cluster before every 06.
+- Cluster login needs password + 2FA (06 script prompts). For Claude Code on the Mac: ssh ControlMaster connection opened once by
+  Alex (`ssh -fN lichtenberg`), then non-interactive `ssh lichtenberg 'bash -lc "..."'` (login shell for $HPC_SCRATCH).
+
+### 2026-10-21 09:00 download (step 1 of the evaluation plan)
+- 05 without a flag (as run at 08:48) packs all event snapshots + ws1.0 fields: 2D archive 7.3 GB, 3D 6.0 GB (the 3D one of 08:35
+  failed `gzip -t`); the Mac has only ~16 GB free. For J/energy/log evaluations use **`05_... --tables-only`** (2D 72 MB, 3D 16 MB).
+  Done by Claude under separate names so the full archives stay untouched:
+  `TARGET_DIR=$HPC_SCRATCH/<proj>_tables ARCHIVE_PATH=$HPC_SCRATCH/<proj>_tables.tar.gz ./05_prepare_lightweight_results_on_cluster.sh --tables-only`,
+  then on the Mac `REMOTE_ARCHIVE=/work/scratch/as12vapa/<proj>_tables.tar.gz ./06_download_results_lightweight.sh` (works through the
+  ControlMaster connection, no 2FA). The `*_lightweight*` and `*_lightweight.tar.gz` on scratch (13 GB) can be deleted (Alex's call).
+- 2D completeness (75 → local results/, 08:58): every case of cases_2D.list finished with exit code 0 except S1_vM_ws4.0 / S3_cubic_vM_ws4.0
+  (cancelled, replaced by S7_*_ws4.0_mi5, both DONE, x_ct 36.0 = end), S7_vM_ws4.0_mi6 (superseded) and S1_vM_ws3.0 (cancelled 19.10. at
+  x_ct = 20.5, far beyond the evaluation window; no replacement needed). Strips S2_*, S2_solid_vM, S3 (0.375/1.0), S4 (8), S5 (5) all DONE.
+- 3D (076): S1F ws0.375/0.5/0.75/1.0 DONE. S1F ws2.0, S2F solid ws1.0/2.0, S9F porous/solid h07 still running (restart jobs 5550518x,
+  tails present). All F cases run with newton_min_iters = 5 (column 11 of cases_3D.list). Local results/ still holds old-mesh folders
+  (S1_3D_*, S3_3D_*, S2_3D_solid_vM*, S7_3D_*) from earlier downloads -> must be excluded in evaluation_rev2.py, not deleted.
+
+### 2026-10-21 2D overall evaluation (step 2)
+- `075/evaluation_rev2.py`: `BASELINE_REPLACEMENTS` (S7_vM_ws4.0_mi5 -> S1_vM_ws4.0, S7_cubic_vM_ws4.0_mi5 -> S3_cubic_vM_ws4.0) and
+  `SUPERSEDED` (the two originals + S7_vM_ws4.0_mi6, dropped from all analyses); sensitivity.csv only S4 + baseline; new
+  `evaluation_output/Jeff_summary_2D.csv` (J_eff, J_eff/J_c^num per set, v2.0 values, EqJc/EqSig ratio) and master_table columns
+  `residual_end_rel`, `residual_maxabs_rel`, `frac_diss_closure`. Call: `python3 evaluation_rev2.py --results results --legacy <research_data>/scripts` (2D only, ~25 s).
+- J_c^num: vM solid 1.425 (used; vM strip with elastic embedding 1.447), EqJc strip 1.088, EqSig strip 0.604 (ratio 1.802 vs 1/0.5523 = 1.811).
+- J_eff / J_c^0 (and / own J_c^num), w_s = 0.25 0.375 0.4 0.5 0.6 0.75 1.0 1.4 2.0 3.0 4.0:
+  vM    0.514 0.718 0.759 0.926 1.084 1.295 1.563 1.741 1.830 1.880 1.903  (0.361 0.504 0.532 0.650 0.761 0.909 1.097 1.222 1.284 1.319 1.336)
+  EqJc  1.219 1.519 1.568 1.718 1.825 1.926 2.020 2.092 2.143 2.184 2.212  (1.121 1.397 1.441 1.579 1.678 1.771 1.858 1.924 1.971 2.008 2.034)
+  EqSig 0.674 0.840 0.866 0.949 1.009 1.064 1.116 1.156 1.184 1.207 1.222  (1.116 1.391 1.435 1.573 1.671 1.763 1.849 1.915 1.961 1.999 2.025)
+  vM crosses EqSig (in J_c^0) between w_s = 0.5 and 0.6 (v2.0: "below for w_s <= 0.6" - holds). Normalised by own J_c^num vM is below both
+  elastic sets for all w_s. vM ws4.0 = S7 mi5 run.
+- vs v2.0 (raw J_eff): vM ws0.25 -11 %, 0.375..0.75 +4..+7 %, 1.0 0 %, 1.4 -3 %, 2.0/3.0 +1 %; EqJc 0.375 -3 %, 1.0 -2 %, 2.0..4.0 0..+2 %.
+  (v2.0 EqSig used J_c = 0.5679, not directly comparable; v2.0 vM ws4.0 gives nan = window not reached in the old table.)
+- Self-similarity (R3-C3): J_eff(EqJc)/J_eff(EqSig) = 1.8089..1.8101 for all w_s vs 1/0.5523 = 1.8106 (<= 0.1 %); all energy fractions
+  of EqJc and EqSig agree to 2-3 digits -> the K_bc fix (equal_gc) works, elastic sets are exactly self-similar.
+- Side studies: cubic vs isotropic embedding +0.18 / +0.08 / +0.01 % (w_s 0.375 / 1.0 / 4.0; Zener 0.890 / 0.959 / 0.998).
+  Sensitivity (J_eff rel. to baseline): w_s 0.375: sig_y 0.75 -2.4 %, 1.5 +36.7 %, H 0.11 -11.9 %, 0.44 +18.9 %; w_s 1.0: sig_y 0.75 -5.7 %,
+  1.5 +2.9 %, H 0.11 -4.4 %, 0.44 +6.1 %. Representativity: crack start 1.5/2.0 w_c +0.02/+0.08 %, 5 rows vM ws1.0 -0.02 %, ws0.375 +1.1 %,
+  EqSig ws1.0 -0.09 %.
+- **Energy balance does NOT close** (unlike the 17.10. note): residual W - dE_el - dE_frac - dE_pl - D_visc at the end = -2 % (w_s 4) ...
+  -44 % (w_s 0.25) of W for the elastic sets, -3 ... -41 % for vM, always negative (recorded D_visc + stored energies > supplied work). It
+  closes within 1-2 % in smooth phases with dt >= 6e-3; the excess appears in the tiny-dt phases around crack jumps (the jump step itself
+  closes). Table resolution is %.4e, so per-step increments of cumulative columns are quantised (D_visc ~10 -> 0.01); only totals are reliable.
+  Most likely cause (not yet proven): quadrature mismatch - the model (PhaseFieldProblemCubicEmbedding, `dx` with deg_quad = 1) integrates
+  the viscous term and the crack density with ONE point per cell, while `form_D_visc_inc`, `form_E_frac`, `form_A` in run_simulation.py
+  use `ufl.dx` (exact). For node-local Δs the exact ∫(Δs)² is up to 1.5x the 1-point value. Checked and consistent: dW uses the dt actually
+  used (alex/solution.py), wm1 is updated after the hook, g'(s) matches g(s), psisurf matches the s-equation. Same issue in 076 presumably.
+  Consequence: J_eff unaffected; energy partition (R3-C1/R1-M3) must use the closure dissipation D = W - dE_el - dE_frac - dE_pl
+  (`frac_diss_closure`), fractions relative to the supplied energy W - dE_el (the K-field applied at t = 0 stores initial E_el that is
+  released later, so E_frac/W > 1 at small w_s for vM is no error). Verification proposal: local Docker run S1_EqJc_ws1.0 up to the first
+  jump with additional columns D_visc/E_frac assembled with `dx` (output-only change).
+
+### 2026-10-21 energy balance resolved (supersedes the "most likely cause" in the previous section)
+- The balance includes D_visc = ∫∫ṡ²/M exactly as D_s in 063 (nothing missing). The error is in **W**: `pp.work_increment_external_forces(
+  sigma_interpolated, u, um1, n, ds)` is called with the untagged `ds` = ALL exterior facets, i.e. also the **pore walls** and the free
+  boundary pieces at the crack mouth (traction-free physically, σ_DG0·n ≠ 0 numerically, large wall motion after ligament failure).
+  Same call in 076 (3D). (J is computed correctly with `ds(external_surface_tag)`.) 063 had the related traction-integral problem (FINDINGS §8/9).
+- Local Docker test with an output-only patch (`075/results_local/energy_diag/`: run.sh, run_vM.sh, compare_balance.py; extra file
+  run_simulation_diag.txt), S1 ws0.375 with the cluster arguments up to just after the first jump, reproduces the cluster run
+  (EqJc: W 5.050 vs 5.046 at t = 6.114). Residual W - ΔE_el - ΔE_frac - ΔE_pl - D_visc in % of W:
+  EqJc: W over all facets -9.7 | W over ds(tag) -3.0 | ds(tag) + D_visc/E_frac with 1-point dx (as the model) -0.5 | residual reactions
+  (063 method, trapezoidal) + 1-point -2.0. vM: all facets -27 | ds(tag) -7 | residual reactions -3 (quadrature irrelevant, +0.2 %).
+  Quadrature: E_frac exact = 1-point (0.02 %), D_visc exact is +8 % (EqJc, jump phase) / +0.2 % (vM) above the model-consistent value.
+- **Consequence:** the W column of all 075/076 tables is unusable for energies. Energy partition now uses the supplied energy from the
+  sinks, E_in = ΔE_el + ΔE_frac + ΔE_pl + D_visc (evaluation_rev2.py: `E_in`, master_table `sink_el/fracture/plastic/visc`,
+  energy_fractions_vs_wsteg.png); error of the fractions ~2-3 %. `frac_diss_closure` removed. No rerun needed for J_eff or the partition.
+- Partition at the end of the run (fractions of E_in; el = remaining stored elastic, negative = net release of the initial K-field energy):
+  w_s   vM: el / fracture / plastic / viscous      EqSig (= EqJc): el / fracture / viscous
+  0.25  -0.35 / 0.82 / 0.18 / 0.35                 -0.12 / 0.27 / 0.86
+  0.375 -0.26 / 0.73 / 0.14 / 0.38                 -0.07 / 0.27 / 0.80
+  0.6   -0.14 / 0.64 / 0.15 / 0.36                 -0.01 / 0.28 / 0.73
+  1.0   -0.06 / 0.57 / 0.15 / 0.33                 +0.12 / 0.28 / 0.60
+  2.0   +0.01 / 0.61 / 0.14 / 0.24                 +0.09 / 0.39 / 0.52
+  4.0   +0.03 / 0.72 / 0.13 / 0.12                 +0.05 / 0.52 / 0.42
+  -> elastic sets lose 42-86 % in unstable snap-through (viscous), vM only 12-38 %; vM spends 57-82 % on fracture (R3-C1 mechanism).
+  Caveat: whole run (different end x_ct per case); a per-event / evaluation-window partition is still to do for the paper.
+- Fix for any NEW run (output only, not yet applied to the templates, decision pending): dW with `ds(external_surface_tag)` or, better,
+  residual-based (063 `pp.reaction_force_from_residual`, R·Δu trapezoidal); D_visc/E_frac with `dx` (deg_quad = 1) instead of `ufl.dx`.
+  Running/checkpointed jobs keep their own run_simulation.py, so a template change does not mix bookkeeping within a run.
+
+### 2026-10-21 energy partition per crack cycle (evaluation_rev2.py)
+- New `energy_cycles(case)`: cycle k = from the crack entering pore k (running max of x_ct passes the pore centre) to entering pore k+1
+  (loading, re-nucleation and failure of ONE ligament; the energy of a jump is released over many tiny-dt steps, so per-step event
+  detection (`events.csv`, dx > 4 eps) misses most of it -> use cycles). Evaluation cycle = the one with the J_eff ligament (2D k = 2,
+  3D k = 1). Partitions are now fractions of the dissipated energy D_tot = ΔE_frac + ΔE_pl + D_visc (sum = 1); ΔE_el/D_tot separately
+  (negative: the stored energy of the K-field applied at t = 0 is drawn down, the specimen is not in a strict steady state).
+  G_diss = D_tot / w_cell = dissipated (incl. stored plastic) energy per unit crack advance. Outputs: `energy_cycles.csv` (all cycles),
+  master_table `cyc_*`, `energy_cycle_partition_vs_wsteg.png`; whole-run columns `sink_*` also relative to D_tot now.
+- Evaluation cycle, fractions of D_tot (fracture / plastic / viscous), G_diss vs J_eff [J_c^0]:
+  w_s    vM                      G_diss  J_eff | EqSig (= EqJc) fr / visc  G_diss  J_eff
+  0.25   0.535 0.138 0.327       0.479   0.514 | 0.173 0.827               0.709   0.674
+  0.375  0.526 0.124 0.350       0.665   0.718 | 0.209 0.791               0.857   0.840
+  0.6    0.493 0.141 0.366       0.989   1.084 | 0.235 0.765               0.989   1.008
+  1.0    0.493 0.157 0.350       1.387   1.563 | 0.286 0.714               1.050   1.116
+  2.0    0.589 0.147 0.264       1.517   1.830 | 0.395 0.605               0.998   1.184
+  4.0    0.744 0.135 0.121       1.385   1.903 | 0.530 0.470               0.889   1.222
+  -> elastic: 47-83 % of the dissipated energy is lost in unstable snap-through, only 17-53 % creates crack surface; vM: 12-37 %
+  viscous, 49-74 % fracture, 12-16 % plastic. The difference is largest for small w_s (nucleation regime). EqJc and EqSig identical.
+- Cycle-to-cycle: G_diss is nearly constant over cycles k = 0..3 (vM ws1.0 1.30/1.36/1.39/1.37, vM ws0.375 0.66/0.65/0.67/0.65,
+  EqSig ws1.0 0.95/1.03/1.05/1.05); only the last cycle (domain end) deviates -> periodic regime, supports representativity (R1-M2).
+- G_diss ≈ J_eff for the elastic sets at small w_s (EqJc G_diss/J_eff 1.10 at 0.25, 0.94 at 1.0, 0.73 at 4.0); for vM G_diss < J_eff
+  (0.93 at 0.25, 0.89 at 1.0, 0.73 at 4.0): J_eff is the peak, G_diss the cycle average.
+
+### 2026-10-21 template fix of the energy bookkeeping (075 + 076 `000_template/run_simulation.py`, output only)
+- dW = ½(R_n + R_{n+1})·Δu_D from the assembled residual at the surfing-BC dofs (`boundary_reactions()`, reactions taken before the
+  plastic update = the solved residual; after a (re)start R_n is rebuilt once from wm1, `reactions_at_previous_state()`); the old
+  traction integral over the untagged ds is gone. `form_D_visc_inc`, `form_E_frac` use `dx` (deg_quad = 1). Marker
+  `energy_bookkeeping=residual_reaction_v2` in parameters.txt and in the restart fingerprint (an old checkpoint cannot be continued with
+  the new script -> RestartError). Column names unchanged; evaluation_rev2.py uses the sinks (E_in, D_tot) for all runs, W and the
+  residual columns are meaningful only for runs with this marker (none of the current results has it). Pre-fix copies: scratchpad only, the diff is small (see git diff once committed).
+- Tests (Docker): 2D S1_EqJc_ws0.375 to just after the first jump: residual -2.07 % of W (old script -9.7 %); kill -9 after 4 min
+  (checkpoint every 1 min) + restart: table identical to the uninterrupted run (W 5.2976, residual -0.1096 in both).
+  3D vM ws1.0 (NL 5, 6 procs, 37 steps): runs, residual +0.5 % (table resolution). Folders: 075/results_local/energy_diag/fix_A, fix_B;
+  076/results_local/t3d/fix3d.
+- Not committed / not on the cluster yet. Running and checkpointed 3D jobs keep their own run_simulation.py (unaffected).
+
+### 2026-10-21 3D evaluation (step 3) and stalled 3D runs (step 4)
+- evaluation_rev2.py, 3D: `Case.h_band` (fixed mesh h, old mesh = 0.0 incl. "old_rule", 2D = -1); 3D baseline = porous isotropic h_band 0.1
+  (S1F); old-mesh runs never baseline/reference; `Jc_num_from_strip` 3D window (0.3, 0.7) L_domain in shifted coordinates, now an
+  **x-weighted** mean (row mean over-weights crawling phases: S2F ws1.0 1.387 row vs 1.415 x-weighted; 2D unchanged within 0.1 %) plus
+  `coverage`; `solid_reference_3d()` = solid with the same h_band and w_s, else nearest w_s on the same mesh; `Jc_num_solid_3D.csv`;
+  master_table `h_band, Jc_ref, Jc_ref_value, Jc_ref_coverage`; cubic_vs_isotropic only on the same mesh. Call with
+  `--results3d ../076_klaim_rev2_3D/results`.
+- 3D solid J_c^num (h 0.1): S2F ws1.0 1.415 (bins 0.3-0.7 L: 1.440 1.428 1.409 1.383, slowly decreasing), S2F ws2.0 1.460 (coverage 12 %),
+  S9F h07 not yet at 0.3 L. Old-mesh solids grow with w_s (1.49 at 0.25 ... 2.39 at 4.0) = mesh effect, confirms the fixed-mesh decision.
+- S1F J_eff / J_c^num (S2F ws1.0): w_s 0.375 1.113/1.415 = 0.786, 0.5 0.791, 0.75 0.919, 1.0 0.950 (2D vM: 0.504 / 0.650 / 0.909 / 1.097).
+- 3D energy partition (evaluation cycle k = 1, fractions of D_tot): fracture 0.92-0.93, plastic 0.07-0.08, viscous 0.001-0.006 for all S1F.
+  In 3D the crack front advances in small increments (max 0.16-0.23 L per step; 2D: ~1.2 L jumps with thousands of dt < 1e-5 steps), no
+  unstable ligament snap-through -> practically no viscous dissipation. Mechanism difference 2D/3D for Sec. 5.
+- Step 4 diagnosis (Newton logs, live check 11:00): the fixed-mesh 3D runs converge in exactly 5 (solids 5-6) Newton iterations per
+  step; with NEWTON_MIN_ITERS = 5 dt is never doubled again after a cut-back (same "Kriecher" as 19.10. with 4). Solids: whole body yields
+  -> one iteration more than porous. Frozen dt / progress in 2.4 h after the restart: S1F ws2.0 2.0e-5 / Δt 0.010 (needs t ≈ 23 -> impossible),
+  S2F ws2.0 3.9e-5 / 0.016, S9F solid h07 7.8e-5 / 0.018 (both need ≈ +5-6 in t up to 0.7 L -> impossible), S9F porous h07 6.3e-4 / 0.15
+  (needs t ≈ 11 -> ~120 h), S2F ws1.0 3.1e-4 (plateau 0.3-0.7 L already fully covered, 79 %).
+- Proposal (pending Alex): NEWTON_MIN_ITERS = 7 for S1F ws2.0, S2F ws2.0, S9F solid h07, S9F porous h07 (sed in the scratch case.env,
+  `02_create_jobs.sh --exact`, scancel, resubmit -> checkpoint restart continues; fingerprint does not contain min_iters); cancel S2F ws1.0
+  (done for the normalisation; must then be excluded from later `11_resubmit_timeouts.sh --match F_3D` calls); validation case
+  S1F_3D_vM_ws1.0_mi7 against the finished S1F ws1.0 (mi5) because mi7 (dt grows at 5-6 iterations) is untested.
+
+### 2026-10-21 16:00 NEWTON_MIN_ITERS = 7 for the stalled 3D runs (Alex: "Ja ... du darfst scancel/sbatch")
+- Scratch case.env of S1F_3D_vM_ws2.0, S2F_3D_solid_vM_ws2.0, S9F_3D_solid_vM_ws1.0_h07, S9F_3D_vM_ws1.0_h07 -> NEWTON_MIN_ITERS=7,
+  `02_create_jobs.sh --exact` (job scripts now 24 h deflt, also the solids). scancel 55505184-55505188 (incl. S2F ws1.0, 7.4 h each),
+  resubmitted with `11_resubmit_timeouts.sh --match <exact name>`: S1F ws2.0 **55514418**, S2F ws2.0 **55514419**, S9F solid h07
+  **55514420**, S9F porous h07 **55514421** - all running at 16:01, restart r2 from the checkpoint, "dt scale-up when iterations < 7".
+- **S2F_3D_solid_vM_ws1.0 is cancelled on purpose** (plateau 0.3-0.7 L complete, J_c^num 1.415, x_ct 0.74 L). It still has an unfinished
+  checkpoint, so `11_resubmit_timeouts.sh --match F_3D` (or without --match) WOULD resubmit it -> always use exact case names.
+- Validation case **S1F_3D_vM_ws1.0_mi7** (55514443, pending): created from the one-line case file
+  `$HPC_SCRATCH/cases_3D_validation_mi7_20261021.list` with the cluster template (run_simulation.py, mesh script, klaim_restart.py
+  byte-identical to the reference S1F_3D_vM_ws1.0, i.e. without the uncommitted energy-bookkeeping fix); job script identical except
+  min_iters 7 and -t 1440. Compare J(x_ct), J_eff, steps with S1F_3D_vM_ws1.0 (mi5, 2713 steps).
+- Local `076/cases_3D.list` updated accordingly (7 in column 11 for the four runs + the mi7 line). `02_create_jobs.sh` (075 + 076):
+  the last line `[ ... ] && echo WARNING` returned exit 1 whenever the account was correct (would abort 11_resubmit_timeouts.sh in its
+  upgrade branch under set -e) -> if-form. Local only; cluster copies change with the next git pull.
+
+### 2026-10-21 19:10 status after the min_iters-7 restart, and step 5 (cubic embedding in 3D)
+- Progress in t during the first 3 h with NEWTON_MIN_ITERS = 7 (before: 2.4 h with 5): S1F ws2.0 +0.99 (+0.010), S2F ws2.0 +1.66 (+0.016),
+  S9F solid h07 +1.08 (+0.018), S9F porous h07 +1.84 (+0.15). dt now up to 5e-3 .. 1e-2, accepted steps mostly 5-6 iterations, many
+  rejected attempts (dt doubles to the stability limit, then halves) - net ~100x faster. 07_status 19:08: S1F ws2.0 31 %, S2F ws2.0 38 %,
+  S9F solid 26 %, S9F porous 40 %; validation S1F_3D_vM_ws1.0_mi7 81 % after 3.1 h (1465 steps; reference mi5: 2713 steps in total).
+  S2F_3D_solid_vM_ws1.0 had reached 99 % (t 11.79) when it was cancelled at 16:00.
+- Step 5 basis: Zener ratio of the 3D cells (fixed mesh, parameters.txt) 0.978 / 0.984 / 0.992 / 0.996 / 1.000 for w_s 0.375 / 0.5 / 0.75 /
+  1.0 / 2.0 - closer to isotropic than 2D (0.890 at 0.375, 0.959 at 1.0); the 076 README statement "Zener ratio larger in 3D" is wrong.
+  ΔJ_eff cubic vs isotropic: 2D (clean pairs) +0.18 / +0.08 / +0.01 % (w_s 0.375 / 1.0 / 4.0); 3D old mesh -0.37 % (S7_3D_cubic ws0.375 mi5
+  vs S1_3D ws0.375 mi4) and -0.22 % (S3_3D_cubic ws1.0 mi4 vs S7_3D ws1.0 mi5), within the min_iters noise.
+  Recommendation (pending Alex): no S3F run; R1-M4 answered with the 2D S3 study + 3D Zener table + old-mesh pairs.
+
+### 2026-10-22 manuscript Section 4 (2D) and letter, decisions
+- Decision (Alex): **no S3F run**; R1-M4 answered with the 2D S3 study (+0.18/+0.08/+0.01 %), the 3D Zener table (A >= 0.978) and the
+  two old-mesh 3D pairs (-0.37/-0.22 %).
+- Ligament state at the J_eff peak (table columns *_max_lig): elastic sets re-nucleate at sigma_yy,max = 0.95-1.02 sigma*_1D for all w_s
+  (stress-controlled, minor 24); vM small w_s: alpha ≈ 0.7, triaxiality 0.67-0.74, sigma_yy ≈ 0.97-1.11 sigma*_vM (nucleation regime);
+  vM w_s >= L: triaxiality 1.0-1.1, sigma_yy 1.67-1.71 = 1.31-1.34 sigma*_vM, alpha 0.44-0.60 (constraint, propagation regime).
+- Paper figures for Section 4: `075/paper_figures_2D.py` -> `revision_2/pics/PAPER_rev2_*.{pgf,pdf}` (x_ct/x_bc vs t, J vs x_ct ws1.0,
+  J sections pores 2-4 per set, J_eff vs w_s (raw + /J_c^num), energy partition per cycle, ligament state before re-nucleation).
+  Labels plain "[vM]" etc. (pgf compiled in the document); curves thinned (bins with min/max kept).
+- Alex: **final documents are written by a Fable subagent** (model "fable"). Brief of 2026-10-22: Section 4.1-4.6 + Sec. 3.5 J_c^num
+  numbers + letter (R1-M2/M3/M4, minors 16/24/25, R3-C1/C3), build all three PDFs. 3D (Section 5) follows when S1F ws2.0 / S9F are done.
+- 2026-10-22 09:31 Fable result (checked): Section 4 rewritten (4.1 Table 1 complete, 4.2 K_bc rule \replaced + Table 2 J_eff, 4.3 eq. energy
+  balance + Table 3 + Fig. 15, 4.4 Fig. 16 + Tables 4/5, 4.5 S3, 4.6 S5), Sec. 3.5 J_c^num numbers, letter R1-M2/M3/M4, minors 16/24/25,
+  R3-C1/C3 (2D), Additional corrections item 4 completed + new item 8 (K_bc rule). Builds: marked 44 pp., clean 40 pp., letter 39 pp.,
+  0 errors / 0 undefined refs, clean body without \mycomment. Remaining TODOs: manuscript 5 (Fig. 3 / Sec. 3.5 solid geometry, Table 6 3D,
+  Sec. 5.2 normalisation, abstract/conclusion), letter 5 (3D parts, minor 25 Fig. 3 + Sec. 5 figures). One-shot scripts
+  `revision_2/edits_round2_part5_section4.py`, `edits_round2_part5_letter.py`. To review by Alex: the nucleation-regime mechanism
+  paragraph in 4.4 (Fable's own wording, line ~1081: "driven by the accumulated plastic work" vs "plastic work not available as crack
+  resistance"), G_diss of the elastic sets self-similar only to 1.75-1.89 (vs 1.81), first cycle systematically lower.
+- 2026-10-22 Alex review round 1 (figures): Figs. 10-13 restyled like v2.0 (markers only, blue/red/green o/s/D, dashed pore edges,
+  legend outside; Figs. 11-13 absolute x_ct, all 11 w_s, range pore start 3 .. pore start 5 (0-based 2..4) as in v2.0). Fig. 10 has the
+  v2.0 field picture `pics/holes_s_middle_row.png` as an aligned strip on top (extent 1.78-14.32 L, strip height from the x scale ->
+  round pores). x_ct plotted as running maximum (the tracked node flickers by one element around jumps). Included as PDF
+  (`\includegraphics`), captions of Figs. 10-13 adjusted. Length: v2.0 clean 29 pp. (Sec. 4 pp. 15-20), now 40 pp. (Sec. 4 pp. 16-29,
+  10 tables vs 4). Fig. 9 of v2.0 (criticised in minor 25) = x_ct/x_bc vs t, now vector.
+- 2026-10-22 Fable condensation (checked): Tables J_eff / energy partition / ligament state removed (full tables now in the letter),
+  Figs. 11-13 merged into Fig. 11 (`PAPER_rev2_Jx_vs_xct_sections_three_sets.pdf`, label fig:PAPER_rev2_Jx_sections_three_sets),
+  4.5+4.6 -> 4.5 "Robustness of the Effective Crack Resistance" (Table 3 = S3+S5), Table 1 five rows, 4.2 paragraph "The three
+  comparisons in Fig. 12 answer different questions" (Alex's reading of Fig. 12b: gain from the material model, microstructure keeps
+  only part of it, 1.34 vs 2.03), 4.4 contradiction removed. Builds: marked 42, clean 38 (Sec. 4 pp. 16-27), letter 40 pp., 0 errors.
+  Numbering: Figs. 9 x_ct, 10 J(x_ct), 11 sections, 12 J_eff, 13 partition, 14 ligament; Sec. 5 figs 15-20; Tables 1 stiffness 2D,
+  2 sensitivity, 3 robustness, 4 stiffness 3D. Scripts edits_round2_part6_condense.py / part6b. Backups of the pre-condense templates
+  in the session scratchpad only. Open levers: Voigt equations of 4.1 (v2.0 text, ~0.6 p), Table 3, white space in Sec. 5 (old 3D figs).
+
+### 2026-10-23 3D runs complete
+- All fixed-mesh 3D runs finished (exit 0): S1F ws2.0 (55514418, 16.5 h), S2F solid ws2.0 (55514419), S9F solid h07 (55514420),
+  S9F porous h07 (55514421), validation S1F_3D_vM_ws1.0_mi7 (55514443, 3.6 h). Queue empty. Tables downloaded 13:40 (05 --tables-only).
+- Validation min_iters 7 vs 5 (S1F ws1.0): 1717 vs 2713 steps; J_eff per ligament -0.06 / +0.47 / +0.01 %, J(x) median +0.07 %
+  (90th pct |d| 1.5 %), G_diss per cycle within 2 % -> mi7 runs are equivalent.
+- 3D J_c^num (x-weighted plateau 0.3-0.7 L): S2F h0.1 ws1.0 1.415, ws2.0 1.444 (bins 1.465 1.459 1.447 1.439 1.437, slowly falling),
+  S9F h0.07 ws1.0 1.351.
+- 3D J_eff / J_c^num (same mesh): w_s 0.375 0.786, 0.5 0.791, 0.75 0.919, 1.0 0.950 (mi7 0.954), 2.0 1.390/1.444 = 0.963.
+  Mesh convergence at w_s = L: h 0.07 vs 0.1: J_eff 1.296 vs 1.344 (-3.6 %), J_c^num 1.351 vs 1.415 (-4.5 %), normalised 0.959 vs 0.950
+  (+0.9 %) -> J_eff/J_c^num is mesh-robust (median band edge 1.03 vs 1.49 eps).
+- 3D vs 2D (vM, normalised): 0.79/0.79/0.92/0.95/0.96 vs 0.50/0.65/0.91/1.10/1.28 (w_s 0.375/0.5/0.75/1/2): in 3D the pores never raise
+  the crack resistance above the homogeneous value (saturation ≈ 0.96), but at small w_s they lower it much less than in 2D.
+  3D partition (evaluation cycle): fracture 0.91-0.94, plastic 0.06-0.08, viscous <= 0.006 (no snap-through, crack front works around
+  the pores in small increments).
+- 2026-10-23 Section 5 figures: `076/paper_figures_3D.py` -> `revision_2/pics/PAPER_rev2_3D_*` (x_ct/x_bc vs t ws1.0 [pgf], J/J_c^num vs
+  x_ct 2D vs 3D ws1.0 with pore strip [pdf], 3D J sections all fixed-mesh w_s [pdf], J_eff/J_c^num 2D vs 3D + partition [pgf]).
+  Facts for Section 5: 4x3x2 cells, domain (6 w_c) x 20L x (2.5 w_c), J per thickness 2.5 w_c; 3D K_bc^2 = 2.5 kept -> J_bc 1.37/1.25/
+  1.13/1.06/0.97 J_c^0 (w_s 0.375..2); G_diss/J_eff 0.97-1.05 in 3D. Old pictures mesh_with_cs.png and s/alpha fields (w_s 0.25, v2.0
+  mesh) are not from the new series -> caption qualification + TODO (replace by S1F renderings). Fable brief for Sec. 5 + 3D letter
+  parts sent 2026-10-23.
+- 2026-10-23 Fable Section 5 result (checked: marked 44, clean 38, letter 45 pp., 0 errors/undefined): 5.1 Table 4, geometry 4x3x2 /
+  (6 w_c) x 20L x (2.5 w_c), mesh rule, J_bc values, Newton threshold sentence; 5.2 new text, Figs. 15 mesh (kept, TODO rendering),
+  16-19 new; field figure (s, alpha, ws 0.25) dropped; Sec. 3.3 "Δh <= eps/2" restricted to 2D; letter R1-M4, minor 25, R3-C3, new
+  Additional corrections items 9-11. Script edits_round2_part7_section5.py.
+- **Open decision (J_eff definition in 3D):** window "max J_x while x_ct is in the ligament ahead of pore k+1" = cycle maximum in 2D
+  for every case (identical to 4 digits), but in 3D the front passes beside the pore and the peak occurs with x_ct inside the pore's
+  x-range: window / cycle max (J_c^num units) 0.786/0.873 (ws 0.375), 0.791/0.891 (0.5), 0.919/0.928 (0.75), 0.950/0.950, 0.963/0.963.
+  3D cycle maxima also decrease along the short 4-pore specimen (ws 1.0: 0.967/0.950/0.902 for cycles 0/1/2). Text currently uses the
+  window values with a TODO note in 5.2.
+- **2026-10-23 decision (Alex): J_eff = maximum of J_x over the pore-to-pore cycle** (evaluation cycle k = 2 in 2D, 1 in 3D;
+  `evaluation_rev2.Jeff`, old window kept as `Jeff_window`, fallback if the cycle is incomplete). 2D: 0 values changed. 3D S1F:
+  0.873 / 0.891 / 0.928 / 0.950 / 0.963 J_c^num (J_eff 1.235 / 1.260 / 1.313 / 1.344 / 1.390), h07 0.959; G_diss/J_eff 0.89-1.04.
+  2D and 3D cross at w_s ≈ 0.75L. Old-mesh cubic pair at 0.375L no longer comparable (iso twin incomplete) -> only the w_s = L pair
+  (-0.22 %) is reported. Fig. 19 regenerated; Fable (Section-5 agent) updates Section 5 + letter.
+
+### 2026-10-23 evening: remaining figures and final writing pass ("do all you can without my input")
+- Fable (Section-5 agent) applied the cycle-maximum J_eff: Sec. 4.2 definition sentence, Sec. 4.5 only the w_s = L old-mesh pair,
+  Sec. 5.2 numbers 0.87-0.96 / crossing 0.75L / G_diss/J_eff 0.89-1.04, letter items 4 and 11. Builds 44/38/45 pp., 0 errors.
+  Script edits_round2_part7b_Jeff_cycle_max.py.
+- New Fig. 3 (Sec. 3.5): `pics/PAPER_rev2_Jx_vs_xct_homogeneous_references.pdf` (paper_figures_2D.fig_references): S2_solid_vM,
+  S2_strip_EqJc, S2_strip_EqSig; all in the 16L x 20L box of the w_s = L specimen without pores (elastic strips fully homogeneous,
+  lam = mu = 1; vM solid yield stress everywhere), K_bc^2 = 2.5 -> J_bc = 0.9375 J_c^0, Δh = 0.02L, initial crack 2L; legend
+  J_c^num 1.42 / 1.09 / 0.60 (x-weighted 1.424 / 1.087 / 0.603; text keeps 1.425 / 1.088 / 0.604 from the row mean, <= 0.1 %).
+  Solver output only (the old Fig. 3 had the synthetic continuation of 062).
+- New Fig. 15 (Sec. 5.1): `076/paper_figure_mesh3D.py` reads the gmsh 4.1 ASCII mesh (copied from
+  $HPC_SCRATCH/076_klaim_rev2_3D/S1F_3D_vM_ws0.375/domain_mesh.msh to the session scratchpad) and plots the section with the plane
+  of the pore centres z = -w_c/2 -> `pics/PAPER_rev2_3D_mesh_section_ws0.375.{pdf,png}` (85,681 tets, 3,641 cut). No gmsh needed.
+- Final Fable pass running: Sec. 3.5 (new geometry text + Fig. 3, old strip pictures qualified), abstract, conclusion, editor
+  cover letter, consistency sweep, Fig. 15 swap. Docker daemon was not running (not needed any more).
+- 2026-10-23 ~18:30 final Fable pass done and checked: Sec. 3.5 new geometry text + Fig. 3 (new), Figs. 2/4 kept with qualified
+  captions ("earlier simulation in a 16L x 2L strip"), Fig. 15 = new mesh section, abstract rewritten (200 words), conclusion rewritten
+  (2D results, mechanisms, 3D, limitations/outlook; "robust and extensible framework" sentence deleted), keyword "Effective Fracture
+  Toughness" -> "Effective Crack Resistance", cover letter filled (1 p., \today), letter: editor item 6, minor 25, Additional
+  corrections 12 (16L x 20L reference) and 13 (synthetic continuation in old Fig. 3). Builds: marked 45, clean 38, letter 49, editor 1 pp.,
+  0 errors / 0 undefined. **No open TODO** in manuscript, letter or cover letter. Script edits_round2_part8_final.py; pre-part-8
+  backups only in the session scratchpad. Nothing committed. Next: Alex reads, co-authors (Ralf, Ronny) review, then git commit/push
+  and the final upload package (README "Final package").

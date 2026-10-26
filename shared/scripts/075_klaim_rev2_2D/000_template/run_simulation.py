@@ -404,12 +404,36 @@ postprocessing_interval = dlfx.fem.Constant(domain, float(args.postprocessing_in
 
 # precompiled forms (quantities that do not depend on t explicitly)
 dt_used = dlfx.fem.Constant(domain, 1.0)  # set to the accepted time step before assembling the viscous increment
-form_D_visc_inc = dlfx.fem.form(((s - sm1) ** 2) * iMob / dt_used * ufl.dx)
+form_D_visc_inc = dlfx.fem.form(((s - sm1) ** 2) * iMob / dt_used * dx)   # same quadrature as the model (deg_quad), 2026-10-21
 form_D_pl_deg_inc = dlfx.fem.form(degradation(s, eta) * (psi_pl_undegraded(alpha_n) - psi_pl_undegraded(alpha_tmp)) * dx)
 form_D_pl_undeg_inc = dlfx.fem.form((psi_pl_undegraded(alpha_n) - psi_pl_undegraded(alpha_tmp)) * dx)
 form_E_pl = dlfx.fem.form(degradation(s, eta) * psi_pl_undegraded(alpha_n) * dx)
 form_E_pl_undeg = dlfx.fem.form(psi_pl_undegraded(alpha_n) * dx)
-form_E_frac = dlfx.fem.form(pf.psisurf_from_function(s, gc, epsilon) * ufl.dx)
+form_E_frac = dlfx.fem.form(pf.psisurf_from_function(s, gc, epsilon) * dx)   # same quadrature as the model (deg_quad), 2026-10-21
+# external work from the nodal reaction forces (assembled residual at the surfing-BC dofs, trapezoidal in time), 2026-10-21.
+# The former traction integral over the untagged ds also counted the traction-free pore walls (energy balance off by up to 40 %).
+form_residual_work = dlfx.fem.form(get_residuum_and_gateaux(dt_global)[0])
+_n_owned_w = W.dofmap.index_map.size_local * W.dofmap.index_map_bs
+work_dofs = np.unique(np.asarray(dofs_at_boundary, dtype=np.int64))
+work_dofs = work_dofs[work_dofs < _n_owned_w]
+work_state = {"R_prev": None}
+
+
+def boundary_reactions():
+    b = dlfx.fem.assemble_vector(form_residual_work)
+    b.scatter_reverse(dlfx.la.InsertMode.add)
+    return b.array[work_dofs].copy()
+
+
+def reactions_at_previous_state():
+    # first step after a (re)start: reactions of the converged state wm1 (u-rows of the residual do not contain the rate term)
+    w_tmp = w.x.array.copy()
+    w.x.array[:] = wm1.x.array[:]
+    w.x.scatter_forward()
+    R = boundary_reactions()
+    w.x.array[:] = w_tmp
+    w.x.scatter_forward()
+    return R
 form_E_frac_micro = dlfx.fem.form(pf.psisurf_from_function(s, gc, epsilon) * dx_tagged(micro_material_marker))
 form_E_el = dlfx.fem.form(phaseFieldProblem.psiel_degraded(s, eta, u, la, mu) * dx)
 form_E_el_micro = dlfx.fem.form(phaseFieldProblem.psiel_degraded(s, eta, u, la, mu) * dx_tagged(micro_material_marker))
@@ -535,6 +559,11 @@ def after_timestep_success(t, dt, iters):
     dD_visc = assemble(form_D_visc_inc)
     D_visc.value = D_visc.value + dD_visc
 
+    # --- reactions of this step (before the plastic update: same stress as in the solved residual)
+    R_now = boundary_reactions()
+    if work_state["R_prev"] is None:
+        work_state["R_prev"] = reactions_at_previous_state()
+
     # --- plastic update (alpha_tmp / e_p_*_tmp keep the previous state afterwards)
     if args.material == "vonmises":
         alex.plasticity.update_e_p_n_and_alpha_arrays_2D(u, e_p_11_n_tmp, e_p_22_n_tmp, e_p_12_n_tmp, e_p_33_n_tmp,
@@ -551,7 +580,8 @@ def after_timestep_success(t, dt, iters):
     # --- stresses, reaction forces, external work
     sigma_interpolated.interpolate(sigma_expr)
     Rx_top, Ry_top = pp.reaction_force(sigma_interpolated, n=n, ds=ds_top_tagged(top_surface_tag), comm=comm)
-    dW = pp.work_increment_external_forces(sigma_interpolated, u, um1, n, ds, comm=comm)
+    dW = comm.allreduce(float(np.dot(0.5 * (R_now + work_state["R_prev"]), w.x.array[work_dofs] - wm1.x.array[work_dofs])), op=MPI.SUM)
+    work_state["R_prev"] = R_now
     Work.value = Work.value + dW
 
     # --- energies
@@ -671,6 +701,7 @@ def after_last_timestep():
 
 
 parameters_to_write = {
+    'energy_bookkeeping': 'residual_reaction_v2',
     'mesh_file': mesh_file,
     'material': args.material,
     'lam_eff_simulation': la_effective,
@@ -730,7 +761,7 @@ ckpt_state = {"last_step": int(success_timestep_counter.value)}
 case_fingerprint = {"mesh_file": mesh_file, "material": args.material, "in_crack_length": in_crack_length,
                     "gc": gc_matrix, "sig_y": sig_y_micro_value, "sig_y_embedding": sig_y_eff_value, "hard": args.hard,
                     "beta": args.beta, "eta": args.eta, "mob": args.mob, "eps": eps_param, "embedding": args.embedding,
-                    "K_bc": K_bc_value, "mu_bc": mu_bc_value, "nu_bc": nu_bc_value}
+                    "K_bc": K_bc_value, "mu_bc": mu_bc_value, "nu_bc": nu_bc_value, "energy_bookkeeping": "residual_reaction_v2"}
 restart_generation = 0
 restart_info = None
 
