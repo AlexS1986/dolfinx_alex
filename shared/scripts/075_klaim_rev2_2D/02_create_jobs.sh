@@ -55,6 +55,7 @@ WSTEG_SHORT_MAX=1.0     # (elastic cases only, see below)
 CONSTRAINT="${CONSTRAINT:-}"        # node type(s), e.g. "i01" or "i01|i02"; empty = no constraint (handoff 2026-10-16: leave out -C i01; i02 needs the OpenBLAS fix, which the template sets)
 EXCLUDE="${EXCLUDE:-mpsd0138,mpsd0319,mpsd0401,mpsd0415,mpsd0557}"   # faulty nodes (handoff 2026-10-16; mpsd0557: SIGBUS 16.10.)
 ACCOUNT="${ACCOUNT:-p0023647}"     # SLURM account (handoff: p0023647; p0025962 = follow-on phase once as12vapa is a member; special00008 only sparingly; never l0003507). p0023647 had MaxSubmit=0 on 2026-10-16.
+if [ "$ACCOUNT" = "l0003507" ]; then echo "ERROR: account l0003507 is never used (rule 2026-10-27, 046_plasticity/CLAUDE.md, Konto). Use p0023647." >&2; exit 1; fi
 
 count=0
 for folder_path in "${BASE_DIR}"/*/; do

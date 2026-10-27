@@ -3,13 +3,14 @@
 # once without and once with the OPENBLAS_CORETYPE fix. Results land in $HPC_SCRATCH/<project>/blas_check/.
 # Expected: without fix "core: Cooperlake", dgemm deviation ~1e1; with fix "core: SkylakeX", both ~1e-13.
 # Only after the "with fix" run prints RESULT: OK may CONSTRAINT in 02_create_jobs.sh include i02.
-# Usage: ACCOUNT=l0003507 ./09_blas_check_i02.sh            then, when the two jobs are done:  ./09_blas_check_i02.sh --show
+# Usage: ACCOUNT=p0023647 ./09_blas_check_i02.sh            then, when the two jobs are done:  ./09_blas_check_i02.sh --show
 set -euo pipefail
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 PROJECT_NAME=$(basename "$SCRIPT_DIR")
 OUT="$HPC_SCRATCH/$PROJECT_NAME/blas_check"
 container="$HOME/dolfinx_alex/alex-dolfinx.sif"
 ACCOUNT="${ACCOUNT:-p0023647}"
+if [ "$ACCOUNT" = "l0003507" ]; then echo "ERROR: account l0003507 is never used (rule 2026-10-27, 046_plasticity/CLAUDE.md, Konto). Use p0023647." >&2; exit 1; fi
 mkdir -p "$OUT" && cp "$SCRIPT_DIR/blas_check.py" "$OUT/"
 if [ "${1:-}" = "--show" ]; then
     for f in "$OUT"/*.out; do echo "== $f"; grep -v "^\[I\]\|^  \[I\]" "$f" | grep "host\|core:\|dgemm\|dgesv\|RESULT\|OPENBLAS"; done

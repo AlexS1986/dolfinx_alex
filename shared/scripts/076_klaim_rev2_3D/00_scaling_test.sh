@@ -45,7 +45,7 @@ for n in $CORES; do
            -e "s|srun -n [0-9]* apptainer exec --bind \$bindpath \$container python3 \$working_directory/run_simulation.py|srun -n ${n} apptainer exec --bind \$bindpath \$container python3 \$working_directory/run_simulation.py|" \
            "$js"
     grep -n "SBATCH -n\|SBATCH -t\|SBATCH -C\|^STOP_FRACTION\|run_simulation.py" "$js" | head -6
-    if [ "$SUBMIT" -eq 1 ]; then sbatch "$js"; else echo "(not submitted: SUBMIT=0)"; fi
+    if [ "$SUBMIT" -eq 1 ]; then sbatch -A "${ACCOUNT:-p0023647}" "$js"; else echo "(not submitted: SUBMIT=0)"; fi
 done
 rm -f "$tmp_cases"
 echo "When the jobs are done:  python3 $SCRIPT_DIR/scaling_report.py"

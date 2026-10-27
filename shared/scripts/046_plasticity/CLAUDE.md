@@ -155,6 +155,17 @@ files on the cluster. `lam_eff = C12`, `mu_eff = C33`; **C11 is discarded**, i.e
    → range `[x_high−1.01 w_s, x_high+0.01 w_s]` with `x_high` = end of pore 3); 3D uses pores 1–3.
    Hole positions: `ramberg_osgood_positions(nholes, dhole, wsteg)` (first cell starts at x=2.0).
 
+### Konto (SLURM account) — rule of the user, 2026-10-27
+* **Never compute on `l0003507`.** All KLAIM jobs run on `p0023647`. No implicit account anywhere: every submit path
+  passes `-A $ACCOUNT` with default `p0023647` (02_create_jobs.sh -> `#SBATCH -A`, 03_submit_all.sh, 11_resubmit_timeouts.sh,
+  09_blas_check_i02.sh, 00_scaling_test.sh in 075 and 076); since 2026-10-27, 03_submit_all.sh and 00_scaling_test.sh pass
+  `-A` explicitly as well, so it overrides the `#SBATCH -A` line of older job scripts (many of them carry `special00008`).
+  All of these scripts stop with an error if `ACCOUNT=l0003507` is set. Other accounts only on the user's explicit request.
+* Audit 2026-10-27 (`sacct -u as12vapa -A l0003507 -S 2026-01-01`): 421 jobs, ~47,700 core-h, all on 01.09. and
+  08.09.2026, job names `prep-JM-25-*` / `JM-25-{71,77,83,88}_*`, working folders `meshing/Meshing` and `pygalmesh/data`
+  (not KLAIM, not from 046/075/076). No KLAIM job ever ran on l0003507; since 01.10. only `p0023647` and `special00008`.
+  The only l0003507 strings in 075/076 were the usage example in 09_blas_check_i02.sh (now p0023647) and comments.
+
 ### Naming conventions
 `simulation_<YYYYMMDD_HHMMSS>_WSTEG<ws>` on the cluster; curated local copies renamed `simulation_<ws>`.
 Figures: `PAPER_<nn>_<quantity>_vs_<quantity>_<dataset>.{png,pgf,pdf}` → copied to `KLAIM_2025/pics/`.

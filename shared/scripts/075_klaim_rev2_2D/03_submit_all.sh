@@ -9,6 +9,8 @@ if [ -z "${HPC_SCRATCH:-}" ]; then
     exit 1
 fi
 BASE_DIR="${HPC_SCRATCH}/${PROJECT_NAME}"
+ACCOUNT="${ACCOUNT:-p0023647}"     # passed as sbatch -A, overrides the #SBATCH -A line of the job script (no implicit account, 2026-10-27)
+if [ "$ACCOUNT" = "l0003507" ]; then echo "ERROR: account l0003507 is never used (rule 2026-10-27, 046_plasticity/CLAUDE.md, Konto). Use p0023647." >&2; exit 1; fi
 DRY_RUN=0
 MAX_SUBMISSIONS=""
 MATCH_TEXT=""
@@ -49,10 +51,10 @@ for folder_path in "${BASE_DIR}"/*/; do
         continue
     fi
     if [ "$DRY_RUN" -eq 1 ]; then
-        echo "would submit: $job_script"
+        echo "would submit: sbatch -A $ACCOUNT $job_script"
     else
         echo "submitting: $job_script"
-        out=$(sbatch "$job_script" 2>&1) && echo "$out" || {
+        out=$(sbatch -A "$ACCOUNT" "$job_script" 2>&1) && echo "$out" || {
             echo "$out"
             if echo "$out" | grep -q "AssocMaxSubmitJobLimit\|QOSMaxSubmitJobPerUserLimit\|job submit limit"; then
                 echo "submit limit of the account reached -> stop here; run this script (or 08_fill_queue.sh) again later"

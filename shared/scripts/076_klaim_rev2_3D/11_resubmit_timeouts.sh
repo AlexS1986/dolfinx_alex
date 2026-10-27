@@ -27,6 +27,7 @@ PROJECT_NAME=$(basename "$SCRIPT_DIR")
 TEMPLATE_DIR="$SCRIPT_DIR/000_template"
 BASE_DIR="${HPC_SCRATCH:?HPC_SCRATCH is not defined}/${PROJECT_NAME}"
 ACCOUNT="${ACCOUNT:-p0023647}"
+if [ "$ACCOUNT" = "l0003507" ]; then echo "ERROR: account l0003507 is never used (rule 2026-10-27, 046_plasticity/CLAUDE.md, Konto). Use p0023647." >&2; exit 1; fi
 EXCLUDE="${EXCLUDE:-mpsd0138,mpsd0319,mpsd0401,mpsd0415,mpsd0557}"
 SACCT_DAYS="${SACCT_DAYS:-21}"
 DRY_RUN=0
