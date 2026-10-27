@@ -26,9 +26,9 @@ WS3 = [0.375, 0.5, 0.75, 1.0, 2.0]
 COL3D, MARK3D = "purple", "^"
 
 
-def case3(ws, h="0.1"):
-    return ev.Case(os.path.join(R3, f"S1F_3D_vM_ws{ws:g}" if ws != int(ws) else f"S1F_3D_vM_ws{ws:.1f}") if h == "0.1"
-                   else os.path.join(R3, "S9F_3D_vM_ws1.0_h07"))
+def case3(ws, series="S1G"):
+    """3D porous run: S1G = 6x3x2 series (paper, 2026-10-26), S1F = 4x3x2 check series"""
+    return ev.Case(os.path.join(R3, f"{series}_3D_vM_ws{ws:g}" if ws != int(ws) else f"{series}_3D_vM_ws{ws:.1f}"))
 
 
 def rows():
@@ -53,9 +53,9 @@ def fig_xct_vs_t_3D():
 def fig_J_vs_xct_2D_vs_3D(R):
     """w_s = L, J_x / J_c^num of the own dimension (2D solid 1.425, 3D solid same mesh), markers, pore strip on top"""
     c2 = ev.Case(os.path.join(R2, "S1_vM_ws1.0")); c3 = case3(1.0)
-    jc2, jc3 = jc_ref(R, "S1_vM_ws1.0"), jc_ref(R, "S1F_3D_vM_ws1.0")
+    jc2, jc3 = jc_ref(R, "S1_vM_ws1.0"), jc_ref(R, c3.name)
     with plt.rc_context({"font.size": 11, "axes.labelsize": 12, "legend.fontsize": 10, "xtick.labelsize": 10, "ytick.labelsize": 10}):
-        xlim = (1.5, 11.5)
+        xlim = (1.5, 15.5)
         fw, fh, left, right, top, bottom = 6.3, 4.0, 0.11, 0.78, 0.99, 0.13
         img = plt.imread(pf.PORE_PIC)
         h = (pf.PORE_PIC_EXTENT[1] - pf.PORE_PIC_EXTENT[0]) * img.shape[0] / img.shape[1]
@@ -75,7 +75,7 @@ def fig_J_vs_xct_2D_vs_3D(R):
         pf.old_style(ax, c3, xlim)
         ax_pic.imshow(img, extent=(pf.PORE_PIC_EXTENT[0], pf.PORE_PIC_EXTENT[1], 0, h), aspect="auto")
         ax_pic.set_ylim(0, h); ax_pic.axis("off")
-        ax.set_xlim(*xlim); ax.set_ylim(0, 1.3); ax.set_xticks(np.arange(2, 12, 2))
+        ax.set_xlim(*xlim); ax.set_ylim(0, 1.3); ax.set_xticks(np.arange(2, 16, 2))
         ax.set_xlabel(r"$x_{\mathrm{ct}}/L$"); ax.set_ylabel(r"$J_x / J_c^{\mathrm{num}}$")
         ax.legend(loc="center left", bbox_to_anchor=(1.02, 0.5), markerscale=4, frameon=True)
         fig.savefig(os.path.join(OUT, "PAPER_rev2_3D_Jx_vs_xct_2D_vs_3D_ws1.0.pdf")); plt.close(fig)
@@ -89,11 +89,15 @@ def fig_J_vs_xct_sections_3D(R):
         fig.subplots_adjust(left=0.11, right=0.78, top=0.97, bottom=0.15)
         styles = [pf.WS_STYLE[i] for i in (1, 2, 5, 6, 8)]   # same colours/markers per w_s as in the 2D Fig. 11
         for (col, mk), ws in zip(styles, WS3):
-            c = case3(ws)
-            jc = jc_ref(R, c.name)
+            try:
+                c = case3(ws)
+                jc = jc_ref(R, c.name)
+            except (KeyError, ValueError, OSError):
+                continue
             starts, _ = ev.pore_positions(c)
+            k = ev.eval_cycle(c)                      # around the evaluated ligament (cycle 2 for six pores)
             xa, Ja = pf.crack_tip(c), c.c("Jx") / jc
-            m = (xa >= starts[1] - 0.02) & (xa <= starts[3] + 0.02)
+            m = (xa >= starts[k] - 0.02) & (xa <= starts[k + 2] + 0.02)
             if not np.any(m):
                 continue
             x, J = pf.thin_markers(xa[m], Ja[m], 300, 250)
@@ -108,14 +112,18 @@ def fig_J_vs_xct_sections_3D(R):
 def fig_Jeff_2D_vs_3D(R):
     fig, axes = plt.subplots(1, 2, figsize=(6.3, 2.7))
     r2 = sorted([r for r in R.values() if r["baseline"] == "True" and r["dim"] == "2" and r["set"] == "vM"], key=lambda r: float(r["wsteg"]))
-    r3 = sorted([r for r in R.values() if r["dim"] == "3" and r["baseline"] == "True" and "_mi" not in r["name"]], key=lambda r: float(r["wsteg"]))
+    r3 = sorted([r for r in R.values() if r["dim"] == "3" and r["baseline"] == "True" and "_mi" not in r["name"]
+                 and np.isfinite(float(r["Jeff_over_Jcnum"] or "nan"))], key=lambda r: float(r["wsteg"]))
+    r4 = sorted([r for r in R.values() if r["name"].startswith("S1F_3D_vM_ws") and "_mi" not in r["name"]], key=lambda r: float(r["wsteg"]))
     f = lambda rr, k: [float(r[k]) for r in rr]
     axes[0].plot(f(r2, "wsteg"), f(r2, "Jeff_over_Jcnum"), color="blue", marker="o", ms=3.5, label=r"2D, [vM]")
-    axes[0].plot(f(r3, "wsteg"), f(r3, "Jeff_over_Jcnum"), color=COL3D, marker=MARK3D, ms=4, label=r"3D, [vM], $h = 0.1L$")
+    axes[0].plot(f(r3, "wsteg"), f(r3, "Jeff_over_Jcnum"), color=COL3D, marker=MARK3D, ms=4, label=r"3D, [vM], $6\times3\times2$")
+    axes[0].plot(f(r4, "wsteg"), f(r4, "Jeff_over_Jcnum"), color=COL3D, marker="v", ms=4, mfc="none", ls=":", lw=0.8,
+                 label=r"3D, [vM], $4\times3\times2$")
     r9 = R.get("S9F_3D_vM_ws1.0_h07")
     if r9:
-        axes[0].plot([1.0], [float(r9["Jeff_over_Jcnum"])], ls="none", marker=MARK3D, ms=6, mfc="none", color=COL3D,
-                     label=r"3D, [vM], $h = 0.07L$")
+        axes[0].plot([1.0], [float(r9["Jeff_over_Jcnum"])], ls="none", marker="s", ms=5, mfc="none", color=COL3D,
+                     label=r"3D, $4\times3\times2$, $h = 0.07L$")
     axes[0].axhline(1.0, color="0.5", lw=0.8)
     axes[0].set_ylabel(r"$J_{x,c}^{\mathrm{eff}} / J_c^{\mathrm{num}}$"); axes[0].set_ylim(0, 1.45)
     axes[1].plot(f(r2, "wsteg"), f(r2, "cyc_visc"), color="blue", marker="s", ms=3, ls="--", label="2D viscous")

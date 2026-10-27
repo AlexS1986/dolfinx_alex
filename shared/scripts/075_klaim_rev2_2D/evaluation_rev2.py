@@ -125,8 +125,9 @@ class Case:
                                                 and any(tag in self.name for tag in ("_mi", "_nl", "_nh"))):   # S7/S8 variants are not baseline
             return False
         plastic_ok = self.material != "vonmises" or (abs(self.sig_y - 1.0) < 1e-9 and abs(self.hard - 0.2222222) < 1e-6)
-        if self.dim == 3:   # paper uses only the fixed-mesh runs with h_band = 0.1 (S1F); S9F (h 0.07) is the convergence check
-            return self.geometry == "porous" and self.embedding == "isotropic" and abs(self.h_band - 0.1) < 1e-9 and plastic_ok
+        if self.dim == 3:   # paper: fixed-mesh 6x3x2 series with h_band = 0.1 (S1G, 2026-10-26); S1F (4 pores) and S9F (h 0.07) are checks
+            return (self.geometry == "porous" and self.embedding == "isotropic" and abs(self.h_band - 0.1) < 1e-9 and self.nholes == 6
+                    and plastic_ok)
         return (self.geometry == "porous" and self.embedding == "isotropic" and self.nrows == 3 and abs(self.crack_factor - 1.0) < 1e-6
                 and plastic_ok)
 
@@ -155,13 +156,18 @@ def pore_positions(case):
     return starts, ends
 
 
+def eval_cycle(case):
+    """pore-to-pore cycle of the J_eff ligament: 2 for six pores in x (2D, 3D 6x3x2 series of 2026-10-26), 1 for the 4-pore 3D series"""
+    return 2 if case.nholes >= 6 else 1
+
+
 def Jeff(case, starting_hole=None):
     """effective crack resistance (decision 2026-10-23): maximum of J_x over the pore-to-pore cycle `starting_hole` (crack entering
     pore k to entering pore k+1, see energy_cycles). In 2D this is identical to the v2.0 window definition (Jeff_window, checked for
     every case); in 3D the front passes beside the spherical pore and the peak can occur while x_ct is inside the pore's x-range,
     which the window misses for small w_s. Falls back to the window if the cycle is incomplete."""
     if starting_hole is None:
-        starting_hole = 1 if case.dim == 3 else 2
+        starting_hole = eval_cycle(case)
     cyc = [d for d in energy_cycles(case) if d["cycle"] == starting_hole]
     return cyc[0]["Jmax"] if cyc else Jeff_window(case, starting_hole)
 
@@ -212,7 +218,7 @@ def first_bin_J(case, width=0.1):
 
 def solid_reference_3d(case, solids):
     """J_c^num for a 3D porous run: solid on the same mesh (h_band) and w_s, else same h_band and nearest w_s; never across meshes"""
-    same_mesh = [s for s in solids if abs(s["h_band"] - case.h_band) < 1e-9 and s["h_band"] > 0]
+    same_mesh = [s for s in solids if abs(s["h_band"] - case.h_band) < 1e-9 and s["h_band"] > 0 and s["nholes"] == case.nholes]
     if not same_mesh:
         return None
     return min(same_mesh, key=lambda s: (abs(s["wsteg"] - case.wsteg), -s["coverage"]))
@@ -307,7 +313,7 @@ def energy_cycles(case):
 
 def eval_cycle_fields(case):
     """partition of the cycle that contains the J_eff ligament (fractions of the energy supplied in that cycle)"""
-    k_eval = 1 if case.dim == 3 else 2
+    k_eval = eval_cycle(case)
     cyc = [d for d in energy_cycles(case) if d["cycle"] == k_eval]
     if not cyc:
         return dict(cyc_E_in=np.nan, cyc_el=np.nan, cyc_fracture=np.nan, cyc_plastic=np.nan, cyc_visc=np.nan, cyc_G_diss=np.nan)
@@ -356,7 +362,7 @@ def main():
     for c in cases:
         if c.geometry in ("strip", "solid") and c.dim == 3:
             v, cov = Jc_num_from_strip(c, return_coverage=True)
-            solids3d.append(dict(name=c.name, h_band=c.h_band, wsteg=c.wsteg, Jc_num=v, coverage=cov, J_first_bin=first_bin_J(c)))
+            solids3d.append(dict(name=c.name, h_band=c.h_band, wsteg=c.wsteg, nholes=c.nholes, Jc_num=v, coverage=cov, J_first_bin=first_bin_J(c)))
         elif c.geometry in ("strip", "solid"):
             jc_num_all[(c.set_name, c.geometry)] = Jc_num_from_strip(c)
     for (name, geo), v in jc_num_all.items():

@@ -101,3 +101,51 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+def figure_view_and_section(path, wsteg, name):
+    """Fig. 15 of the 6x3x2 series: a) 3D view (box outline, surface mesh of the front face z = z_max showing the refined crack band,
+    all pore surfaces), y vertical as in the v2.0 figure; b) section through the pore centres z = -w_c/2 (resolved region)."""
+    from mpl_toolkits.mplot3d.art3d import Poly3DCollection, Line3DCollection
+    w_c = wsteg + 1.0
+    xyz, tets = read_msh41(path)
+    f = np.sort(np.vstack([tets[:, [0, 1, 2]], tets[:, [0, 1, 3]], tets[:, [0, 2, 3]], tets[:, [1, 2, 3]]]), axis=1)
+    u, c = np.unique(f, axis=0, return_counts=True)
+    bf = u[c == 1]; cen = xyz[bf].mean(axis=1); lo, hi = xyz.min(0), xyz.max(0)
+    on_box = np.any((np.abs(cen - lo) < 1e-6) | (np.abs(cen - hi) < 1e-6), axis=1)
+    pores, front = bf[~on_box], bf[np.abs(cen[:, 2] - hi[2]) < 1e-6]
+    P = lambda tri: xyz[tri][:, :, [0, 2, 1]]          # plot axes (x, z, y): y vertical
+    plt.rcParams.update({"font.family": "serif", "font.size": 9, "mathtext.fontset": "cm"})
+    fig = plt.figure(figsize=(6.3, 3.9))
+    ax = fig.add_axes([0.02, -0.04, 0.46, 1.08], projection="3d")
+    fe = P(front); segs = np.concatenate([fe[:, [0, 1]], fe[:, [1, 2]], fe[:, [2, 0]]])
+    ax.add_collection3d(Line3DCollection(segs, colors=(0.25, 0.25, 0.6, 0.35), linewidths=0.12, rasterized=True))
+    ax.add_collection3d(Poly3DCollection(P(pores), facecolor=(0.3, 0.35, 0.8, 0.85), edgecolor=(0.1, 0.1, 0.35, 0.6),
+                                         linewidths=0.08, rasterized=True))
+    X, Y, Z = (lo[0], hi[0]), (lo[1], hi[1]), (lo[2], hi[2])
+    for a in X:
+        for b in Y:
+            ax.plot([a, a], [Z[0], Z[1]], [b, b], "k-", lw=0.5)
+        for b in Z:
+            ax.plot([a, a], [b, b], [Y[0], Y[1]], "k-", lw=0.5)
+    for a in Y:
+        for b in Z:
+            ax.plot([X[0], X[1]], [b, b], [a, a], "k-", lw=0.5)
+    ax.set_box_aspect((hi[0] - lo[0], hi[2] - lo[2], hi[1] - lo[1]), zoom=0.95)
+    ax.set_xlim(*X); ax.set_ylim(*Z); ax.set_zlim(*Y); ax.view_init(elev=14, azim=-58); ax.set_axis_off()
+    o = np.array([lo[0] - 6.0, hi[2] + 2.0, lo[1] - 1.0]); Ls = 3.5     # coordinate triad, left of the box
+    for d, lab in ((np.array([1, 0, 0]), "x"), (np.array([0, 0, 1]), "y"), (np.array([0, -1, 0]), "z")):
+        ax.quiver(*o, *(Ls * d), color="k", lw=0.8, arrow_length_ratio=0.25)
+        ax.text(*(o + 1.25 * Ls * d), f"${lab}$")
+    ax.text2D(0.03, 0.95, "a)", transform=ax.transAxes)
+    ax2 = fig.add_axes([0.56, 0.27, 0.43, 0.5])
+    polys = plane_section(xyz, tets, -0.5 * w_c); sg = segments(polys, -lo[0])
+    m = (np.abs(sg[:, :, 1]).min(axis=1) < 3.3)
+    ax2.add_collection(LineCollection(sg[m], colors="k", linewidths=0.15, rasterized=True))
+    ax2.axhline(0.0, color="tab:red", lw=0.6, ls="--")
+    ax2.set_xlim(0, hi[0] - lo[0]); ax2.set_ylim(-3.3, 3.3); ax2.set_aspect("equal")
+    ax2.set_xlabel(r"$x/L$"); ax2.set_ylabel(r"$y/L$")
+    ax2.text(0.0, 1.06, "b)", transform=ax2.transAxes)
+    fig.savefig(os.path.join(OUT, name + ".pdf"), dpi=400)
+    fig.savefig(os.path.join(OUT, name + ".png"), dpi=200)
+    print("wrote", name, f"({len(tets)} tets, {len(pores)} pore faces, {len(front)} front faces)")

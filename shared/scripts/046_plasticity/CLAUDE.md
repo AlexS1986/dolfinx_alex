@@ -719,3 +719,44 @@ into the `_PAPER` folders. The `alex`/`ronny` packages live in `shared/utils/` (
   `076/meshes_6x3x2_20261026/<case>/` (msh, xdmf/h5, mesh_parameters.txt, check_3D/section.png) and
   `076/meshes_4x3x2_used_in_S1F_S2F_S9F_runs/<case>/` (copies from scratch of the meshes the current runs used).
   Check/render script `076/mesh_check_render.py`. Nothing submitted yet (waiting for Alex's OK after mesh inspection).
+- **2026-10-26 14:22 6x3x2 series submitted and running** (Alex: "yes okay", incl. own restarts until Friday with 11_resubmit
+  --match <exact name>): S1G_3D_vM_ws0.375 55656656, ws0.5 55656657, ws0.75 55656658 (64 cores), ws1.0 55656659, ws2.0 55656660
+  (96), S2G_3D_solid_vM_ws1.0 55656661 (64), ws2.0 55656662 (96); account p0023647, deflt 24 h, NEWTON_MIN_ITERS 7. All started
+  within seconds; all 7 copied the provided mesh from <case>/premesh/ (md5 of mesh_fracture_adaptive.h5 identical to the uploaded
+  file, all 28 uploads verified) and run. Cluster repo at 8a75178 -> these runs also use the energy-bookkeeping fix
+  (energy_bookkeeping=residual_reaction_v2: W from residual reactions, D_visc/E_frac with dx). The 2 "error" lines per .err are the
+  non-fatal get_mesh_info step (same in the earlier runs). Estimate: w_s 0.375-0.75 a few hours, w_s 1.0 + solid 1.0 ~6-12 h, w_s 2.0
+  + solid 2.0 ~1.5-2 days (one restart).
+
+### 2026-10-27 morning: 6x3x2 series, first results
+- Finished (exit 0): S1G ws0.375 (3.3 h), ws0.5 (3.8 h), ws0.75 (5.7 h), ws1.0 (13.8 h), S2G solid ws1.0 (4.8 h). Running: S1G ws2.0
+  (21 %, t 7.5 after 18.3 h) and S2G solid ws2.0 (34 %); continuation jobs queued with --dependency=afterany: S1G ws2.0 55674241
+  (after 55656660), S2G ws2.0 55674242 (after 55656662) -> start automatically at the 24 h limit (~14:22) and restart from the checkpoint.
+- evaluation_rev2.py: `eval_cycle(case)` = 2 for six pores in x (2D and the 3D 6x3x2 series, middle ligament), 1 for the 4-pore 3D
+  series; 3D baseline = porous, isotropic, h_band 0.1, **nholes 6** (S1F now a check series); solid reference matched by h_band AND
+  nholes (S1G -> S2G, S1F -> S2F).
+- J_c^num 3D 6x3x2: S2G ws1.0 1.421 (S2F 1.415), S2G ws2.0 1.446 at 22 % coverage (S2F 1.444) -> domain length 6 -> 8 w_c changes
+  the reference by <= 0.4 %.
+- J_eff / J_c^num (cycle 2): 0.860 / 0.883 / 0.923 / 0.946 for w_s 0.375 / 0.5 / 0.75 / 1.0 (4-pore series 0.873 / 0.891 / 0.928 /
+  0.950, i.e. -1.5 ... -0.4 %). J_eff 1.223 / 1.255 / 1.312 / 1.344 J_c^0. Partition (cycle 2): fracture 0.91-0.93, plastic 0.07-0.09,
+  viscous <= 0.01; G_diss/J_eff 0.95-0.97. Cycle maxima drift down along the specimen (ws1.0: 0.975/0.959/0.946/0.936/0.901); the
+  solid reference drifts too (-5 % near the end); position-matched ratio ws1.0 0.965/0.955/0.933/0.951/0.949, ws0.375 0.873->0.835.
+- Conclusions of Sec. 5 unchanged (below 1, nearly flat, no snap-through). Missing: w_s = 2L (needs the crack past the centre of pore 3,
+  x_ct = +1.5L, currently -5.1L) and the full S2G ws2.0 plateau.
+- 2026-10-27 manuscript update to the 6x3x2 series started (Alex: "update the manuscript with the new data, plots of mesh,
+  placeholders for missing data"). Figures regenerated: paper_figures_3D.py now uses S1G (Figs. 16-19; Fig. 19a with the 4x3x2
+  series as open triangles and the h07 point); new Fig. 15 `pics/PAPER_rev2_3D_mesh_6x3x2_ws1.0.{pdf,png}`
+  (paper_figure_mesh3D.figure_view_and_section: a) 3D view, back-face surface mesh + all 36 pore surfaces, y vertical; b) section
+  z = -w_c/2). Energy balance in the new 3D runs (fixed bookkeeping) closes to -0.03 % (S1G ws1.0) / -0.06 % (S2G ws1.0) of W.
+  6x3x2 partition (cycle 2): fracture 0.907/0.913/0.923/0.931, plastic 0.088/0.078/0.066/0.065, viscous 0.005/0.008/0.010/0.004;
+  G_diss/J_eff 0.95-0.97; max crack advance per step 0.13-0.19L; x_ct inside a pore's x-range 38-79 % of the steps.
+  Fable brief sent: Sec. 5 + 4.5 + abstract/conclusion + letter/cover letter to 6x3x2, placeholders `\pending{}` (red, visible in
+  the clean build) for w_s = 2L and the S2G ws2.0 reference.
+- 2026-10-27 Fable part 9 (6x3x2) checked: builds marked 46, clean 39 (1 page over the 38 target, ~16 lines), letter 50, cover 1 pp.,
+  0 errors. `\pending{}` (red, also in the clean build): manuscript 11 (Figs. 18/19 captions, Sec. 5.2: S2G ws2.0 reference 1.446,
+  J_eff 2L 1.39 / 0.96, partition 2L, crack-front numbers 2L; conclusion 0.96), letter 17 incl. generated quotes (minor 25, R3-C3,
+  Additional corrections items 4 and 11). Geometry back to 6x3x2, embedding (8 w_c) x 20L x (2.5 w_c); 4x3x2 only as robustness
+  check (<= 1.5 %, Sec. 4.5 "length in x varied in 3D"); "advances beside the pores", "does not exceed the homogeneous value";
+  energy balance "within 0.4 % (0.1 % for w_s = L)" (S1G residuals 0.24/0.16/-0.11/-0.03 %). Script edits_round2_part9_6x3x2.py,
+  backups in the scratchpad (backup_pre_part9/). Status 27.10. ~09:30: S1G ws2.0 22 % (t 7.7), S2G ws2.0 35 %, continuation jobs
+  55674241/55674242 queued (dependency). To fill when done: all \pending, Figs. 18/19 (rerun paper_figures_3D.py).
