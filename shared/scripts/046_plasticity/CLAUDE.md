@@ -771,3 +771,10 @@ into the `_PAPER` folders. The `alex`/`ronny` packages live in `shared/utils/` (
   energy balance "within 0.4 % (0.1 % for w_s = L)" (S1G residuals 0.24/0.16/-0.11/-0.03 %). Script edits_round2_part9_6x3x2.py,
   backups in the scratchpad (backup_pre_part9/). Status 27.10. ~09:30: S1G ws2.0 22 % (t 7.7), S2G ws2.0 35 %, continuation jobs
   55674241/55674242 queued (dependency). To fill when done: all \pending, Figs. 18/19 (rerun paper_figures_3D.py).
+
+### 2026-10-27 17:30 status of the w_s = 2L runs (6x3x2 series)
+- Both continuation jobs restarted from the checkpoint at 14:30 (S1G 55674241 from t 9.71, S2G 55674242 from t 12.91), mpsd0168/0179.
+- S1G_3D_vM_ws2.0: t 10.19, x_ct 9.37 L (domain 0..24 L), dt 0.0025, ~0.17 L/h while crossing the pore rows. Cycle-2 ligament
+  for J_eff: x_ct 10.0..13.0 L (pore starts 4, 7, 10, 13, 16, 19). Expected at x_ct = 13 around the end of the current job
+  (Wed ~14:30) or early in the next one -> second continuation queued: 55682952 (afterany:55674241, -A p0023647).
+- S2G_3D_solid_vM_ws2.0: t 14.18, x_ct 12.54 L, ~0.44 L/h; 3D plateau window 7.2..16.8 L covered at ~Wed 03:00-04:00.
