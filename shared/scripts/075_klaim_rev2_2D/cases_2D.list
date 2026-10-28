@@ -66,6 +66,9 @@ S4_H0.44_ws1.0       1.0   vonmises 1.0  1.0  0.4444444 isotropic 3 1.0 porous
 # ---------------------------------------------------------------- S5: representativity probes (initial crack position, number of pore rows), R1 major point 2
 S5_crack1.5_vM_ws1.0   1.0   vonmises 1.0  1.0  0.2222222 isotropic 3 1.5 porous
 S5_crack2.0_vM_ws1.0   1.0   vonmises 1.0  1.0  0.2222222 isotropic 3 2.0 porous
+# 2026-10-28 (Alex): initial crack also in the nucleation regime; tip at the centre of the first pore (1.5) / middle of the first ligament (2.0)
+S5_crack1.5_vM_ws0.375 0.375 vonmises 1.0  1.0  0.2222222 isotropic 3 1.5 porous
+S5_crack2.0_vM_ws0.375 0.375 vonmises 1.0  1.0  0.2222222 isotropic 3 2.0 porous
 S5_rows5_vM_ws1.0      1.0   vonmises 1.0  1.0  0.2222222 isotropic 5 1.0 porous
 S5_rows5_vM_ws0.375    0.375 vonmises 1.0  1.0  0.2222222 isotropic 5 1.0 porous
 S5_rows5_EqSig_ws1.0   1.0   elastic  0.5523 1.0 0.2222222 isotropic 5 1.0 porous
