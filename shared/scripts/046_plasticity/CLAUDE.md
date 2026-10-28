@@ -778,3 +778,103 @@ into the `_PAPER` folders. The `alex`/`ronny` packages live in `shared/utils/` (
   for J_eff: x_ct 10.0..13.0 L (pore starts 4, 7, 10, 13, 16, 19). Expected at x_ct = 13 around the end of the current job
   (Wed ~14:30) or early in the next one -> second continuation queued: 55682952 (afterany:55674241, -A p0023647).
 - S2G_3D_solid_vM_ws2.0: t 14.18, x_ct 12.54 L, ~0.44 L/h; 3D plateau window 7.2..16.8 L covered at ~Wed 03:00-04:00.
+
+### 2026-10-28 morning: w_s = 2L values filled (Fable part 10), open questions on the introduction's promises
+- 08:10 status: S2G solid ws2.0 at x_ct 18.1 L (plateau 7.2-16.8 L covered) -> J_c^num 1.445 (final). S1G ws2.0 at x_ct 13.0 L (cycle 2 closes
+  at 13.5 L, pore-3 centre): cycle-2 peak already passed (0.970 J_c^num at x_ct 11.8 L, J_x since down to 0.78) -> J_eff 1.40 J_c^0 / 0.97
+  (final). Partition / G_diss of cycle 2 still missing. Background watcher (Mac) waits for max x_ct >= +1.6 L (centred) on the cluster.
+- Local results: the two ws2.0 tables replaced by the 08:10 cluster state (old copies in the session scratchpad results_bak_1027/);
+  evaluation_rev2.py rerun (master_table: S1G ws2.0 Jeff 1.4016, 0.9696 via window fallback = cycle max so far; Jc_ref 1.4453);
+  paper_figures_3D.py rerun: Fig. 18 has the 2L curve up to x_ct = 13 L, Fig. 19a the 2L point, 19b not yet.
+- Crack-front statistics (definition of 27.10.: running-max x_ct inside any pore x-range, fraction of ALL steps; max Δx_ct per step):
+  0.375/0.5/0.75/1.0: 79/73/54/38 %, 0.19/0.15/0.14/0.13 L; 2L (run so far) 17 %, 0.105 L -> provisional.
+- 4x3x2 vs 6x3x2 (normalised): +1.5/+0.9/+0.5/+0.4 % for w_s <= L, -0.7 % at 2L -> "within 1.5 %".
+- Fable part 10 (`edits_round2_part10_ws2_current.py`, checked): 1.40 / 0.97 / 1.445 as plain numbers, crack-front 2L values with new
+  macro `\prelim{}` (red, no brackets), four-pore sentence in Sec. 5.2 and letter item 9 extended by the 2L value. Remaining:
+  `\pending` 4 (Fig. 18 caption "shown up to 13L", Fig. 19 caption "to be added in b)", 2x partition/G_diss in Sec. 5.2), `\prelim` 2.
+  Builds 46/39/50/1 pp., 0 errors / undefined, quotes in sync. Backups in scratchpad backup_pre_part10/. Not committed.
+- Alex asked whether the introduction's promises are kept: (1) σ_y/H sensitivity = Table 2 (S4, 2D, [vM], w_s 0.375L and L, one-at-a-time)
+  - exists; caveat: values in J_c^0, no recomputed J_c^num for the varied material (not stated in the text). (2) initial crack = S5
+  crack1.5/crack2.0 at w_s = L only (+0.02/+0.08 %); in 2D the tip x = in_crack_length, so 1.0/1.5/2.0 w_c put the tip ahead of pore 1,
+  at its centre and in the middle of the first ligament -> Sec. 4.5 "position of the initial crack relative to the pores not tested" is
+  inaccurate. Proposed: wording fixes (intro, 4.5, sensitivity caveat) and optionally S5 crack1.5/crack2.0 at w_s = 0.375L (~1-2 h each);
+  waiting for Alex's decision.
+- 2026-10-28 ~08:50 (Alex: "Text + 2 runs"): S5_crack1.5_vM_ws0.375 **55700663** and S5_crack2.0_vM_ws0.375 **55700664** (075, p0023647,
+  -t 1440 deflt, 16 cores, running on mpsd0123). Cases committed in 4f8ad5b, cluster repo pulled to 4f8ad5b (now also has the account
+  scripts). Job scripts identical to the baseline S1_vM_ws0.375 except crack factor, account, empty min_iters block (= default 4, as the
+  baseline) and the restart/checkpoint lines; the current template has the energy-bookkeeping fix (output only, J unaffected).
+  Independent overstatement/consistency review of the clean manuscript started (read-only agent). Alex's manuscript notes: not found in
+  the .tex (all uncommitted changes are Fable part 10) nor as PDF annotations -> asked where they are.
+- 2026-10-28 08:30 **Alex's Acrobat annotations are probably lost**: he annotated manuscript_revised_template/clean.pdf (Acrobat recent files,
+  recorded sizes 2,280,786 / 1,985,596 = the 27.10. 09:20 builds); the Fable part-10 build at 08:20 rewrote the PDFs (new inodes).
+  No Time Machine/local snapshot, Google Drive does not back up ~/Work, Acrobat AutoSave folder empty (changed 08:24), Acrobat now holds
+  the new clean PDF. **Rule from now on:** builds write only the manuscript_revised_*/response_* PDFs; Alex reads/annotates dated copies
+  in `revision_2/reading/` (first set: *_READ_2026-10-28.pdf), which no build touches.
+- 2026-10-28 ~09:00 independent overstatement/consistency review of the clean manuscript (38 items). Verified by Claude so far:
+  (1) **3D side layers**: embedding w_c/4 on both z faces lies on the crack plane along the whole path (mesh_fracture_adaptive: block
+  W - 2 wbz, wbz = w_c/4), linear elastic (sig_y_embedding 1e6, mu_eff 0.89 at ws1), same G_c -> 20 % of the thickness 2.5 w_c fractures
+  elastically; the S2G solid reference is plastic with mu0 everywhere -> normalisation inconsistent (rough estimate +5 % on J_eff/J_c^num,
+  0.97 -> ~1.0 at 2L). The K-field on the z faces is common to porous and solid (same BC function) - state it in 5.1. Fix: 3D `strip`
+  reference (no pores, block plastic, embedding elastic, K^2 = 2.5), geometry already supported by 076; the 6x3x2 solid premeshes have
+  2 volumes (block + embedding) and can be reused. Waiting for Alex's OK (ws1.0 ~5 h, ws2.0 ~1.5 d).
+  (2) Sec. 2 defines J_eff as the global max over the whole separation, the paper uses the cycle-2 max (global max differs, e.g. vM ws1
+  1.595 in cycle 0). (5) nucleation regime "w_s <= 0.6L" in 4.4 vs "<= 0.5L" in 4.2 (vM > EqSig at 0.6L). (9) solver is MUMPS LU
+  (KSP preonly, PC lu), not GMRES/ILU. (11) J peaks per cycle DEcrease along the specimen for w_s <= L (vM ws1 1.595/1.581/1.563/1.526),
+  only G_diss of the first cycle is lower. (15) intro "separate nucleation, plastic dissipation and crack growth" overstated.
+  Other items (cycle content / which ligament the 2D peak re-nucleates = 4th-5th pore, pore numbering in the Fig. 11/18 captions,
+  ligament "yields across its full width" not measurable from window maxima, triaxiality = ratio of two window maxima, "plastic work does
+  not enter J_x", 2D W_ext not usable -> partition from sinks, 31 % vs factor 2.36, thinnest TESTED wall 0.375L, numbers 1.25 / 0.7-1.1 /
+  0.959 / 7-9 %) go to Fable with the evidence for verification while editing.
+
+### 2026-10-28 10:45 cycle 2 of S1G ws2.0 closed, S5 ws0.375 done, figures 18/19 complete
+- Watcher fired 10:40 (S1G ws2.0 max x_ct centred 1.68 > 1.5 = cycle-2 end). Tables of 075 and 076 downloaded (05 --tables-only, 06);
+  evaluation_rev2.py rerun (master_table backup in the scratchpad results_bak_1028/); paper_figures_3D.py rerun (pics backup pics_bak_1028/):
+  Fig. 18 now has the full 2L cycle (x_ct 10.0-13.7), Fig. 19b the 2L point.
+- S1G ws2.0 final (cycle 2 complete, no window fallback): J_eff 1.4016 J_c^0 = 0.970 J_c^num (S2G 1.4454); cycle-2 partition: fracture 0.940,
+  plastic 0.059, viscous 0.001; G_diss 1.439 J_c^0, G_diss/J_eff 1.027 (0.375L-L: 0.95-0.97). Residual (whole run) 0.01 %.
+- **G_diss/J_eff is not a stable property**: per cycle (k = 0..4) 0.82/0.84/0.95/0.85/0.98 at 0.375L, 0.93/0.98/0.97/0.98/1.05 at L,
+  0.99/1.00/1.03 at 2L. In 3D the stored elastic energy DEcreases during every cycle (ΔE_el/ΔD_tot in cycle 2: -0.27 at 0.375L,
+  -0.24, -0.20, -0.15 at L, -0.08 at 2L), so G_diss includes released elastic energy -> Sec. 5.2 "nearly coincides"/"varies only little"
+  must be weakened (only the cycle-2 values 0.95-1.03 are quoted).
+- **J peaks drift down along the specimen also in the pore-free references** (x-weighted J_x in 8 bins over 0.15-0.85 L_domain):
+  S2G solid ws1.0 1.414 1.439 1.423 1.442 1.430 1.396 1.366 1.285; S2G ws2.0 1.482 1.461 1.443 1.454 1.449 1.439 1.411;
+  2D S2_solid_vM 1.442 ... 1.404 1.352; S2_strip_vM 1.473 ... 1.417 1.054 -> the per-cycle decrease of the J peaks (review item 11) is a
+  property of the surfing setup on a finite domain, not of the pores; the plateau window 0.3-0.7 L_domain averages over it.
+- Crack-front statistics: 2L at x_ct 13.73 (run still going): 22 % of steps in a pore x-range (08:10: 17 %), max Δx_ct 0.105L. Variant "up to
+  the end of the evaluation cycle" for all runs (final now): 75/69/51/38/21 %, max Δx 0.145/0.131/0.140/0.106/0.105 L (0.375/0.5/0.75/1/2 L);
+  whole-run values 79/73/54/38 % and 0.19/0.15/0.14/0.13 L. Proposed to Alex: use the cycle-end variant and cancel the S1G ws2.0
+  continuation (55674241 running, 55682952 pending; ~20-40 h x 96 cores left); S2G ws2.0 (55674242) reference final (coverage 1.00).
+- S5 initial crack at w_s = 0.375L (55700663/55700664 COMPLETED, 1:03 h / 0:41 h): J_eff crack1.5 0.7180, crack2.0 0.7173 vs baseline
+  S1_vM_ws0.375 0.7177 (+0.04 / -0.06 %); with w_s = L (+0.02 / +0.08 %) the initial crack (tip ahead of pore 1, at its centre, in the middle
+  of the first ligament) changes J_eff by <= 0.1 % in both regimes. Cycle partitions within 1-2 points of the baseline.
+- Still waiting for Alex: 3D strip reference runs (side-layer normalisation) yes/no; then Fable part 11 (review fixes + these values).
+
+### 2026-10-28 afternoon: strip references submitted, Alex's annotations recovered, Fable part 11 started
+- Alex: "Yes, submit both" -> strip cases committed (b6b103a, pushed, cluster pulled): S2G_3D_strip_vM_ws1.0/ws2.0 in 076/cases_3D.list
+  (geometry strip, mi 7, nholes 6, h_band 0.1, 64/96 cores; block vM-plastic, z-face embedding elastic = consistent 3D normalisation).
+  Premesh: solid premeshes copied on the cluster (S2G_3D_solid_vM_ws*/premesh -> strip case folders). Jobs: ws1.0 **55714173**
+  (running 14:5x), ws2.0 **55714174** + continuation **55714176** (afterany, p0023647, -t 1440). Expected: ws1.0 tonight, ws2.0 Thu/Fri.
+- Alex annotated manuscript_revised_template.pdf (saved 14:44) — again the BUILD OUTPUT, not the reading copy. Secured BEFORE any
+  build as reading/manuscript_template_ANNOT_2026-10-28.pdf + scratchpad copy. Extraction: no pypdf on the Mac -> Swift/PDFKit script
+  (scratchpad extract_annots.swift, renders pages too via render_page.swift); 24 annotations (highlights with comments + 1 text note),
+  list in scratchpad annots_1028.txt. Highlights: Fig. 4 alpha-legend overlaps the caption (picture-overlay \put(-50,25) -> move
+  between plot and caption); corners paragraph stays (R1 quote letter l.506); Nemat-Nasser sentence out; Newton text: max 8 correct,
+  dt-increase threshold 4 (2D) / 5 (ws4L) / 7 (3D) + same paragraph says GMRES/ILU -> MUMPS LU; nu_0^eff column (0.186/0.195/0.228/
+  0.244/0.249) into Table 1; G_diss physics/numerics discussion (p29) as hedged limitation (no dissertation cite — not in the bib);
+  holes_s_middle_row.png as illustration figure in Sec. 5 (no run claim in the caption).
+- Checks for part 11: old-mesh 3D cubic "-0.22 %" not reproducible under the cycle definition (old-mesh isotropic ws1.0 has no complete
+  cycle -> claim dropped, keep 2D <= +0.18 % and A >= 0.978); 3D corners statement in Sec. 2 false in 3D (resolved-block edges lie ON
+  the crack plane via the side layers) -> scoped to 2D + Sec. 5.1 geometry statement; letter "agree to within 0.5 %": 1.351 (h0.07)
+  differs 4.5 % -> claim scoped to the h0.1 references.
+- Fable part 11 launched (brief: scratchpad brief_part11.md; annotations A1-A23, value fills B1-B5 — incl. crack-front stats switched
+  to the cycle-end variant 21-75 % / 0.11-0.15L, G_diss/J_eff 0.95-1.03 weakened — and review fixes C1-C17; 3D normalised values ->
+  \prelim with strip caveat). Build outputs only; new reading copies *_READ_2026-10-28b.pdf; no commit. Alex will mail the result to
+  the co-authors for internal review.
+- Part 11 done (edits_round2_part11_comments_review.py, 60 anchors, checked by Claude: Fig. 4 legend, Table 1 nu column, Sec. 5.1
+  side-layer/BC statement, new Fig. 17 crack illustration = s_t_2.9998_wsteg_0.25.png (3D block of the previous version; holes_s_middle_row
+  is the 2D strip, Fable's deviation from the brief correct), crack-front stats cycle-end variant in 5.2, eq. (39) 1/(2.5 w_c)).
+  Deviations: A1 Nemat-Nasser sentence was in the intro (not Sec. 2); A22 only 4.3/4.5/5.2 needed lead-ins; C6 "factor 2.36 at equal
+  strength (31 % at equal J_c^0)" = J_c^num ratio 1.425/0.604, both comparisons named; C17 z-face claim comes from the internal review,
+  not a journal reviewer -> plain statement in 5.1 + letter item 11. Equation numbers >= 26 shifted by A11 (hard-coded letter refs fixed).
+  Builds 48/41/52 pp., 0 errors, quotes in sync; \pending 0, \prelim 10 (MS) / 13 (letter) = the 3D normalisation set.
+  Reading copies *_READ_2026-10-28b.pdf delivered to Alex for the co-author mail. NOT committed.
