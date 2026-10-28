@@ -72,3 +72,9 @@ S1G_3D_vM_ws1.0               1.0   vonmises 1.0 1.0 0.2222222 isotropic 1.0 por
 S1G_3D_vM_ws2.0               2.0   vonmises 1.0 1.0 0.2222222 isotropic 1.0 porous   7   -  6      0.1    96
 S2G_3D_solid_vM_ws1.0         1.0   vonmises 1.0 1.0 0.2222222 isotropic 1.0 solid    7   -  6      0.1    64
 S2G_3D_solid_vM_ws2.0         2.0   vonmises 1.0 1.0 0.2222222 isotropic 1.0 solid    7   -  6      0.1    96
+
+# 2026-10-28 (review item 1): strip references for the 6x3x2 series — no pores, block plastic (vM), embedding on the z faces linear
+# elastic (as in every porous run) -> consistent normalisation of J_eff (the S2G solids are plastic everywhere, incl. the side layers).
+# Premesh: reuse of the solid meshes (same box, 2 volumes block+embedding), copied from S2G_3D_solid_vM_ws*/premesh on the cluster.
+S2G_3D_strip_vM_ws1.0         1.0   vonmises 1.0 1.0 0.2222222 isotropic 1.0 strip    7   -  6      0.1    64
+S2G_3D_strip_vM_ws2.0         2.0   vonmises 1.0 1.0 0.2222222 isotropic 1.0 strip    7   -  6      0.1    96
