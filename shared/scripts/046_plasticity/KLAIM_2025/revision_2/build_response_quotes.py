@@ -36,7 +36,13 @@ becomes one bullet of the surrounding relatedchanges list, preceded by its locat
 import re
 import sys
 
-MS, AUX, LETTER = sys.argv[1:4]
+args = sys.argv[1:]
+OLD_MAX = None   # --old-max N: for \replaced{new}{old} with len(old) > N chars, quote only the new text (2026-10-28)
+if "--old-max" in args:
+    j = args.index("--old-max")
+    OLD_MAX = int(args[j + 1])
+    del args[j:j + 2]
+MS, AUX, LETTER = args[:3]
 ms = open(MS, encoding="utf-8").read()
 aux = open(AUX, encoding="utf-8").read()
 
@@ -180,7 +186,42 @@ def resolve(text):
 
     text = re.sub(r"\\cite(p|t)?\{([^}]*)\}", lambda m: cite(m), text)
     text = text.replace("\\protect", "")
-    return text
+    return shorten_replaced(text)
+
+
+SHORTENED = []
+
+
+def shorten_replaced(text):
+    """\\replaced{new}{old} with a long old part -> \\added{new} + note (the struck-out text stays in the marked manuscript)"""
+    if OLD_MAX is None:
+        return text
+    if text.startswith("\\deleted{") and len(text) > OLD_MAX + len("\\deleted{}"):
+        SHORTENED.append(len(text))
+        return "\\textit{(a passage of the previous version was removed here; it is shown struck out in the marked manuscript)}"
+    if not text.startswith("\\replaced{"):
+        return text
+    s = text[len("\\replaced"):]
+    d, k, ends = 0, 0, []
+    while k < len(s) and len(ends) < 2:
+        c = s[k]
+        if c == "\\":
+            k += 2
+            continue
+        if c == "{":
+            d += 1
+        elif c == "}":
+            d -= 1
+            if d == 0:
+                ends.append(k)
+        k += 1
+    if len(ends) < 2:
+        return text
+    new, old = s[1:ends[0]], s[ends[0] + 2:ends[1]]
+    if len(old) <= OLD_MAX:
+        return text
+    SHORTENED.append(len(old))
+    return ("\\added{%s}" % new) + " \\textit{(replaces a passage of the previous version; the removed text is shown in the marked manuscript)}"
 
 
 def math_env(anchor):
@@ -280,5 +321,7 @@ open(LETTER, "w", encoding="utf-8").write("\n".join(out))
 missing = [(ms.count("\n", 0, c[0]) + 1, " ".join(c[2].split())[:90])
            for c in cmds if c[0] not in used]
 print("quoted %d of %d markup commands" % (len(used & {c[0] for c in cmds}), len(cmds)))
+if OLD_MAX is not None:
+    print("old text omitted for %d long replaced quotes (--old-max %d, %d chars)" % (len(SHORTENED), OLD_MAX, sum(SHORTENED)))
 for ln, txt in missing:
     print("  not quoted: l.%d %s" % (ln, txt))

@@ -878,3 +878,57 @@ into the `_PAPER` folders. The `alex`/`ronny` packages live in `shared/utils/` (
   not a journal reviewer -> plain statement in 5.1 + letter item 11. Equation numbers >= 26 shifted by A11 (hard-coded letter refs fixed).
   Builds 48/41/52 pp., 0 errors, quotes in sync; \pending 0, \prelim 10 (MS) / 13 (letter) = the 3D normalisation set.
   Reading copies *_READ_2026-10-28b.pdf delivered to Alex for the co-author mail. NOT committed.
+
+### 2026-10-28 16:20 S1G ws2.0 stopped, early strip signal
+- Alex: "Yes, cancel it" -> scancel 55682952 (S1G_3D_vM_ws2.0 2nd continuation, 1:43 h, x_ct centred ~+3.9). Not needed: J_eff, cycle-2
+  partition and the cycle-end crack-front statistics are final. S2G solid ws2.0 (55674242) finished on its own. Remaining: strips only.
+- Early strip ws1.0 signal (x_ct centred -5.6..-4.8, before the plateau window): J_x strip/solid = 0.91-0.93 -> if it holds, normalised
+  3D values rise ~8 % (0.86 -> ~0.93, 0.95 -> ~1.03, 0.97 -> ~1.05): "does not exceed the homogeneous value" would flip to "slightly
+  exceeds from w_s ~ 0.75L". Told Alex (co-author mail). Expected: ws1.0 plateau ~19-20 h today, ws2.0 Fri ~03-08 h (job limit Thu ~15 h,
+  continuation 55714176 queued). Fallback: apply the ws1.0 strip/solid ratio to 2L (side-layer fraction 20 % for every w_s).
+
+### 2026-10-28 17:00 co-author review version
+- Alex: a version to send to the co-authors tonight, without the Revision Working Note, with the open strip-reference point stated.
+  `revision_2/make_review_version.py` (new, reusable): replaces the Working Note by a "Note to the co-authors" (document set, red =
+  provisional normalised 3D values, strip references running, expected shift +5-8 %, everything else final; removed before submission),
+  writes manuscript_review_marked.tex / manuscript_review_clean.tex (make_clean_manuscript.py), builds the letter under
+  response_review_letter.tex (the working letter PDF was older than its source after the quote rebuild; working PDFs are never
+  overwritten), copies to reading/*_COAUTHORS_2026-10-28.pdf (47/42/52 pp., 0 errors). Templates untouched. Email draft:
+  reading/coauthor_email_2026-10-28.md (names/deadline as placeholders). Written directly by the main session (model switched to
+  Fable 5.1 by Alex before the request).
+- 2026-10-28 ~18:00 Alex: letters must not list the errors openly ("just mention that results were recalculated because of small
+  inconsistencies"). Fable part 12 (edits_round2_part12_neutral_corrections.py): reviewer-letter section renamed "Further changes by the
+  authors", 13-item list -> one neutral paragraph (what was harmonized, no old/new numbers, no audit/mistake/Voigt/synthetic wording;
+  3D fixed mesh + 3D reference + cycle-max definition kept as the reason for the changed 3D result); references at l.71/95/189/975 and
+  editor letter item 4 neutralised. Letter 49 pp., 0 errors, quotes in sync. Co-author set rebuilt as reading/*_COAUTHORS_2026-10-28b.pdf
+  (make_review_version.py now takes the suffix as argv[1]); e-mail: "Hi Ronny, hi Ralf," + "kleinere Inkonsistenzen". Not committed.
+
+### 2026-10-28 evening: response letter — consistency check and conciseness (Alex: manuscript untouched, "if it doesnt make sense dont shorten")
+- Co-author mail sent with the *_COAUTHORS_2026-10-28b set (clean/marked manuscript + neutral letter). Letter was 49 pp.: 69 % verbatim
+  quote blocks (169 items, 11 passages quoted twice), 23 % response prose, 8 % reviewer text.
+- build_response_quotes.py: new option `--old-max N` — for \replaced quotes with removed text > N chars only the new text is quoted
+  (+ italic note), long purely \deleted paragraphs become a one-line note; the marked manuscript still shows everything. Test on a
+  scratch copy: 400 -> 18 quotes shortened, 49 -> 46 pp.; plus `\small` in the relatedchanges environment -> 42 pp. (readable).
+- Fable part 13 launched (brief scratchpad brief_part13.md): (1) consistency of the letter prose with manuscript_revised_clean.tex
+  (numbers, section/figure/eq numbers from the aux — Fig >= 17 and eq >= 26 shifted on 28.10., claims such as initial-crack test,
+  z-face BC, cycle-max definition, crack-front stats 0.11-0.15L / 21-75 %, G_diss 0.95-1.03), neutral wording preserved, unquoted
+  changes reviewed; (2) --old-max 400, \small quotes, duplicate quotes -> cross-references, prose tightened only where redundant;
+  target ~38-40 pp.; reading copy response_letter_READ_2026-10-28c.pdf; no commit.
+- Fable part 13 done (edits_round2_part13_letter_concise.py), checked by Claude: manuscript files untouched (git: not modified), letter
+  40 pp., 0 errors, quotes idempotent, forbidden-word grep empty (one benign "0.22" = H value in the Table-2 caption quote).
+  Consistency fixes in the letter prose: sensitivity range "-2 to +37 %" -> "-12 to +37 %" (Table 2); "smallest wall width 0.375L" ->
+  "thinnest wall of the test series" (2x); the old-mesh 3D cubic "-0.22 %" sentence removed (manuscript dropped it in part 11);
+  "yields across its full width" hedged to "recorded maxima indicate"; relhead Figs. 15-19 -> 15-20. Five previously unquoted changes
+  now quoted (cycle definition in Sec. 2, 3D reference in 3.5, Fig. 8 caption, side layers in 5.1, Fig. 17 caption).
+  Pages 49 -> 46 (--old-max 400, 17 quotes) -> 42 (\small) -> 40 (11 duplicates -> cross-references, ~25 lines of prose).
+  Not shortened on purpose: reviewer comments, R1 major 2/3 tables, R3 C3 scaling answer + table, "Further changes", abstract/
+  conclusion quotes. Note for the final pass (manuscript, not touched now): conclusion still says "w_s <= 0.6L yield across their width"
+  / "above [Eq sigma*] from about 0.6L on" while 4.4 gives the regime as <= 0.5L with the crossing between 0.5L and 0.6L.
+  Reading copy reading/response_letter_READ_2026-10-28c.pdf. Uncommitted: both letters, build_response_quotes.py (--old-max),
+  make_review_version.py, part-12/13 scripts, review .tex files.
+- Fable part 14 (edits_round2_part14_regime_consistency.py), checked: conclusion now distinguishes the yielding observation (w_s <= 0.6L in
+  the recorded runs) from the crack-resistance regime (<= 0.5L, crossing 0.5-0.6L); four small fixes (Fig. 10 double period, Sec. 5.1
+  J_bc/J_eff ratio 0.7-1.1, Sec. 4.1 "6 x 3 ... Fig. 8a)", intro pointer to Sec. 3); every repeated number verified against the CSVs.
+  Builds 48/41/40 pp., 0 errors, quotes in sync (--old-max 400 is now the standard letter build). Review set for the co-authors:
+  reading/*_COAUTHORS_2026-10-28c.pdf (marked 47, clean 42, letter 40 pp.) = the set to send. Letter l.303 "G_diss smaller for
+  w_s <= 0.375L" is understated (also at 0.4/0.5L) — fix with the final numbers.
