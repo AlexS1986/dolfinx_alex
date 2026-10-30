@@ -92,6 +92,13 @@ class Case:
         self.material = self.params.get("material", "vonmises" if "E_pl" in self.columns else "elastic")
         self.gc = float(self.params.get("Gc_simulation", 1.0))
         self.geometry = self.params.get("geometry", "porous")
+        # the 3D strip runs reuse the solid premesh, whose mesh_parameters ("geometry=solid") end up in parameters.txt;
+        # case.env (GEOMETRY=...) is what the run was submitted as (2026-10-28)
+        env_file = os.path.join(folder, "case.env")
+        if os.path.exists(env_file):
+            for line in open(env_file):
+                if line.startswith("GEOMETRY="):
+                    self.geometry = line.split("=", 1)[1].strip() or self.geometry
         self.embedding = self.params.get("embedding", "isotropic")
         self.nrows = int(self.params.get("nrows", 3))
         self.sig_y = float(self.params.get("sig_y_simulation", 1.0))
@@ -216,12 +223,45 @@ def first_bin_J(case, width=0.1):
     return float(np.mean(case.c("Jx")[mask])) if np.any(mask) else float("nan")
 
 
+def strip_solid_ratio(case, solids):
+    """(J_c^num strip / J_c^num solid, label) from a complete strip/solid pair on the same mesh (h_band), nholes and w_s;
+    preference: same h_band and nholes at the nearest w_s, else same h_band, else any pair. None without a pair."""
+    done = [s for s in solids if s["coverage"] >= 0.99 and s["h_band"] > 0]
+    pairs = []
+    for st in [s for s in done if s["geometry"] == "strip"]:
+        for so in [s for s in done if s["geometry"] == "solid" and abs(s["h_band"] - st["h_band"]) < 1e-9
+                   and s["nholes"] == st["nholes"] and abs(s["wsteg"] - st["wsteg"]) < 1e-9]:
+            pairs.append((st, so))
+    if not pairs:
+        return None
+    def rank(p):
+        st = p[0]
+        return (abs(st["h_band"] - case.h_band) > 1e-9, st["nholes"] != case.nholes, abs(st["wsteg"] - case.wsteg))
+    st, so = min(pairs, key=rank)
+    return st["Jc_num"] / so["Jc_num"], f"strip/solid h{st['h_band']} ws{st['wsteg']}"
+
+
 def solid_reference_3d(case, solids):
-    """J_c^num for a 3D porous run: solid on the same mesh (h_band) and w_s, else same h_band and nearest w_s; never across meshes"""
+    """J_c^num for a 3D porous run, never across meshes (same h_band and nholes).
+    Preferred (2026-10-28): the 'strip' reference at the same w_s (no pores, plastic block, linear elastic side layers on the
+    z faces exactly as in the porous specimens). While a strip run is incomplete: the 'solid' reference (plastic through the
+    whole thickness) at the same / nearest w_s, scaled by the strip/solid ratio of a complete pair (strip_solid_ratio);
+    without any strip run the plain solid value (as before)."""
     same_mesh = [s for s in solids if abs(s["h_band"] - case.h_band) < 1e-9 and s["h_band"] > 0 and s["nholes"] == case.nholes]
     if not same_mesh:
         return None
-    return min(same_mesh, key=lambda s: (abs(s["wsteg"] - case.wsteg), -s["coverage"]))
+    key = lambda s: (abs(s["wsteg"] - case.wsteg), -s["coverage"])
+    strips = [s for s in same_mesh if s["geometry"] == "strip" and s["coverage"] >= 0.99]
+    solid = [s for s in same_mesh if s["geometry"] == "solid"]
+    if strips and (not solid or key(min(strips, key=key)) <= key(min(solid, key=key))):
+        return min(strips, key=key)   # a complete strip at the same (or the nearest) w_s
+    if not solid:
+        return min(same_mesh, key=key)
+    sol = min(solid, key=key)
+    r = strip_solid_ratio(case, solids)
+    if r is None:
+        return sol
+    return dict(sol, name=f"{sol['name']}*{r[0]:.4f}({r[1]})", Jc_num=sol["Jc_num"] * r[0], J_first_bin=sol["J_first_bin"] * r[0])
 
 
 # ----------------------------------------------------------------------------------------------- energies
@@ -362,7 +402,7 @@ def main():
     for c in cases:
         if c.geometry in ("strip", "solid") and c.dim == 3:
             v, cov = Jc_num_from_strip(c, return_coverage=True)
-            solids3d.append(dict(name=c.name, h_band=c.h_band, wsteg=c.wsteg, nholes=c.nholes, Jc_num=v, coverage=cov, J_first_bin=first_bin_J(c)))
+            solids3d.append(dict(name=c.name, geometry=c.geometry, h_band=c.h_band, wsteg=c.wsteg, nholes=c.nholes, Jc_num=v, coverage=cov, J_first_bin=first_bin_J(c)))
         elif c.geometry in ("strip", "solid"):
             jc_num_all[(c.set_name, c.geometry)] = Jc_num_from_strip(c)
     for (name, geo), v in jc_num_all.items():
@@ -374,10 +414,10 @@ def main():
         for (name, geo), v in jc_num_all.items():
             f.write(f"{name},{geo},{v:.5f},{int(jc_num[name] == v)}\n")
     with open(os.path.join(args.out, "Jc_num_solid_3D.csv"), "w") as f:
-        f.write("case,h_band,wsteg,Jc_num_plateau,plateau_coverage,J_first_bin_0.3_0.4L\n")
-        for s in sorted(solids3d, key=lambda s: (s["h_band"], s["wsteg"])):
-            f.write(f"{s['name']},{s['h_band']},{s['wsteg']},{s['Jc_num']:.4f},{s['coverage']:.3f},{s['J_first_bin']:.4f}\n")
-            print(f"3D solid {s['name']}: h_band {s['h_band']} w_s {s['wsteg']} plateau {s['Jc_num']:.4f} (coverage {s['coverage']:.2f}), first bin {s['J_first_bin']:.4f}")
+        f.write("case,geometry,h_band,wsteg,Jc_num_plateau,plateau_coverage,J_first_bin_0.3_0.4L\n")
+        for s in sorted(solids3d, key=lambda s: (s["h_band"], s["wsteg"], s["geometry"])):
+            f.write(f"{s['name']},{s['geometry']},{s['h_band']},{s['wsteg']},{s['Jc_num']:.4f},{s['coverage']:.3f},{s['J_first_bin']:.4f}\n")
+            print(f"3D {s['geometry']} {s['name']}: h_band {s['h_band']} w_s {s['wsteg']} plateau {s['Jc_num']:.4f} (coverage {s['coverage']:.2f}), first bin {s['J_first_bin']:.4f}")
 
     def jc_ref(c):
         """(J_c^num, reference name, coverage) used to normalise case c"""

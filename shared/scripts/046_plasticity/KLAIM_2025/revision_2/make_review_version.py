@@ -30,16 +30,13 @@ prepared for internal review before submission. The marked version shows every c
 (new text underlined, removed text struck out); the clean version has all changes accepted. The response to the editor
 and the reviewers is a separate document.
 
-One set of results is still provisional and is printed in \textcolor{red}{red}: the three-dimensional effective crack
-resistances normalized by the crack resistance of the homogeneous material (Section~\ref{sec:3D_fracture_behavior},
-abstract, conclusion). The homogeneous reference computed so far is plastic through the whole thickness, whereas the
-porous specimens carry a linear elastic layer on each $z$ face that lies on the crack plane
-(Section~\ref{sec:3D_effective_medium}). Two reference simulations with the same elastic layers are running; the first
-completes on 28 October, the second by 31 October. Their first values indicate that the normalized three-dimensional
-results rise by about $5$ to $8\,\%$, so that the statement that the porous material does not exceed the homogeneous
-value may turn into a small enhancement for the wider walls. All two-dimensional results, the three-dimensional values
-in units of $J_c^0$, the three-dimensional mechanism and the comparison between the two models are final. This note and
-the red marking will be removed before submission.
+Compared with the version of 28 October, the three-dimensional values normalized by the homogeneous reference
+changed: the reference now carries the same linear elastic side layers as the porous specimens
+(Sections~\ref{sec:steady_growth_griffith} and~\ref{sec:3D_effective_medium}), which lowers it by $11\,\%$
+($w_s = L$) and $7\,\%$ ($2L$). The normalized values are $0.96$ to $1.06$ instead of $0.86$ to $0.97$, so that
+the porous material now slightly exceeds the homogeneous value for $w_s \ge 0.75L$
+(Section~\ref{sec:3D_fracture_behavior}, abstract, conclusion). No value is provisional any more. This note will
+be removed before submission.
 
 """
 

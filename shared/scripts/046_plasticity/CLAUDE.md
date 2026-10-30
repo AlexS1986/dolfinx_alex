@@ -932,3 +932,51 @@ into the `_PAPER` folders. The `alex`/`ronny` packages live in `shared/utils/` (
   Builds 48/41/40 pp., 0 errors, quotes in sync (--old-max 400 is now the standard letter build). Review set for the co-authors:
   reading/*_COAUTHORS_2026-10-28c.pdf (marked 47, clean 42, letter 40 pp.) = the set to send. Letter l.303 "G_diss smaller for
   w_s <= 0.375L" is understated (also at 0.4/0.5L) — fix with the final numbers.
+
+### 2026-10-28 21:00 strip reference w_s = L finished: 3D normalisation corrected (+12 %, not +5-8 %)
+- S2G_3D_strip_vM_ws1.0 (55714173) COMPLETED after 6.2 h (exit 0); tables of 076 downloaded 21:01 (05 --tables-only, 06). Setup verified:
+  parameters identical to S2G_3D_solid_vM_ws1.0 except sig_y_embedding 1e6 (elastic side layers w_c/4 on both z faces, as in the porous
+  runs). NOTE: the strip runs' parameters.txt says `geometry=solid` (mesh_parameters copied with the solid premesh) -> evaluation_rev2.py
+  now reads GEOMETRY from case.env (overrides parameters.txt).
+- J_c^num strip (x-weighted plateau 0.3-0.7 L_domain) **1.268** vs solid 1.421 -> strip/solid = **0.892** (-10.8 %); the ratio is uniform
+  along the domain (1 L bins: 0.91/0.89/0.89/0.89/0.90/0.88), i.e. no plateau artefact. The naive mixture rule (0.8 x 1.42 + 0.2 x 1.09 =
+  1.35) overestimates the strip: the elastic layers crack ahead and relieve the constraint of the plastic block.
+- evaluation_rev2.py `solid_reference_3d`: reference = complete `strip` run on the same mesh/nholes at the same or nearest w_s; while a
+  strip is incomplete: nearest `solid` x strip/solid ratio of a complete pair (`strip_solid_ratio`, same h_band preferred; the Jc_ref
+  column names the construction, e.g. `S2G_3D_solid_vM_ws2.0*0.8924(strip/solid h0.1 ws1.0)`); without any strip: solid as before.
+  Jc_num_solid_3D.csv has a geometry column now.
+- **Corrected J_eff / J_c^num (3D, 6x3x2): 0.964 / 0.989 / 1.035 / 1.060 / 1.087** (w_s 0.375 / 0.5 / 0.75 / 1 / 2L; 2L provisional =
+  solid 1.445 x 0.892 = 1.290 until S2G_3D_strip_vM_ws2.0 is done). Old (solid): 0.860 / 0.883 / 0.923 / 0.946 / 0.970. 2D vM:
+  0.504 / 0.650 / 0.909 / 1.097 / 1.284. -> In 3D the porous material now *exceeds* the homogeneous reference by 3-9 % for w_s >= 0.75L
+  and lies 1-4 % below it for w_s <= 0.5L; 2D and 3D cross between 0.75L and L (was 0.75L). Robustness unchanged: 4x3x2 vs 6x3x2
+  +1.5/+0.9/+0.5/+0.4/-0.7 % (same ratio applied to S2F), h 0.07 vs 0.1 at w_s = L +0.9 % (S1F 1.064 vs S9F 1.074). J_eff in J_c^0,
+  partitions, G_diss/J_eff, crack-front statistics unaffected.
+- Figures regenerated (paper_figures_3D.py; previous set in the session scratchpad pics_bak_1028b/): Fig. 17 (J/J_c^num vs x_ct 2D vs 3D),
+  Fig. 18 (3D sections), Fig. 19a now with the strip normalisation (3D curve 0.96-1.09, above 1 from 0.75L). Fig. 19a legend/caption
+  still say J_c^num; the text must define J_c^num(3D) as the strip value (Sec. 3.5 / 5.1) and all \prelim values + the caveat sentence
+  change (manuscript 10, letter 4 own-prose uses + quotes). Not yet edited; waiting for the 2L strip (55714174 running since 14:5x,
+  continuation 55714176 queued; plateau window x_ct(centred) -4.8..4.8 of the 24 L domain) — expected Thu night/Fri morning. Fallback
+  if late: keep the ratio-scaled 2L value and say so. Nothing committed yet (evaluation_rev2.py patch + figures).
+
+### 2026-10-30 07:45 strip reference w_s = 2L: plateau covered, final 3D normalisation
+- Watcher fired 07:41 (S2G_3D_strip_vM_ws2.0 x_ct centred 4.86 >= 4.8 = end of the 0.3-0.7 window; job 55714174 TIMEOUT Thu 14:53,
+  continuation 55714176 running since then, left running to the domain end). Tables downloaded 07:45, evaluation + 3D figures rerun.
+- J_c^num strip 2L **1.343** (bins 1.39/1.37/1.345/1.344/1.342) vs solid 1.445 -> ratio 0.929 (w_s = L: 0.892; the side-layer effect
+  is smaller on the longer/wider domain). **Final 3D J_eff / J_c^num(strip): 0.964 / 0.989 / 1.035 / 1.060 / 1.044** (w_s 0.375 / 0.5 /
+  0.75 / 1 / 2L; J_eff 1.223 / 1.255 / 1.312 / 1.344 / 1.402 J_c^0). -> above the homogeneous value by 3-6 % for w_s >= 0.75L, 1-4 %
+  below for w_s <= 0.5L, nearly flat (0.96-1.06); 2D/3D crossing between 0.75L (1.03 vs 0.91) and L (1.06 vs 1.10). 4x3x2 series:
+  S2F solid x ratio of the same w_s -> normalised differences unchanged (+1.5/+0.9/+0.5/+0.4/-0.7 %), h0.07 +0.9 %.
+- Fable part 15 (brief scratchpad brief_part15.md): strip reference defined in Secs. 3.5/5.1, all \prelim values replaced, caveat removed,
+  abstract/conclusion/letters/editor letter adjusted, letter l.~303 G_diss statement (vM < EqSig for w_s <= 0.5L, equal at 0.6L), new
+  reading copies *_READ_2026-10-30.pdf and co-author set *_COAUTHORS_2026-10-30.pdf. Backups: scratchpad backup_pre_part15/.
+- Part 15 done (edits_round2_part15_strip_reference.py, checked by Claude): Secs. 3.5/5.1 define the 3D reference as the pore-free
+  specimen with the elastic side layers (1.268 / 1.343 J_c^0; the fully plastic 1.421 / 1.445 = 2D 1.425 within 2 % kept as a
+  consistency statement; four-pore/h0.07 points normalised by their own plastic references x strip/plastic ratio), all \prelim gone
+  (macro removed in both files), caveat paragraph deleted, Sec. 5.2 0.96/0.99/1.03/1.06/1.04 (four-pore 0.98/1.00/1.04/1.06/1.04),
+  cycle maxima at w_s = L 1.09/1.07/1.06/1.05/1.01 (verified: energy_cycles Jmax / 1.2684), reference drop at the domain end 6 %
+  (strip), abstract/conclusion "within -4 % and +6 % of the homogeneous value", letter l.97/303/1083 + "Further changes" (same elastic
+  side layers), editor letter item 4 (spacing tightened to keep 1 page), review NOTE rewritten (no provisional values). Builds 48/41/40/1,
+  review set 47/42/40 pp., 0 errors, quotes idempotent. Reading copies *_READ_2026-10-30.pdf (4 incl. editor), co-author set
+  *_COAUTHORS_2026-10-30.pdf, follow-up mail draft reading/coauthor_email_2026-10-30.md. NOT committed: evaluation_rev2.py (strip
+  reference logic + case.env geometry), 3D figures (ignored by git), the five tex/py files of part 15, CLAUDE.md.
+- 2026-10-30 ~08:30 (Alex: "Commit and cancel"): scancel 55714176 (strip 2L continuation, 21.5 h; plateau already covered). Queue empty; no KLAIM job left. Part 15 committed (see git log).
